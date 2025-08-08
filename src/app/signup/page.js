@@ -7,7 +7,7 @@ import { Home } from "lucide-react";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({

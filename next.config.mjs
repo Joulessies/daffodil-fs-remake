@@ -10,10 +10,15 @@ const nextConfig = {
       },
     },
   },
-  // Disable static optimization for pages that use useSearchParams
-  images: {
-    unoptimized: false,
+  // Allow build to continue even with prerender errors
+  typescript: {
+    ignoreBuildErrors: false,
   },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  // This helps with the useSearchParams issue
+  output: "standalone",
 };
 
 export default nextConfig;
