@@ -1,0 +1,43 @@
+@import url("https://fonts.cdnfonts.com/css/santa-catarina");
+
+@font-face {
+  font-family: "Rothek";
+  src: url("/fonts/rothek-extralight-webfont.woff2") format("woff2"),
+    url("/fonts/rothek-extralight-webfont.woff") format("woff");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-santa-catarina: "Santa Catarina", serif;
+  --font-geist-sans: "Geist", sans-serif;
+  --font-geist-mono: "Geist Mono", monospace;
+  --font-rothek: "Rothek", sans-serif;
+  --color-primary: #bc0930;
+  --background-color: #ffffff;
+}
+
+* {
+  background-color: var(--background-color);
+}
+
+h1 {
+  font-family: var(--font-santa-catarina);
+  color: var(--color-primary);
+  font-size: 2rem;
+  font-weight: 200;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-align: center;
+  color: var(--color-primary);
+}
+
+a {
+  font-family: var(--font-rothek);
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+  text-decoration: none;
+}
