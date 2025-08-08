@@ -10,6 +10,10 @@ const nextConfig = {
       },
     },
   },
+  // Disable static optimization for pages that use useSearchParams
+  images: {
+    unoptimized: false,
+  },
 };
 
 export default nextConfig;

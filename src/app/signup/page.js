@@ -4,8 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Home } from "lucide-react";
-import { useSession, signIn } from "@auth/nextjs/react";
+import { useSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+
+export const dynamic = 'force-dynamic';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({

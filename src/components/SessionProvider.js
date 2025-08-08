@@ -1,6 +1,6 @@
 "use client";
 
-import { SessionProvider } from "@auth/nextjs/react";
+import { SessionProvider } from "next-auth/react";
 
 export function SessionProviderWrapper({ children }) {
   return <SessionProvider>{children}</SessionProvider>;

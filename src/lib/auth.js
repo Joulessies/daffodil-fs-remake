@@ -1,16 +1,15 @@
-import Google from "@auth/core/providers/google";
-import GitHub from "@auth/core/providers/github";
-import { SupabaseAdapter } from "@auth/supabase-adapter";
-import { supabase } from "./supabase.js";
+import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
+import { SupabaseAdapter } from "@next-auth/supabase-adapter";
 import { v4 as uuidv4 } from "uuid";
 
 export const authOptions = {
   providers: [
-    Google({
+    GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "placeholder",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "placeholder",
     }),
-    GitHub({
+    GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID || "placeholder",
       clientSecret: process.env.GITHUB_CLIENT_SECRET || "placeholder",
     }),

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { LayoutGrid, Search, ShoppingBag, Heart } from "lucide-react";
-import { useSession, signOut } from "@auth/nextjs/react";
+import { useSession, signOut } from "next-auth/react";
 
 export default function NavigationBar() {
   const { data: session, status } = useSession();
