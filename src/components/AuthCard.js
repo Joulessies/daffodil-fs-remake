@@ -12,6 +12,10 @@ export default function AuthCard({ mode = "login" }) {
 
   const handleContinue = async (e) => {
     e.preventDefault();
+    if (!supabase) {
+      alert("Auth is not configured. Please try again later.");
+      return;
+    }
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${window.location.origin}/` },
@@ -157,6 +161,10 @@ export default function AuthCard({ mode = "login" }) {
         >
           <button
             onClick={async () => {
+              if (!supabase) {
+                alert("Auth is not configured. Please try again later.");
+                return;
+              }
               const { error } = await supabase.auth.signInWithOAuth({
                 provider: "github",
                 options: { redirectTo: `${window.location.origin}/` },
@@ -175,6 +183,10 @@ export default function AuthCard({ mode = "login" }) {
           </button>
           <button
             onClick={async () => {
+              if (!supabase) {
+                alert("Auth is not configured. Please try again later.");
+                return;
+              }
               const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: { redirectTo: `${window.location.origin}/` },
