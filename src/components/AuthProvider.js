@@ -12,6 +12,14 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let isMounted = true;
 
+    if (!supabase) {
+      // Supabase not configured; mark loading as done and exit.
+      setIsLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
+
     supabase.auth
       .getSession()
       .then(({ data }) => {
