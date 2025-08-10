@@ -15,10 +15,11 @@
   --font-geist-mono: "Geist Mono", monospace;
   --font-rothek: "Rothek", sans-serif;
   --color-primary: #bc0930;
-  --background-color: #ffffff;
+  --background-color: #fffcf2;
 }
 
-* {
+html,
+body {
   background-color: var(--background-color);
 }
 

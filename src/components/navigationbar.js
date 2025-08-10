@@ -3,13 +3,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { LayoutGrid, Search, ShoppingBag, Heart } from "lucide-react";
-import { useSession, signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { useAuth } from "./AuthProvider";
 
 export default function NavigationBar() {
-  const { data: session, status } = useSession();
+  const { user } = useAuth();
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/" });
+  const handleLogout = async () => {
+    const { supabase } = await import("../lib/supabase");
+    await supabase.auth.signOut();
+    window.location.href = "/";
   };
   return (
     <div
@@ -18,8 +21,12 @@ export default function NavigationBar() {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        padding: "5px 40px",
-        position: "relative",
+        padding: "8px 24px",
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        background: "#fffcf2",
+        borderBottom: "1px solid #e8e2d6",
       }}
     >
       <div
@@ -28,13 +35,18 @@ export default function NavigationBar() {
           justifyContent: "space-between",
           alignItems: "center",
           width: "100%",
+          maxWidth: 1240,
           fontWeight: "500",
         }}
       >
         <div style={{ width: "100px" }}>
-          <a href="/menu" style={{ textDecoration: "none", color: "#333" }}>
+          <Link
+            prefetch={false}
+            href="/menu"
+            style={{ textDecoration: "none", color: "#333" }}
+          >
             <LayoutGrid size={24} />
-          </a>
+          </Link>
         </div>
 
         <div
@@ -47,8 +59,8 @@ export default function NavigationBar() {
           <Image
             src="/images/logo.svg"
             alt="Daffodil"
-            width={160}
-            height={100}
+            width={210}
+            height={60}
             priority
           />
         </div>
@@ -58,18 +70,31 @@ export default function NavigationBar() {
             width: "100px",
             display: "flex",
             justifyContent: "flex-end",
-            gap: "20px",
+            gap: 20,
+            color: "#2B2B2B",
           }}
         >
-          <a href="/search" style={{ textDecoration: "none", color: "#333" }}>
+          <Link
+            prefetch={false}
+            href="/search"
+            style={{ textDecoration: "none", color: "#333" }}
+          >
             <Search size={24} />
-          </a>
-          <a href="/wishlist" style={{ textDecoration: "none", color: "#333" }}>
+          </Link>
+          <Link
+            prefetch={false}
+            href="/wishlist"
+            style={{ textDecoration: "none", color: "#333" }}
+          >
             <Heart size={24} />
-          </a>
-          <a href="/cart" style={{ textDecoration: "none", color: "#333" }}>
+          </Link>
+          <Link
+            prefetch={false}
+            href="/cart"
+            style={{ textDecoration: "none", color: "#333" }}
+          >
             <ShoppingBag size={24} />
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -78,69 +103,76 @@ export default function NavigationBar() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: "1px 0",
-          gap: "50px",
+          padding: "6px 0",
+          gap: 48,
+          width: "100%",
+          maxWidth: 920,
+          color: "#5B6B73",
+          letterSpacing: 0.2,
         }}
       >
-        <a
+        <Link
           href="/"
           style={{
             textDecoration: "none",
-            color: "#333",
-            fontSize: "14px",
+            color: "#5B6B73",
+            fontSize: 14,
             fontFamily: "var(--font-rothek)",
-            fontWeight: "bold",
+            fontWeight: 500,
           }}
         >
           Home
-        </a>
-        <a
+        </Link>
+        <Link
+          prefetch={false}
           href="/shop"
           style={{
             textDecoration: "none",
-            color: "#333",
-            fontSize: "14px",
+            color: "#5B6B73",
+            fontSize: 14,
             fontFamily: "var(--font-rothek)",
-            fontWeight: "bold",
+            fontWeight: 500,
           }}
         >
           Shop
-        </a>
-        <a
+        </Link>
+        <Link
+          prefetch={false}
           href="/about"
           style={{
             textDecoration: "none",
-            color: "#333",
-            fontSize: "14px",
+            color: "#5B6B73",
+            fontSize: 14,
             fontFamily: "var(--font-rothek)",
-            fontWeight: "bold",
+            fontWeight: 500,
           }}
         >
           About
-        </a>
-        <a
-          href="/contact"
+        </Link>
+        <Link
+          prefetch={false}
+          href="/customize"
           style={{
             textDecoration: "none",
-            color: "#333",
-            fontSize: "14px",
+            color: "#5B6B73",
+            fontSize: 14,
             fontFamily: "var(--font-rothek)",
-            fontWeight: "bold",
+            fontWeight: 500,
           }}
         >
-          Contact
-        </a>
-        {session ? (
+          Customize
+        </Link>
+        {user ? (
           <>
             <button
               onClick={handleLogout}
               style={{
                 background: "none",
                 border: "none",
-                color: "#333",
-                fontSize: "14px",
+                color: "#5B6B73",
+                fontSize: 14,
                 fontFamily: "var(--font-rothek)",
-                fontWeight: "bold",
+                fontWeight: 500,
                 cursor: "pointer",
               }}
             >
@@ -149,30 +181,30 @@ export default function NavigationBar() {
           </>
         ) : (
           <>
-            <a
+            <Link
               href="/login"
               style={{
                 textDecoration: "none",
-                color: "#333",
-                fontSize: "14px",
+                color: "#5B6B73",
+                fontSize: 14,
                 fontFamily: "var(--font-rothek)",
-                fontWeight: "bold",
+                fontWeight: 500,
               }}
             >
               Login
-            </a>
-            <a
+            </Link>
+            <Link
               href="/signup"
               style={{
                 textDecoration: "none",
-                color: "#333",
-                fontSize: "14px",
+                color: "#5B6B73",
+                fontSize: 14,
                 fontFamily: "var(--font-rothek)",
-                fontWeight: "bold",
+                fontWeight: 500,
               }}
             >
               Signup
-            </a>
+            </Link>
           </>
         )}
       </div>

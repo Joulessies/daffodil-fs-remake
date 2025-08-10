@@ -1,24 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    turbo: {
-      rules: {
-        "*.svg": {
-          loaders: ["@svgr/webpack"],
-          as: "*.js",
-        },
-      },
-    },
-  },
-  // Allow build to continue even with prerender errors
   typescript: {
     ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: false,
   },
-  // This helps with the useSearchParams issue
+  // Use Next.js server runtime to allow API routes (needed for AI generation)
   output: "standalone",
+  images: {
+    unoptimized: true,
+  },
+  reactStrictMode: true,
 };
 
 export default nextConfig;
