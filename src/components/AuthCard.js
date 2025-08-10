@@ -167,7 +167,10 @@ export default function AuthCard({ mode = "login" }) {
               }
               const { error } = await supabase.auth.signInWithOAuth({
                 provider: "github",
-                options: { redirectTo: `${window.location.origin}/` },
+                options: {
+                  redirectTo: `${window.location.origin}/`,
+                  flowType: "pkce",
+                },
               });
               if (error) alert(error.message);
             }}
@@ -189,7 +192,10 @@ export default function AuthCard({ mode = "login" }) {
               }
               const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
-                options: { redirectTo: `${window.location.origin}/` },
+                options: {
+                  redirectTo: `${window.location.origin}/`,
+                  flowType: "pkce",
+                },
               });
               if (error) alert(error.message);
             }}
