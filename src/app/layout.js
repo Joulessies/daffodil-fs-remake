@@ -3,6 +3,7 @@ import "./globals.scss";
 import { CacheProvider } from "@chakra-ui/next-js";
 import { Providers } from "./providers";
 import { AuthProvider } from "@/components/AuthProvider";
+import CartModal from "@/components/CartModal";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,7 +27,11 @@ export default function RootLayout({ children }) {
       <body className={`${inter.variable} font-santa-katarina font-rothek`}>
         <CacheProvider>
           <Providers>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              {children}
+              {/* Portal for cart modal */}
+              <CartModal />
+            </AuthProvider>
           </Providers>
         </CacheProvider>
       </body>

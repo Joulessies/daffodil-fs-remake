@@ -2,17 +2,43 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import {
+  IconButton,
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  Stack as CStack,
+  Button as CButton,
+  Box as CBox,
+  useDisclosure,
+  HStack,
+  Input,
+} from "@chakra-ui/react";
 import { LayoutGrid, Search, ShoppingBag, Heart } from "lucide-react";
+import CartButton from "./CartButton";
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function NavigationBar() {
   const { user } = useAuth();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [query, setQuery] = useState("");
 
   const handleLogout = async () => {
     const { supabase } = await import("../lib/supabase");
     await supabase.auth.signOut();
     window.location.href = "/";
+  };
+
+  const handleMobileSearch = (e) => {
+    e.preventDefault();
+    const q = (query || "").trim();
+    onClose();
+    if (q) window.location.href = `/search?q=${encodeURIComponent(q)}`;
+    else window.location.href = "/search";
   };
   return (
     <div
@@ -39,15 +65,16 @@ export default function NavigationBar() {
           fontWeight: "500",
         }}
       >
-        <div style={{ width: "100px" }}>
-          <Link
-            prefetch={false}
-            href="/menu"
-            style={{ textDecoration: "none", color: "#333" }}
-          >
-            <LayoutGrid size={24} />
-          </Link>
-        </div>
+        <CBox style={{ width: "100px" }}>
+          <CBox display={{ base: "block", md: "none" }}>
+            <IconButton
+              aria-label="Open menu"
+              icon={<LayoutGrid size={22} />}
+              variant="ghost"
+              onClick={onOpen}
+            />
+          </CBox>
+        </CBox>
 
         <div
           style={{
@@ -65,42 +92,44 @@ export default function NavigationBar() {
           />
         </div>
 
-        <div
+        <CBox
+          display={{ base: "none", md: "flex" }}
           style={{
             width: "100px",
-            display: "flex",
             justifyContent: "flex-end",
-            gap: 20,
+            gap: 10,
             color: "#2B2B2B",
           }}
         >
           <Link
             prefetch={false}
             href="/search"
-            style={{ textDecoration: "none", color: "#333" }}
+            style={{ textDecoration: "none" }}
           >
-            <Search size={24} />
+            <IconButton
+              aria-label="Search"
+              icon={<Search size={20} />}
+              variant="ghost"
+            />
           </Link>
           <Link
             prefetch={false}
             href="/wishlist"
-            style={{ textDecoration: "none", color: "#333" }}
+            style={{ textDecoration: "none" }}
           >
-            <Heart size={24} />
+            <IconButton
+              aria-label="Favorites"
+              icon={<Heart size={20} />}
+              variant="ghost"
+            />
           </Link>
-          <Link
-            prefetch={false}
-            href="/cart"
-            style={{ textDecoration: "none", color: "#333" }}
-          >
-            <ShoppingBag size={24} />
-          </Link>
-        </div>
+          <CartButton />
+        </CBox>
       </div>
 
-      <div
+      <CBox
+        display={{ base: "none", md: "flex" }}
         style={{
-          display: "flex",
           justifyContent: "center",
           alignItems: "center",
           padding: "6px 0",
@@ -207,7 +236,164 @@ export default function NavigationBar() {
             </Link>
           </>
         )}
-      </div>
+      </CBox>
+
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {isOpen && (
+          <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="xs">
+            <DrawerOverlay />
+            <DrawerContent>
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -20, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <DrawerHeader>Menu</DrawerHeader>
+                </motion.div>
+                <DrawerBody>
+                  <motion.div
+                    initial="hidden"
+                    animate="show"
+                    variants={{
+                      hidden: { opacity: 0, y: 10 },
+                      show: {
+                        opacity: 1,
+                        y: 0,
+                        transition: { staggerChildren: 0.05 },
+                      },
+                    }}
+                  >
+                    <CStack spacing={4}>
+                      <HStack>
+                        <form
+                          onSubmit={handleMobileSearch}
+                          style={{ width: "100%" }}
+                        >
+                          <HStack>
+                            <Input
+                              placeholder="Search flowers..."
+                              value={query}
+                              onChange={(e) => setQuery(e.target.value)}
+                              autoComplete="off"
+                            />
+                            <IconButton
+                              aria-label="Search"
+                              icon={<Search size={18} />}
+                              type="submit"
+                            />
+                          </HStack>
+                        </form>
+                        <Link
+                          prefetch={false}
+                          href="/wishlist"
+                          onClick={onClose}
+                        >
+                          <IconButton
+                            aria-label="Favorites"
+                            icon={<Heart size={18} />}
+                          />
+                        </Link>
+                        <CartButton />
+                      </HStack>
+                      <Link
+                        href="/"
+                        onClick={onClose}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <CButton
+                          variant="ghost"
+                          width="100%"
+                          justifyContent="flex-start"
+                        >
+                          Home
+                        </CButton>
+                      </Link>
+                      <Link
+                        href="/shop"
+                        onClick={onClose}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <CButton
+                          variant="ghost"
+                          width="100%"
+                          justifyContent="flex-start"
+                        >
+                          Shop
+                        </CButton>
+                      </Link>
+                      <Link
+                        href="/about"
+                        onClick={onClose}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <CButton
+                          variant="ghost"
+                          width="100%"
+                          justifyContent="flex-start"
+                        >
+                          About
+                        </CButton>
+                      </Link>
+                      <Link
+                        href="/customize"
+                        onClick={onClose}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <CButton
+                          variant="ghost"
+                          width="100%"
+                          justifyContent="flex-start"
+                        >
+                          Customize
+                        </CButton>
+                      </Link>
+                      {user ? (
+                        <CButton
+                          onClick={() => {
+                            onClose();
+                            handleLogout();
+                          }}
+                          variant="outline"
+                        >
+                          Logout
+                        </CButton>
+                      ) : (
+                        <>
+                          <Link
+                            href="/login"
+                            onClick={onClose}
+                            style={{ textDecoration: "none" }}
+                          >
+                            <CButton variant="outline" width="100%">
+                              Login
+                            </CButton>
+                          </Link>
+                          <Link
+                            href="/signup"
+                            onClick={onClose}
+                            style={{ textDecoration: "none" }}
+                          >
+                            <CButton
+                              variant="solid"
+                              colorScheme="red"
+                              width="100%"
+                            >
+                              Signup
+                            </CButton>
+                          </Link>
+                        </>
+                      )}
+                    </CStack>
+                  </motion.div>
+                </DrawerBody>
+              </motion.div>
+            </DrawerContent>
+          </Drawer>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
