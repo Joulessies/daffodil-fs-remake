@@ -25,7 +25,6 @@ import {
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/CartContext";
 import NavigationBar from "@/components/navigationbar";
-import PayPalButtons from "@/components/PayPalButtons";
 
 export default function CheckoutPage() {
   const toast = useToast();
@@ -55,10 +54,7 @@ export default function CheckoutPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (paymentMethod !== "card") {
-        // For PayPal and others, do not submit the form; buttons handle flow
-        return;
-      }
+      // Only Stripe (card) is supported now
       // Create Stripe Checkout session
       const stripeInit = await fetch("/api/payments/stripe/checkout", {
         method: "POST",
@@ -409,35 +405,6 @@ export default function CheckoutPage() {
                         />
                       </FormControl>
                     </Grid>
-                  )}
-
-                  {paymentMethod === "paypal" && (
-                    <Box mt={3}>
-                      <PayPalButtons
-                        items={cart.items}
-                        onApproved={async (capture) => {
-                          try {
-                            const { supabase } = await import("@/lib/supabase");
-                            if (supabase) {
-                              await supabase.from("orders").insert({
-                                order_number:
-                                  capture?.id ||
-                                  Math.random().toString(36).slice(2, 10),
-                                status: "paid",
-                                total: cart.total,
-                                items: cart.items,
-                                customer_name: name,
-                                customer_email: email,
-                                shipping_address: shipping,
-                                paypal_order_id: capture?.id || null,
-                              });
-                            }
-                          } catch {}
-                          cart.clearCart();
-                          window.location.href = "/order/confirmation";
-                        }}
-                      />
-                    </Box>
                   )}
 
                   <Grid
