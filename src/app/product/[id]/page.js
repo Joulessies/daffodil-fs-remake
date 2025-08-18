@@ -27,10 +27,29 @@ export default function ProductDetailPage() {
   const [rating, setRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
 
-  const product = useMemo(
-    () => findProductById(String(params?.id || "")),
-    [params]
-  );
+  const productId = String(params?.id || "");
+  const product = useMemo(() => findProductById(productId), [productId]);
+
+  // Load reviews for this product id
+  useEffect(() => {
+    let mounted = true;
+    if (!productId) return;
+    (async () => {
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        if (!supabase) return;
+        const { data } = await supabase
+          .from("reviews")
+          .select("id, rating, content, user_email, created_at")
+          .eq("product_id", productId)
+          .order("created_at", { ascending: false });
+        if (mounted) setReviews(data || []);
+      } catch {}
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [productId]);
 
   if (!product) {
     return (
@@ -42,25 +61,6 @@ export default function ProductDetailPage() {
       </>
     );
   }
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const { supabase } = await import("@/lib/supabase");
-        if (!supabase) return;
-        const { data } = await supabase
-          .from("reviews")
-          .select("id, rating, content, user_email, created_at")
-          .eq("product_id", product.id)
-          .order("created_at", { ascending: false });
-        if (mounted) setReviews(data || []);
-      } catch {}
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [product.id]);
 
   const submitReview = async () => {
     try {

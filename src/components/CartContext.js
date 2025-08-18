@@ -114,8 +114,8 @@ export function CartProvider({ children }) {
     setItems([]);
   };
 
-  const value = useMemo(
-    () => ({
+  const value = useMemo(() => {
+    return {
       items,
       addItem,
       removeItem,
@@ -125,9 +125,8 @@ export function CartProvider({ children }) {
       open: () => setIsOpen(true),
       close: () => setIsOpen(false),
       total,
-    }),
-    [items, isOpen, total]
-  );
+    };
+  }, [items, isOpen, total]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
