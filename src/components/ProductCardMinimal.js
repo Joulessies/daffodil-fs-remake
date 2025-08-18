@@ -6,15 +6,27 @@ import {
   Image as ChakraImage,
   Text,
   IconButton,
+  Button,
+  useToast,
 } from "@chakra-ui/react";
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { useWishlist } from "./WishlistContext";
+import { useCart } from "./CartContext";
 
 export default function ProductCardMinimal({
+  id,
   title = "Colorful Dreams",
   image = "https://images.unsplash.com/photo-1520256862855-398228c41684?q=80&w=1600&auto=format&fit=crop",
+  price,
   onFavorite,
+  showAddToCart = false,
 }) {
+  const wishlist = useWishlist();
+  const cart = useCart();
+  const toast = useToast();
+  const itemId = (id || title).toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const isSaved = wishlist.contains(itemId);
   return (
     <Box
       as={motion.div}
@@ -44,21 +56,56 @@ export default function ProductCardMinimal({
       </Box>
 
       <HStack justify="space-between" align="center" px={4} py={3}>
-        <Text
-          fontWeight={300}
-          letterSpacing={0.3}
-          fontSize="sm"
-          color="#5B6B73"
-          style={{ fontFamily: "var(--font-rothek)" }}
-        >
-          {title}
-        </Text>
-        <IconButton
-          aria-label="favorite"
-          icon={<Heart size={16} />}
-          variant="ghost"
-          onClick={onFavorite}
-        />
+        <Box>
+          <Text
+            fontWeight={300}
+            letterSpacing={0.3}
+            fontSize="sm"
+            color="#5B6B73"
+            style={{ fontFamily: "var(--font-rothek)" }}
+          >
+            {title}
+          </Text>
+          {price != null && (
+            <Text fontSize="sm" color="#2B2B2B" mt={1}>
+              PHP {Number(price).toFixed(2)}
+            </Text>
+          )}
+        </Box>
+        <HStack spacing={1}>
+          {showAddToCart && (
+            <Button
+              size="xs"
+              colorScheme="red"
+              onClick={() => {
+                const ok = cart.addItem({
+                  id: id || itemId,
+                  title,
+                  image,
+                  price,
+                });
+                if (ok) {
+                  toast({
+                    title: "Added to cart",
+                    description: title,
+                    status: "success",
+                    duration: 1500,
+                    isClosable: true,
+                    position: "top",
+                  });
+                }
+              }}
+            >
+              Add
+            </Button>
+          )}
+          <IconButton
+            aria-label={isSaved ? "Remove from wishlist" : "Add to wishlist"}
+            icon={<Heart size={16} color={isSaved ? "#bc0930" : undefined} />}
+            variant="ghost"
+            onClick={() => wishlist.toggle({ id: itemId, title, image, price })}
+          />
+        </HStack>
       </HStack>
     </Box>
   );

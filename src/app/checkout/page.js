@@ -25,6 +25,7 @@ import {
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/CartContext";
 import NavigationBar from "@/components/navigationbar";
+import PayPalButtons from "@/components/PayPalButtons";
 
 export default function CheckoutPage() {
   const toast = useToast();
@@ -54,53 +55,43 @@ export default function CheckoutPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/order", {
+      if (paymentMethod !== "card") {
+        // For PayPal and others, do not submit the form; buttons handle flow
+        return;
+      }
+      // Create Stripe Checkout session
+      const stripeInit = await fetch("/api/payments/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
-          name,
-          phone,
-          shipping,
-          billing: billingSame ? shipping : billing,
-          instructions,
           items: cart.items,
-          total: cart.total,
+          customerEmail: email,
+          successUrl: `${window.location.origin}/order/confirmation`,
+          cancelUrl: `${window.location.origin}/checkout`,
         }),
       });
-      if (!res.ok) throw new Error("Failed to submit order");
-      toast({
-        title: "Order placed!",
-        description: "We sent a confirmation email.",
-        status: "success",
-      });
+      const session = await stripeInit.json();
+      if (!stripeInit.ok)
+        throw new Error(session?.error || "Failed to init payment");
+
+      // Save a draft order in Supabase (for history) with status pending
       try {
-        const payload = await res.json().catch(() => ({}));
-        const order = {
-          orderNumber:
-            payload.orderNumber ||
-            Math.random().toString(36).slice(2, 10).toUpperCase(),
-          date: Date.now(),
-          items: cart.items,
-          totals: {
-            subtotal: cart.total,
-            taxes: cart.total * 0.12,
-            shipping: cart.total > 0 ? 150 : 0,
-            total: cart.total * 1.12 + (cart.total > 0 ? 150 : 0),
-          },
-          customer: {
-            name,
-            email,
-            phone,
-            shipping,
-            billing: billingSame ? shipping : billing,
-          },
-          payment: { method: paymentMethod, status: "Paid" },
-        };
-        localStorage.setItem("lastOrder", JSON.stringify(order));
+        const { supabase } = await import("@/lib/supabase");
+        if (supabase) {
+          await supabase.from("orders").insert({
+            order_number: session.id,
+            status: "pending",
+            total: cart.total,
+            items: cart.items,
+            customer_name: name,
+            customer_email: email,
+            shipping_address: shipping,
+          });
+        }
       } catch {}
-      cart.clearCart();
-      window.location.href = "/order/confirmation";
+
+      // Redirect to Stripe Checkout (server returns URL)
+      window.location.href = session.url;
     } catch (err) {
       toast({
         title: "Unable to place order",
@@ -420,10 +411,33 @@ export default function CheckoutPage() {
                     </Grid>
                   )}
 
-                  {paymentMethod !== "card" && (
-                    <Text mt={3} color="#5B6B73">
-                      You will be redirected to complete the payment securely.
-                    </Text>
+                  {paymentMethod === "paypal" && (
+                    <Box mt={3}>
+                      <PayPalButtons
+                        items={cart.items}
+                        onApproved={async (capture) => {
+                          try {
+                            const { supabase } = await import("@/lib/supabase");
+                            if (supabase) {
+                              await supabase.from("orders").insert({
+                                order_number:
+                                  capture?.id ||
+                                  Math.random().toString(36).slice(2, 10),
+                                status: "paid",
+                                total: cart.total,
+                                items: cart.items,
+                                customer_name: name,
+                                customer_email: email,
+                                shipping_address: shipping,
+                                paypal_order_id: capture?.id || null,
+                              });
+                            }
+                          } catch {}
+                          cart.clearCart();
+                          window.location.href = "/order/confirmation";
+                        }}
+                      />
+                    </Box>
                   )}
 
                   <Grid

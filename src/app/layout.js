@@ -14,6 +14,9 @@ const inter = Inter({
 export const metadata = {
   title: "Daffodil Flower Shop",
   description: "Beautiful flowers for every occasion",
+  icons: {
+    icon: "/images/favicon.ico",
+  },
 };
 
 export const viewport = {
@@ -26,13 +29,13 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.variable} font-santa-katarina font-rothek`}>
         <CacheProvider>
-          <Providers>
-            <AuthProvider>
+          <AuthProvider>
+            <Providers>
               {children}
               {/* Portal for cart modal */}
               <CartModal />
-            </AuthProvider>
-          </Providers>
+            </Providers>
+          </AuthProvider>
         </CacheProvider>
       </body>
     </html>

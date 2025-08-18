@@ -17,8 +17,11 @@ import { useCart } from "@/components/CartContext";
 import NavigationBar from "@/components/navigationbar";
 import { Image as ChakraImage, Grid, GridItem, Tag } from "@chakra-ui/react";
 import ProductCardMinimal from "@/components/ProductCardMinimal";
+import { searchProducts } from "@/lib/products";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import FloralSwiper from "@/components/FloralSwiper";
+import CartButton from "@/components/CartButton";
 
 const CATALOG = [
   {
@@ -135,6 +138,20 @@ export default function ShopPage() {
     <>
       <NavigationBar />
       <Box maxW="1240px" mx="auto" px={{ base: 4, md: 6 }} py={8}>
+        <Box textAlign="center" mb={8}>
+          <Heading
+            size={{ base: "2xl", md: "3xl" }}
+            color="#bc0930"
+            style={{ fontFamily: "'Santa Catarina', var(--font-rothek)" }}
+          >
+            Flower Shop
+          </Heading>
+          <Text mt={3} color="#5B6B73">
+            With us, you will find the perfect bouquet for any occasion, which
+            will leave unforgettable impressions and bring joy to your loved
+            ones and friends.
+          </Text>
+        </Box>
         {/* Top categories */}
         <HStack spacing={3} mb={6} wrap="wrap">
           {["Bouquets", "Arrangements", "Wedding", "Gift", "Seasonal"].map(
@@ -155,7 +172,7 @@ export default function ShopPage() {
         </HStack>
 
         <Grid
-          templateColumns={{ base: "1fr", lg: "1.1fr 1fr" }}
+          templateColumns={{ base: "1fr", lg: "1fr" }}
           gap={8}
           alignItems="stretch"
         >
@@ -227,25 +244,7 @@ export default function ShopPage() {
             </Box>
           </GridItem>
 
-          {/* Right: Product grid derived from CATALOG */}
-          <GridItem>
-            <SimpleGrid
-              as={motion.div}
-              columns={{ base: 2, md: 3 }}
-              gap={4}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.15 }}
-            >
-              {CATALOG.flatMap((c) =>
-                c.sections.flatMap((s) => s.items.map((title) => ({ title })))
-              )
-                .slice(0, 9)
-                .map((p, idx) => (
-                  <ProductCardMinimal key={p.title + idx} title={p.title} />
-                ))}
-            </SimpleGrid>
-          </GridItem>
+          {/** Product grid intentionally removed per request **/}
         </Grid>
 
         <Stack spacing={14} mt={10}>
@@ -255,56 +254,16 @@ export default function ShopPage() {
                 {category.title}
               </Heading>
               <Divider mb={4} />
-              <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-                {category.sections.map((sec) => (
-                  <Box
-                    key={sec.subtitle}
-                    bg="white"
-                    border="1px solid #EFEFEF"
-                    p={4}
-                    borderRadius="10"
-                  >
-                    <Heading
-                      as="h3"
-                      size="sm"
-                      mb={2}
-                      display="flex"
-                      alignItems="center"
-                      gap={2}
-                    >
-                      {sec.subtitle}
-                      <Badge colorScheme="pink">{sec.items.length}</Badge>
-                    </Heading>
-                    <List
-                      spacing={1}
-                      style={{ listStyleType: "disc", paddingLeft: 18 }}
-                    >
-                      {sec.items.map((item) => (
-                        <ListItem key={item}>
-                          <HStack justify="space-between">
-                            <Text fontSize="sm">{item}</Text>
-                            <Button
-                              size="xs"
-                              onClick={() =>
-                                cart.addItem({
-                                  id: item,
-                                  title: item,
-                                  price: 0,
-                                })
-                              }
-                            >
-                              Add to cart
-                            </Button>
-                          </HStack>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                ))}
-              </SimpleGrid>
+              {/* Floral arrangements as Swiper carousel */}
+              <FloralSwiper sections={category.sections} />
             </Box>
           ))}
         </Stack>
+
+        {/* Floating cart button */}
+        <Box position="fixed" bottom={6} right={6} zIndex={60}>
+          <CartButton />
+        </Box>
       </Box>
     </>
   );

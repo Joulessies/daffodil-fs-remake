@@ -22,10 +22,54 @@ export default function OrderConfirmationPage() {
 
   useEffect(() => {
     setMounted(true);
-    try {
-      const raw = localStorage.getItem("lastOrder");
-      if (raw) setOrder(JSON.parse(raw));
-    } catch {}
+    (async () => {
+      try {
+        // Try to find the latest order for the signed-in user
+        const { supabase } = await import("@/lib/supabase");
+        if (supabase) {
+          const params = new URLSearchParams(window.location.search);
+          const sessionId = params.get("session_id");
+          const userRes = await supabase.auth.getUser();
+          const email = userRes?.data?.user?.email;
+          if (email) {
+            const { data } = await supabase
+              .from("orders")
+              .select("*")
+              .eq("customer_email", email)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (data) {
+              setOrder({
+                orderNumber: data.order_number || sessionId || "-",
+                date: data.created_at,
+                items: data.items || [],
+                totals: {
+                  subtotal: data.total || 0,
+                  taxes: (data.total || 0) * 0.12,
+                  shipping: (data.total || 0) > 0 ? 150 : 0,
+                  total:
+                    (data.total || 0) * 1.12 +
+                    ((data.total || 0) > 0 ? 150 : 0),
+                },
+                customer: {
+                  name: data.customer_name,
+                  email: data.customer_email,
+                  shipping: data.shipping_address,
+                  billing: data.billing_address || data.shipping_address,
+                },
+                payment: { method: "card", status: data.status || "Paid" },
+                trackingUrl: data.tracking_url || null,
+              });
+              return;
+            }
+          }
+        }
+        // Fallback to localStorage if present
+        const raw = localStorage.getItem("lastOrder");
+        if (raw) setOrder(JSON.parse(raw));
+      } catch {}
+    })();
   }, []);
 
   if (!mounted) return null;

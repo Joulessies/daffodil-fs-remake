@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useAuth } from "./AuthProvider";
+import { useAuthPrompt } from "./AuthPromptContext";
 
 const CartContext = createContext({
   items: [],
@@ -17,21 +19,31 @@ const CartContext = createContext({
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const { user, isLoading } = useAuth();
+  const authPrompt = useAuthPrompt();
 
-  // Load from localStorage once on mount
+  // Storage key is scoped per user to isolate carts between accounts (and guest)
+  const storageKey = useMemo(
+    () => (user?.id ? `cart:${user.id}` : "cart:guest"),
+    [user?.id]
+  );
+
+  // Load cart whenever the active account changes
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("cart");
-      if (raw) setItems(JSON.parse(raw));
-    } catch {}
-  }, []);
+      const raw = localStorage.getItem(storageKey);
+      setItems(raw ? JSON.parse(raw) : []);
+    } catch {
+      setItems([]);
+    }
+  }, [storageKey]);
 
-  // Persist to localStorage on change
+  // Persist current cart to the active account's storage key
   useEffect(() => {
     try {
-      localStorage.setItem("cart", JSON.stringify(items));
+      localStorage.setItem(storageKey, JSON.stringify(items));
     } catch {}
-  }, [items]);
+  }, [items, storageKey]);
 
   const total = useMemo(
     () =>
@@ -42,7 +54,23 @@ export function CartProvider({ children }) {
     [items]
   );
 
+  const requireAuthOrRedirect = (reason) => {
+    // If auth state is still loading, don't block or prompt
+    if (isLoading) return true;
+    if (!user) {
+      authPrompt.open(reason || "Please log in or register first to continue.");
+      return false;
+    }
+    return true;
+  };
+
   const addItem = (item) => {
+    if (
+      !requireAuthOrRedirect(
+        "Please log in or register to add items to your cart."
+      )
+    )
+      return false;
     setItems((prev) => {
       const index = prev.findIndex((p) => p.id === item.id);
       if (index !== -1) {
@@ -56,20 +84,35 @@ export function CartProvider({ children }) {
       }
       return [{ quantity: 1, ...item }, ...prev];
     });
+    return true;
   };
 
   const removeItem = (id) => {
+    if (
+      !requireAuthOrRedirect("Please log in or register to modify your cart.")
+    )
+      return;
     setItems((prev) => prev.filter((p) => p.id !== id));
   };
 
   const updateQuantity = (id, quantity) => {
+    if (
+      !requireAuthOrRedirect("Please log in or register to modify your cart.")
+    )
+      return;
     const safeQty = Math.max(1, Number(quantity) || 1);
     setItems((prev) =>
       prev.map((it) => (it.id === id ? { ...it, quantity: safeQty } : it))
     );
   };
 
-  const clearCart = () => setItems([]);
+  const clearCart = () => {
+    if (
+      !requireAuthOrRedirect("Please log in or register to modify your cart.")
+    )
+      return;
+    setItems([]);
+  };
 
   const value = useMemo(
     () => ({

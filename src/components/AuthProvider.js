@@ -2,8 +2,13 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { isAdminEmail } from "../lib/admin";
 
-const AuthContext = createContext({ user: null, isLoading: true });
+const AuthContext = createContext({
+  user: null,
+  isLoading: true,
+  isAdmin: false,
+});
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -41,7 +46,10 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const value = useMemo(() => ({ user, isLoading }), [user, isLoading]);
+  const value = useMemo(
+    () => ({ user, isLoading, isAdmin: isAdminEmail(user?.email) }),
+    [user, isLoading]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
