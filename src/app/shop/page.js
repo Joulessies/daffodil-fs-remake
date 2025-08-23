@@ -16,11 +16,13 @@ import {
 import { useCart } from "@/components/CartContext";
 import NavigationBar from "@/components/navigationbar";
 import { Image as ChakraImage, Grid, GridItem, Tag } from "@chakra-ui/react";
-import ProductCardMinimal from "@/components/ProductCardMinimal";
-import { searchProducts } from "@/lib/products";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import FloralSwiper from "@/components/FloralSwiper";
+import dynamic from "next/dynamic";
+
+const FloralSwiper = dynamic(() => import("@/components/FloralSwiper"), {
+  ssr: false,
+});
 
 const CATALOG = [
   {
