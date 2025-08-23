@@ -1,13 +1,20 @@
 "use client";
 
-import { Box } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { A11y } from "swiper/modules";
 import "swiper/css";
 import { PRODUCTS } from "@/lib/products";
 import ProductCardMinimal from "./ProductCardMinimal";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
-export default function FloralSwiper({ sections = [] }) {
+export default function FloralSwiper({
+  sections = [],
+  randomizePrice = false,
+  randomPriceRange = { min: 499, max: 1999, step: 50 },
+  showSwipeHint = true,
+}) {
   const toSlug = (s) =>
     String(s || "")
       .toLowerCase()
@@ -139,12 +146,76 @@ export default function FloralSwiper({ sections = [] }) {
     return p;
   });
 
+  if (randomizePrice) {
+    const { min = 499, max = 1999, step = 50 } = randomPriceRange || {};
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const steps = Math.max(1, Math.floor((max - min) / step));
+    const seededPriceFor = (seedStr) => {
+      let hash = 0;
+      for (let i = 0; i < seedStr.length; i++) {
+        hash = (hash * 31 + seedStr.charCodeAt(i)) | 0;
+      }
+      const idx = Math.abs(hash) % (steps + 1);
+      const value = min + idx * step;
+      return clamp(value, min, max);
+    };
+    items = items.map((p) => {
+      if (p && (!p.price || Number(p.price) <= 0)) {
+        const seed = p.id || toSlug(p.title || "");
+        return { ...p, price: seededPriceFor(String(seed)) };
+      }
+      return p;
+    });
+  }
+
+  const [hintVisible, setHintVisible] = useState(false);
+  useEffect(() => {
+    if (!showSwipeHint) return;
+    setHintVisible(true);
+    const t = setTimeout(() => setHintVisible(false), 3500);
+    return () => clearTimeout(t);
+  }, [showSwipeHint]);
+
   return (
-    <Box>
+    <Box position="relative">
+      {/* Right fade overlay (mobile) */}
+      <Box
+        position="absolute"
+        right={0}
+        top={0}
+        bottom={0}
+        w="56px"
+        pointerEvents="none"
+        display={{ base: "block", md: "none" }}
+        bgGradient="linear(to-l, rgba(255,255,255,0.95), rgba(255,255,255,0))"
+        zIndex={1}
+      />
+
+      {/* Swipe hint (mobile) */}
+      {hintVisible && (
+        <Box
+          position="absolute"
+          right={3}
+          bottom={2}
+          zIndex={2}
+          bg="rgba(0,0,0,0.55)"
+          color="#fff"
+          px={3}
+          py={1}
+          borderRadius="full"
+          fontSize="xs"
+          pointerEvents="none"
+          display={{ base: "inline-block", md: "none" }}
+        >
+          <Text fontSize="xs">Swipe for more →</Text>
+        </Box>
+      )}
+
       <Swiper
         modules={[A11y]}
         spaceBetween={16}
         slidesPerView={1}
+        grabCursor
         breakpoints={{
           640: { slidesPerView: 1 },
           768: { slidesPerView: 2 },
@@ -154,13 +225,21 @@ export default function FloralSwiper({ sections = [] }) {
       >
         {items.map((p) => (
           <SwiperSlide key={p.id}>
-            <ProductCardMinimal
-              id={p.id}
-              title={p.title}
-              image={p.images?.[0]}
-              price={p.price}
-              showAddToCart
-            />
+            <Box
+              as={motion.div}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ type: "spring", stiffness: 220, damping: 22 }}
+            >
+              <ProductCardMinimal
+                id={p.id}
+                title={p.title}
+                image={p.images?.[0]}
+                price={p.price}
+                showAddToCart
+              />
+            </Box>
           </SwiperSlide>
         ))}
       </Swiper>

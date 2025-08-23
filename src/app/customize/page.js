@@ -8,6 +8,10 @@ import {
   Divider,
   Heading,
   HStack,
+  Image as ChakraImage,
+  Grid,
+  Skeleton,
+  Tooltip,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -22,32 +26,34 @@ import {
   Textarea,
   useToast,
 } from "@chakra-ui/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import NavigationBar from "@/components/navigationbar";
+import { useCart } from "@/components/CartContext";
 import BouquetPreview from "@/components/BouquetPreview";
 
 const FLOWER_TYPES = {
-  roses: { label: "Roses", pricePerStem: 3.5 },
-  tulips: { label: "Tulips", pricePerStem: 2.5 },
-  sunflowers: { label: "Sunflowers", pricePerStem: 4 },
-  mixed: { label: "Mixed Bouquet", pricePerStem: 3 },
+  roses: { label: "Roses", pricePerStem: 100 },
+  tulips: { label: "Tulips", pricePerStem: 100 },
+  sunflowers: { label: "Sunflowers", pricePerStem: 100 },
+  mixed: { label: "Mixed Bouquet", pricePerStem: 100 },
 };
 
 const WRAPS = {
-  kraft: { label: "Kraft Paper", price: 2 },
-  satin: { label: "Satin Wrap", price: 4 },
-  box: { label: "Gift Box", price: 6 },
+  kraft: { label: "Kraft Paper", price: 3 },
+  satin: { label: "Satin Wrap", price: 5 },
+  box: { label: "Gift Box", price: 8 },
 };
 
 const ADDONS = {
-  vase: { label: "Glass Vase", price: 10 },
-  teddy: { label: "Mini Teddy", price: 6 },
-  chocolate: { label: "Chocolates", price: 8 },
-  card: { label: "Greeting Card", price: 2 },
+  vase: { label: "Glass Vase", price: 12 },
+  teddy: { label: "Mini Teddy", price: 8 },
+  chocolate: { label: "Chocolates", price: 10 },
+  card: { label: "Greeting Card", price: 3 },
 };
 
 export default function CustomizePage() {
   const toast = useToast();
+  const cart = useCart();
   const formatPeso = (n) =>
     new Intl.NumberFormat("en-PH", {
       style: "currency",
@@ -62,6 +68,77 @@ export default function CustomizePage() {
   const [addons, setAddons] = useState([]);
   const [color, setColor] = useState("red");
   const [note, setNote] = useState("");
+  const [aiImage, setAiImage] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [autoGenerate, setAutoGenerate] = useState(true);
+  const lastSpecRef = useRef("");
+  // Always include the gift note text in AI prompt (toggle removed)
+
+  const generateAiPreview = async () => {
+    if (aiLoading) return;
+    try {
+      setAiLoading(true);
+      setAiImage("");
+      let resp = await fetch("/api/ai/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          flowerType,
+          color,
+          stems,
+          wrap,
+          addons,
+          note,
+        }),
+      });
+      // If the model is loading (503), do a brief retry with backoff
+      if (resp.status === 503) {
+        await new Promise((r) => setTimeout(r, 1500));
+        resp = await fetch("/api/ai/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            flowerType,
+            color,
+            stems,
+            wrap,
+            addons,
+            note,
+          }),
+        });
+      }
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data?.error || "Failed to generate image");
+      if (data?.imageUrl) setAiImage(data.imageUrl);
+    } catch (err) {
+      toast({
+        title: "AI preview failed",
+        description: err.message,
+        status: "error",
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Auto-generate preview when options change (debounced)
+  useEffect(() => {
+    if (!autoGenerate) return;
+    const spec = JSON.stringify({
+      flowerType,
+      color,
+      stems,
+      wrap,
+      addons,
+      note,
+    });
+    const timer = setTimeout(async () => {
+      if (lastSpecRef.current === spec) return;
+      await generateAiPreview();
+      lastSpecRef.current = spec;
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [autoGenerate, flowerType, color, stems, wrap, addons]);
 
   const price = useMemo(() => {
     const base = FLOWER_TYPES[flowerType].pricePerStem * stems;
@@ -79,14 +156,16 @@ export default function CustomizePage() {
       wrap,
       addons,
       note,
+      image: aiImage || undefined,
       price,
     };
-    try {
-      const existing = JSON.parse(localStorage.getItem("cart") || "[]");
-      localStorage.setItem("cart", JSON.stringify([item, ...existing]));
+    const ok = cart.addItem(item);
+    if (ok) {
       toast({ title: "Added to cart", status: "success", duration: 2000 });
-    } catch {
-      toast({ title: "Unable to save to cart", status: "error" });
+      cart.open();
+    } else {
+      // addItem handles prompting for auth; show a gentle notice
+      toast({ title: "Please sign in to add items", status: "info" });
     }
   };
 
@@ -107,12 +186,31 @@ export default function CustomizePage() {
         </Heading>
 
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
-          <Box bg="white" border="1px solid #EFEFEF" borderRadius="12" p={6}>
+          <Box
+            bg="white"
+            border="1px solid #EFEFEF"
+            borderRadius="12"
+            p={6}
+            boxShadow="sm"
+          >
             <Stack spacing={5}>
               <Box>
-                <Text mb={2} fontWeight={600}>
-                  Flower type
-                </Text>
+                <HStack mb={2} spacing={2}>
+                  <Box
+                    w="22px"
+                    h="22px"
+                    borderRadius="full"
+                    bg="#bc0930"
+                    color="white"
+                    fontSize="xs"
+                    display="inline-flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    1
+                  </Box>
+                  <Text fontWeight={600}>Flower type</Text>
+                </HStack>
                 <Select
                   value={flowerType}
                   onChange={(e) => setFlowerType(e.target.value)}
@@ -126,15 +224,30 @@ export default function CustomizePage() {
               </Box>
 
               <Box>
-                <Text mb={2} fontWeight={600}>
-                  Stem count
-                </Text>
+                <HStack mb={2} spacing={2}>
+                  <Box
+                    w="22px"
+                    h="22px"
+                    borderRadius="full"
+                    bg="#bc0930"
+                    color="white"
+                    fontSize="xs"
+                    display="inline-flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    2
+                  </Box>
+                  <Text fontWeight={600}>Stem count</Text>
+                </HStack>
                 <HStack maxW="240px">
                   <NumberInput
                     value={stems}
-                    onChange={(v) => setStems(Number(v) || 0)}
+                    onChange={(v) =>
+                      setStems(Math.max(1, Math.min(50, Number(v) || 0)))
+                    }
                     min={1}
-                    max={100}
+                    max={50}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -146,44 +259,113 @@ export default function CustomizePage() {
               </Box>
 
               <Box>
-                <Text mb={2} fontWeight={600}>
-                  Color theme
-                </Text>
-                <RadioGroup value={color} onChange={setColor}>
-                  <HStack spacing={6}>
-                    {[
-                      { key: "red", label: "Red" },
-                      { key: "white", label: "White" },
-                      { key: "pink", label: "Pink" },
-                      { key: "yellow", label: "Yellow" },
-                    ].map((c) => (
-                      <Radio key={c.key} value={c.key}>
-                        {c.label}
-                      </Radio>
-                    ))}
-                  </HStack>
-                </RadioGroup>
+                <HStack mb={2} spacing={2}>
+                  <Box
+                    w="22px"
+                    h="22px"
+                    borderRadius="full"
+                    bg="#bc0930"
+                    color="white"
+                    fontSize="xs"
+                    display="inline-flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    3
+                  </Box>
+                  <Text fontWeight={600}>Color theme</Text>
+                </HStack>
+                <HStack spacing={4}>
+                  {[
+                    { key: "red", label: "Red", swatch: "#E11D48" },
+                    {
+                      key: "white",
+                      label: "White",
+                      swatch: "#F3F4F6",
+                      outline: true,
+                    },
+                    { key: "pink", label: "Pink", swatch: "#F472B6" },
+                    { key: "yellow", label: "Yellow", swatch: "#F59E0B" },
+                  ].map((c) => (
+                    <Tooltip key={c.key} label={c.label}>
+                      <Box
+                        as="button"
+                        onClick={() => setColor(c.key)}
+                        aria-label={c.label}
+                        w="34px"
+                        h="34px"
+                        borderRadius="full"
+                        border={c.outline ? "1px solid #E5E7EB" : "none"}
+                        boxShadow={
+                          color === c.key
+                            ? "0 0 0 3px rgba(188,9,48,0.35)"
+                            : "inset 0 0 0 1px rgba(0,0,0,0.06)"
+                        }
+                        bg={c.swatch}
+                      />
+                    </Tooltip>
+                  ))}
+                </HStack>
               </Box>
 
               <Box>
-                <Text mb={2} fontWeight={600}>
-                  Wrap style
-                </Text>
-                <RadioGroup value={wrap} onChange={setWrap}>
-                  <Stack direction={{ base: "column", sm: "row" }} spacing={6}>
-                    {Object.entries(WRAPS).map(([key, v]) => (
-                      <Radio key={key} value={key}>
-                        {v.label} (+{formatPeso(v.price)})
-                      </Radio>
-                    ))}
-                  </Stack>
-                </RadioGroup>
+                <HStack mb={2} spacing={2}>
+                  <Box
+                    w="22px"
+                    h="22px"
+                    borderRadius="full"
+                    bg="#bc0930"
+                    color="white"
+                    fontSize="xs"
+                    display="inline-flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    4
+                  </Box>
+                  <Text fontWeight={600}>Wrap style</Text>
+                </HStack>
+                <HStack spacing={4} wrap="wrap">
+                  {Object.entries(WRAPS).map(([key, v]) => (
+                    <Box
+                      key={key}
+                      as="button"
+                      onClick={() => setWrap(key)}
+                      px={4}
+                      py={3}
+                      borderRadius="10"
+                      border={
+                        wrap === key ? "2px solid #bc0930" : "1px solid #E5E7EB"
+                      }
+                      bg={wrap === key ? "rgba(188,9,48,0.06)" : "white"}
+                      _hover={{ borderColor: "#bc0930" }}
+                    >
+                      <Text fontWeight={600}>{v.label}</Text>
+                      <Text fontSize="sm" color="#5B6B73">
+                        +{formatPeso(v.price)}
+                      </Text>
+                    </Box>
+                  ))}
+                </HStack>
               </Box>
 
               <Box>
-                <Text mb={2} fontWeight={600}>
-                  Add-ons
-                </Text>
+                <HStack mb={2} spacing={2}>
+                  <Box
+                    w="22px"
+                    h="22px"
+                    borderRadius="full"
+                    bg="#bc0930"
+                    color="white"
+                    fontSize="xs"
+                    display="inline-flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    5
+                  </Box>
+                  <Text fontWeight={600}>Add-ons</Text>
+                </HStack>
                 <CheckboxGroup value={addons} onChange={(v) => setAddons(v)}>
                   <Stack direction={{ base: "column", sm: "row" }} spacing={6}>
                     {Object.entries(ADDONS).map(([key, v]) => (
@@ -196,9 +378,22 @@ export default function CustomizePage() {
               </Box>
 
               <Box>
-                <Text mb={2} fontWeight={600}>
-                  Gift note (optional)
-                </Text>
+                <HStack mb={2} spacing={2}>
+                  <Box
+                    w="22px"
+                    h="22px"
+                    borderRadius="full"
+                    bg="#bc0930"
+                    color="white"
+                    fontSize="xs"
+                    display="inline-flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    6
+                  </Box>
+                  <Text fontWeight={600}>Gift note (optional)</Text>
+                </HStack>
                 <Textarea
                   placeholder="Write a short message for the recipient"
                   value={note}
@@ -209,7 +404,15 @@ export default function CustomizePage() {
             </Stack>
           </Box>
 
-          <Box bg="white" border="1px solid #EFEFEF" borderRadius="12" p={6}>
+          <Box
+            bg="white"
+            border="1px solid #EFEFEF"
+            borderRadius="12"
+            p={6}
+            boxShadow="sm"
+            position="sticky"
+            top={16}
+          >
             <Heading size="md" mb={4}>
               Summary
             </Heading>
@@ -235,6 +438,11 @@ export default function CustomizePage() {
                   ? addons.map((k) => ADDONS[k].label).join(", ")
                   : "None"}
               </Text>
+              {note && (
+                <Text>
+                  <strong>Gift note:</strong> {note}
+                </Text>
+              )}
             </Stack>
 
             <Divider my={4} />
@@ -265,6 +473,57 @@ export default function CustomizePage() {
               Prices are estimates; taxes and delivery are calculated at
               checkout.
             </Text>
+
+            <Divider my={6} />
+            <Heading size="sm" mb={2}>
+              AI Preview (beta)
+            </Heading>
+            <Text color="#5B6B73" fontSize="sm" mb={3}>
+              Generate a realistic photo of your customized bouquet.
+            </Text>
+            <HStack spacing={3} mb={3}>
+              <Checkbox
+                isChecked={autoGenerate}
+                onChange={(e) => setAutoGenerate(e.target.checked)}
+              >
+                Auto-generate preview
+              </Checkbox>
+
+              <Button
+                onClick={generateAiPreview}
+                isLoading={aiLoading}
+                loadingText="Generating..."
+              >
+                Generate AI Preview
+              </Button>
+              {aiImage && (
+                <Button variant="ghost" onClick={() => setAiImage("")}>
+                  Clear
+                </Button>
+              )}
+            </HStack>
+            <Skeleton isLoaded={!aiLoading} borderRadius="12">
+              {aiImage && (
+                <ChakraImage
+                  src={aiImage}
+                  alt="AI generated bouquet preview"
+                  borderRadius="12"
+                  border="1px solid #EFEFEF"
+                />
+              )}
+            </Skeleton>
+            {!aiImage && !aiLoading && (
+              <Box
+                border="1px dashed #E2E8F0"
+                borderRadius="12"
+                p={6}
+                textAlign="center"
+                color="#5B6B73"
+                fontSize="sm"
+              >
+                No AI image yet. Click "Generate AI Preview" to create one.
+              </Box>
+            )}
           </Box>
         </SimpleGrid>
       </Box>

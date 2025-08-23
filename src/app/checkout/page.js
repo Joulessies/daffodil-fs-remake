@@ -13,9 +13,8 @@ import {
   Heading,
   HStack,
   Image as ChakraImage,
+  Icon,
   Input,
-  Radio,
-  RadioGroup,
   Select,
   Stack,
   Text,
@@ -44,15 +43,13 @@ export default function CheckoutPage() {
   const [billingSame, setBillingSame] = useState(true);
   const [billing, setBilling] = useState({ ...shipping });
   const [instructions, setInstructions] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  const [card, setCard] = useState({ number: "", exp: "", cvv: "" });
   const [promo, setPromo] = useState("");
   const [saveInfo, setSaveInfo] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
     try {
       // Only Stripe (card) is supported now
       // Create Stripe Checkout session
@@ -102,7 +99,7 @@ export default function CheckoutPage() {
   return (
     <>
       <NavigationBar />
-      <Box maxW="1200px" mx="auto" px={{ base: 4, md: 6 }} py={8}>
+      <Box maxW="1200px" mx="auto" px={{ base: 4, md: 6 }} py={8} bg="#FFF8F3">
         <Heading
           as="h1"
           size="lg"
@@ -120,6 +117,7 @@ export default function CheckoutPage() {
                   p={5}
                   borderRadius="12"
                   bg="white"
+                  boxShadow="sm"
                 >
                   <Heading size="md" mb={4}>
                     Customer Information
@@ -348,64 +346,16 @@ export default function CheckoutPage() {
                   p={5}
                   borderRadius="12"
                   bg="white"
+                  boxShadow="sm"
                 >
                   <Heading size="md" mb={4}>
                     Payment
                   </Heading>
-                  <RadioGroup value={paymentMethod} onChange={setPaymentMethod}>
-                    <Stack
-                      direction={{ base: "column", md: "row" }}
-                      spacing={6}
-                    >
-                      <Radio value="card">Credit / Debit Card</Radio>
-                      <Radio value="paypal">PayPal</Radio>
-                      <Radio value="wallet">Digital Wallet</Radio>
-                    </Stack>
-                  </RadioGroup>
-
-                  {paymentMethod === "card" && (
-                    <Grid
-                      templateColumns={{ base: "1fr", md: "2fr 1fr 1fr" }}
-                      gap={3}
-                      mt={4}
-                    >
-                      <FormControl isRequired>
-                        <FormLabel>Card Number</FormLabel>
-                        <Input
-                          inputMode="numeric"
-                          autoComplete="cc-number"
-                          placeholder="1234 5678 9012 3456"
-                          value={card.number}
-                          onChange={(e) =>
-                            setCard({ ...card, number: e.target.value })
-                          }
-                        />
-                      </FormControl>
-                      <FormControl isRequired>
-                        <FormLabel>Expiry</FormLabel>
-                        <Input
-                          placeholder="MM/YY"
-                          autoComplete="cc-exp"
-                          value={card.exp}
-                          onChange={(e) =>
-                            setCard({ ...card, exp: e.target.value })
-                          }
-                        />
-                      </FormControl>
-                      <FormControl isRequired>
-                        <FormLabel>CVV</FormLabel>
-                        <Input
-                          type="password"
-                          placeholder="123"
-                          autoComplete="cc-csc"
-                          value={card.cvv}
-                          onChange={(e) =>
-                            setCard({ ...card, cvv: e.target.value })
-                          }
-                        />
-                      </FormControl>
-                    </Grid>
-                  )}
+                  <Text color="#5B6B73" mb={4}>
+                    We accept major credit and debit cards. Payments are
+                    securely processed via Stripe. You will be redirected to
+                    Stripe Checkout to complete your purchase.
+                  </Text>
 
                   <Grid
                     templateColumns={{ base: "1fr", md: "2fr 1fr" }}
@@ -433,26 +383,41 @@ export default function CheckoutPage() {
                     Save payment and address info for next time
                   </Checkbox>
 
-                  <HStack mt={6} spacing={4}>
+                  <Stack
+                    mt={6}
+                    spacing={3}
+                    direction={{ base: "column", sm: "row" }}
+                  >
                     <Button
-                      type="submit"
-                      colorScheme="red"
+                      type="button"
+                      onClick={handleSubmit}
+                      bg="#635bff"
+                      _hover={{ bg: "#5851df" }}
+                      color="white"
                       isDisabled={cart.items.length === 0}
                     >
-                      Complete Purchase
+                      Pay with Stripe
                     </Button>
                     <Button as="a" href="/" variant="ghost">
                       Back to Cart
                     </Button>
+                  </Stack>
+
+                  <HStack mt={3} spacing={2} color="#5B6B73">
+                    <Text fontSize="sm">Powered by</Text>
+                    <Text fontSize="sm" fontWeight={600}>
+                      Stripe
+                    </Text>
                   </HStack>
 
                   <Divider my={6} />
                   <HStack spacing={4} color="#5B6B73">
-                    <ChakraImage
-                      src="/images/lock.svg"
-                      alt="SSL"
-                      boxSize="20px"
-                    />
+                    <Icon viewBox="0 0 24 24" boxSize="20px">
+                      <path
+                        fill="currentColor"
+                        d="M12 2a5 5 0 00-5 5v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V7a5 5 0 00-5-5zm3 8H9V7a3 3 0 116 0v3zm-3 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"
+                      />
+                    </Icon>
                     <Text fontSize="sm">Secure checkout — SSL encrypted</Text>
                     <Text fontSize="sm">•</Text>
                     <a href="/privacy" style={{ color: "#3b5bfd" }}>

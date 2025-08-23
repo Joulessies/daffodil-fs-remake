@@ -21,7 +21,6 @@ import { searchProducts } from "@/lib/products";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import FloralSwiper from "@/components/FloralSwiper";
-import CartButton from "@/components/CartButton";
 
 const CATALOG = [
   {
@@ -243,27 +242,33 @@ export default function ShopPage() {
               </Box>
             </Box>
           </GridItem>
-
-          {/** Product grid intentionally removed per request **/}
         </Grid>
 
         <Stack spacing={14} mt={10}>
-          {CATALOG.map((category) => (
-            <Box key={category.title}>
+          {CATALOG.map((category, idx) => (
+            <Box
+              key={category.title}
+              as={motion.div}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ delay: idx * 0.05, duration: 0.4 }}
+            >
               <Heading as="h2" size="md" mb={3}>
                 {category.title}
               </Heading>
               <Divider mb={4} />
               {/* Floral arrangements as Swiper carousel */}
-              <FloralSwiper sections={category.sections} />
+              <FloralSwiper
+                sections={category.sections}
+                randomizePrice={category.title === "Seasonal Flowers"}
+                randomPriceRange={{ min: 599, max: 2499, step: 50 }}
+              />
             </Box>
           ))}
         </Stack>
 
-        {/* Floating cart button */}
-        <Box position="fixed" bottom={6} right={6} zIndex={60}>
-          <CartButton />
-        </Box>
+        {/* Floating cart button removed per request */}
       </Box>
     </>
   );

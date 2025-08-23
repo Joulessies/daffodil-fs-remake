@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { useWishlist } from "./WishlistContext";
 import { useCart } from "./CartContext";
 
@@ -83,11 +84,12 @@ export default function ProductCardMinimal({
                   title,
                   image,
                   price,
+                  quantity: 1,
                 });
                 if (ok) {
                   toast({
                     title: "Added to cart",
-                    description: title,
+                    description: `${title} × 1`,
                     status: "success",
                     duration: 1500,
                     isClosable: true,
