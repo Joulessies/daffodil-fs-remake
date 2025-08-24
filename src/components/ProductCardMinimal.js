@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useWishlist } from "./WishlistContext";
 import { useCart } from "./CartContext";
 
@@ -28,6 +28,48 @@ export default function ProductCardMinimal({
   const toast = useToast();
   const itemId = (id || title).toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const isSaved = wishlist.contains(itemId);
+  const encodePathSegments = (path) => {
+    if (!path || typeof path !== "string") return "";
+    const parts = path.split("/");
+    const encoded = parts
+      .map((seg, idx) =>
+        idx === 0 && seg === "" ? "" : encodeURIComponent(seg)
+      )
+      .join("/");
+    return encoded;
+  };
+
+  const resolvedImage = useMemo(() => {
+    const fallback =
+      "https://images.unsplash.com/photo-1520256862855-398228c41684?q=80&w=1600&auto=format&fit=crop";
+    if (typeof image !== "string" || image.trim().length === 0) return fallback;
+    // Encode segments to handle spaces and special characters like &
+    try {
+      const encoded = encodePathSegments(image);
+      return encoded || fallback;
+    } catch {
+      return image;
+    }
+  }, [image]);
+
+  const [imgSrc, setImgSrc] = useState(resolvedImage);
+
+  const tryAlternateSeasonalPath = (current) => {
+    if (typeof current !== "string") return "";
+    if (current.startsWith("/images/seasonal-flowers/")) {
+      return current.replace(
+        "/images/seasonal-flowers/",
+        "/images/products/seasonal-flowers/"
+      );
+    }
+    if (current.startsWith("/images/products/seasonal-flowers/")) {
+      return current.replace(
+        "/images/products/seasonal-flowers/",
+        "/images/seasonal-flowers/"
+      );
+    }
+    return "";
+  };
   return (
     <Box
       as={motion.div}
@@ -47,12 +89,18 @@ export default function ProductCardMinimal({
         minH="220px"
       >
         <ChakraImage
-          src={image}
+          src={imgSrc}
           alt={title}
           objectFit="contain"
           maxH="200px"
           borderRadius="12"
           filter="drop-shadow(0 6px 16px rgba(0,0,0,0.08))"
+          fallbackSrc={"/images/logo.png"}
+          onError={() => {
+            const alt = tryAlternateSeasonalPath(imgSrc);
+            if (alt && alt !== imgSrc) setImgSrc(alt);
+            else setImgSrc("/images/logo.png");
+          }}
         />
       </Box>
 

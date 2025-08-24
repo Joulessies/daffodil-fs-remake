@@ -43,63 +43,63 @@ export default function FloralSwiper({
   const keywordImageMap = [
     {
       k: "tulip",
-      img: "/images/products/seasonal-flowers/spring-flowers/fire-tulips.jpg",
+      img: "/images/seasonal-flowers/spring-flowers/fire-tulips.jpg",
     },
     {
       k: "peony",
-      img: "/images/products/seasonal-flowers/spring-flowers/peony.jpg",
+      img: "/images/seasonal-flowers/spring-flowers/peony.jpg",
     },
     {
       k: "crocus",
-      img: "/images/products/seasonal-flowers/spring-flowers/potted-crocus.png",
+      img: "/images/seasonal-flowers/spring-flowers/potted-crocus.png",
     },
     {
       k: "hyacinth",
-      img: "/images/products/seasonal-flowers/spring-flowers/hyacinth-vase-arrangement.jpg",
+      img: "/images/seasonal-flowers/spring-flowers/hyacinth-vase-arrangement.jpg",
     },
     {
       k: "spring garden",
-      img: "/images/products/seasonal-flowers/spring-flowers/spring-garden-planter.png",
+      img: "/images/seasonal-flowers/spring-flowers/spring-garden-planter.png",
     },
     {
       k: "sunflower bunch",
-      img: "/images/products/seasonal-flowers/summer-flowers/sunflower-bunch.jpg",
+      img: "/images/seasonal-flowers/summer-flowers/sunflower-bunch.jpg",
     },
     {
       k: "dahlia",
-      img: "/images/products/seasonal-flowers/summer-flowers/dahlias-bloom.jpg",
+      img: "/images/seasonal-flowers/summer-flowers/dahlias-bloom.jpg",
     },
     {
       k: "wildflower",
-      img: "/images/products/seasonal-flowers/summer-flowers/wild-flower.jpg",
+      img: "/images/seasonal-flowers/summer-flowers/wild-flower.jpg",
     },
     {
       k: "hydrangea",
-      img: "/images/products/seasonal-flowers/summer-flowers/hydrangea.png",
+      img: "/images/seasonal-flowers/summer-flowers/hydrangea.png",
     },
     {
       k: "hibiscus",
-      img: "/images/products/seasonal-flowers/summer-flowers/hibiscus-flower.jpg",
+      img: "/images/seasonal-flowers/summer-flowers/hibiscus-flower.jpg",
     },
     {
       k: "chrysanthemum",
-      img: "/images/products/seasonal-flowers/autumn-flowers/Chrysanthemum & Marigold Mix.png",
+      img: "/images/seasonal-flowers/autumn-flowers/Chrysanthemum & Marigold Mix.png",
     },
     {
       k: "fall centerpiece",
-      img: "/images/products/seasonal-flowers/autumn-flowers/Fall Centerpiece with Pumpkins.png",
+      img: "/images/seasonal-flowers/autumn-flowers/Fall Centerpiece with Pumpkins.png",
     },
     {
       k: "autumn orchid",
-      img: "/images/products/seasonal-flowers/autumn-flowers/Autumn Orchid Arrangement.png",
+      img: "/images/seasonal-flowers/autumn-flowers/Autumn Orchid Arrangement.png",
     },
     {
       k: "sunflower and berry",
-      img: "/images/products/seasonal-flowers/autumn-flowers/Sunflower and Berry Bouquet.png",
+      img: "/images/seasonal-flowers/autumn-flowers/Sunflower and Berry Bouquet.png",
     },
     {
       k: "maple leaf",
-      img: "/images/products/seasonal-flowers/autumn-flowers/Rustic Maple Leaf Wreath.png",
+      img: "/images/seasonal-flowers/autumn-flowers/Rustic Maple Leaf Wreath.png",
     },
     {
       k: "sympathy bouquet",
