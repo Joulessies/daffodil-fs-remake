@@ -56,9 +56,30 @@ export default function NavigationBar() {
   const [passwordSaving, setPasswordSaving] = useState(false);
 
   const handleLogout = async () => {
-    const { supabase } = await import("../lib/supabase");
-    await supabase.auth.signOut();
-    window.location.href = "/";
+    try {
+      const { supabase } = await import("../lib/supabase");
+      if (supabase && supabase.auth) {
+        await supabase.auth.signOut();
+      }
+    } catch (err) {
+      // ignore – fall through to local cleanup
+    } finally {
+      try {
+        if (typeof localStorage !== "undefined") {
+          localStorage.removeItem("daffodil-auth");
+          // Clear any potential Supabase keys just in case
+          Object.keys(localStorage).forEach((k) => {
+            if (k.startsWith("sb-") || k.includes("supabase")) {
+              localStorage.removeItem(k);
+            }
+          });
+        }
+        if (typeof sessionStorage !== "undefined") {
+          sessionStorage.removeItem("daffodil-auth");
+        }
+      } catch {}
+      window.location.href = "/";
+    }
   };
 
   useEffect(() => {
@@ -784,15 +805,7 @@ export default function NavigationBar() {
                   </CButton>
                 </>
               )}
-              <CButton
-                colorScheme="red"
-                onClick={async () => {
-                  const { supabase } = await import("../lib/supabase");
-                  await supabase.auth.signOut();
-                  onCloseProfile();
-                  window.location.href = "/";
-                }}
-              >
+              <CButton colorScheme="red" onClick={handleLogout}>
                 Sign Out
               </CButton>
             </ModalFooter>

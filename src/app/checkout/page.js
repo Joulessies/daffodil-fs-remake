@@ -59,7 +59,9 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: cart.items,
           customerEmail: email,
-          successUrl: `${window.location.origin}/order/confirmation`,
+          // Include the session id placeholder so the confirmation page
+          // can fetch the exact order by session_id
+          successUrl: `${window.location.origin}/order/confirmation?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/checkout`,
         }),
       });
@@ -81,6 +83,34 @@ export default function CheckoutPage() {
             shipping_address: shipping,
           });
         }
+      } catch {}
+
+      // Persist a lightweight copy locally for fallback on confirmation page
+      try {
+        const subtotal = cart.total;
+        const taxes = subtotal * 0.12;
+        const shippingFee = subtotal > 0 ? 150 : 0;
+        const total = subtotal * 1.12 + shippingFee;
+        const draftOrder = {
+          orderNumber: session.id,
+          date: Date.now(),
+          items: cart.items,
+          totals: {
+            subtotal,
+            taxes,
+            shipping: shippingFee,
+            total,
+          },
+          customer: {
+            name,
+            email,
+            shipping,
+            billing: billingSame ? shipping : billing,
+            phone,
+          },
+          payment: { method: "card", status: "Paid" },
+        };
+        localStorage.setItem("lastOrder", JSON.stringify(draftOrder));
       } catch {}
 
       // Redirect to Stripe Checkout (server returns URL)
