@@ -1,10 +1,10 @@
-@import url("https://fonts.cdnfonts.com/css/santa-catarina");
+/* Santa Catarina is loaded via <head> in layout for better reliability on prod */
 
 @font-face {
   font-family: "Rothek";
   src: url("/fonts/rothek-extralight-webfont.woff2") format("woff2"),
     url("/fonts/rothek-extralight-webfont.woff") format("woff");
-  font-weight: 800;
+  font-weight: 200;
   font-style: normal;
   font-display: swap;
 }
@@ -21,6 +21,8 @@
 html,
 body {
   background-color: var(--background-color);
+  font-family: var(--font-rothek), system-ui, -apple-system, Segoe UI, Roboto,
+    Ubuntu, Cantarell, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 h1 {
@@ -40,4 +42,13 @@ a {
   font-size: 14px;
   color: #333;
   text-decoration: none;
+}
+
+/* Utility font classes used on <body> in layout */
+.font-rothek {
+  font-family: var(--font-rothek) !important;
+}
+
+.font-santa-katarina {
+  font-family: var(--font-santa-catarina) !important;
 }

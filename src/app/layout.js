@@ -27,6 +27,13 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.cdnfonts.com" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.cdnfonts.com/css/santa-catarina"
+        />
+      </head>
       <body className={`${inter.variable} font-santa-katarina font-rothek`}>
         <CacheProvider>
           <AuthProvider>
