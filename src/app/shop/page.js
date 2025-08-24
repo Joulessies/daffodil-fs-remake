@@ -167,7 +167,7 @@ export default function ShopPage() {
                 bgGradient="linear(to-r, #bc0930, #ff6b9e)"
                 bgClip="text"
                 letterSpacing="-0.02em"
-                style={{ fontFamily: "'Santa Catarina', var(--font-rothek)" }}
+                className="font-santa-katarina"
               >
                 {titleText.split("").map((ch, i) => (
                   <Box

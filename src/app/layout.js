@@ -34,7 +34,7 @@ export default function RootLayout({ children }) {
           href="https://fonts.cdnfonts.com/css/santa-catarina"
         />
       </head>
-      <body className={`${inter.variable} font-santa-katarina font-rothek`}>
+      <body className={`${inter.variable} font-rothek`}>
         <CacheProvider>
           <AuthProvider>
             <Providers>
