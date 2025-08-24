@@ -139,19 +139,141 @@ export default function ShopPage() {
     <>
       <NavigationBar />
       <Box maxW="1240px" mx="auto" px={{ base: 4, md: 6 }} py={8}>
-        <Box textAlign="center" mb={8}>
-          <Heading
-            size={{ base: "2xl", md: "3xl" }}
-            color="#bc0930"
-            style={{ fontFamily: "'Santa Catarina', var(--font-rothek)" }}
-          >
-            Flower Shop
-          </Heading>
-          <Text mt={3} color="#5B6B73">
+        <Box textAlign="center" mb={8} position="relative">
+          {(() => {
+            const titleText = "Flower Shop";
+            const titleContainer = {
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: { staggerChildren: 0.045 },
+              },
+            };
+            const titleChar = {
+              hidden: { y: 16, opacity: 0 },
+              show: {
+                y: 0,
+                opacity: 1,
+                transition: { type: "spring", stiffness: 260, damping: 20 },
+              },
+            };
+            return (
+              <Heading
+                as={motion.h1}
+                variants={titleContainer}
+                initial="hidden"
+                animate="show"
+                size={{ base: "2xl", md: "3xl" }}
+                bgGradient="linear(to-r, #bc0930, #ff6b9e)"
+                bgClip="text"
+                letterSpacing="-0.02em"
+                style={{ fontFamily: "'Santa Catarina', var(--font-rothek)" }}
+              >
+                {titleText.split("").map((ch, i) => (
+                  <Box
+                    as={motion.span}
+                    key={`t-${i}`}
+                    display="inline-block"
+                    variants={titleChar}
+                  >
+                    {ch === " " ? "\u00A0" : ch}
+                  </Box>
+                ))}
+              </Heading>
+            );
+          })()}
+          {/* Floating petals (desktop only) */}
+          {[
+            { e: "🌸", l: "8%", t: -6, d: 0, dx: 24, dur: 9.5 },
+            { e: "🌼", l: "88%", t: 4, d: 0.2, dx: -28, dur: 10.5 },
+            { e: "🌷", l: "-2%", t: 26, d: 0.35, dx: 20, dur: 11.2 },
+          ].map((p, i) => (
+            <Box
+              key={i}
+              position="absolute"
+              left={p.l}
+              top={`${p.t}px`}
+              display={{ base: "none", md: "block" }}
+              opacity={0.95}
+              pointerEvents="none"
+            >
+              <Box
+                as={motion.div}
+                initial={{ y: 0, rotateX: -12, rotateY: 16, opacity: 0.95 }}
+                animate={{
+                  x: [0, p.dx, p.dx * -0.6, 0],
+                  y: [0, -16, -6, 0],
+                  rotateZ: [0, 6, -5, 0],
+                  rotateX: [-12, -8, -12],
+                  rotateY: [16, 10, 16],
+                  opacity: [0.95, 1, 0.92, 0.95],
+                }}
+                whileHover={{ rotateX: -18, rotateY: 24, scale: 1.08 }}
+                transition={{
+                  duration: p.dur || 10,
+                  repeat: Infinity,
+                  repeatType: "mirror",
+                  delay: p.d,
+                  ease: "easeInOut",
+                }}
+                style={{
+                  transformStyle: "preserve-3d",
+                  filter: "drop-shadow(0 10px 16px rgba(0,0,0,0.20))",
+                }}
+              >
+                <Box
+                  as={motion.span}
+                  fontSize={{ md: "2xl" }}
+                  style={{
+                    transform: "translateZ(24px)",
+                    textShadow:
+                      "0 2px 0 rgba(0,0,0,0.12), 0 6px 12px rgba(0,0,0,0.18)",
+                  }}
+                >
+                  {p.e}
+                </Box>
+              </Box>
+            </Box>
+          ))}
+          <Box
+            as={motion.div}
+            h="3px"
+            w="180px"
+            mx="auto"
+            mt={2}
+            borderRadius="full"
+            bgGradient="linear(to-r, #ff8abf, #bc0930)"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            style={{ transformOrigin: "center" }}
+          />
+          <Text mt={3} color="#5B6B73" fontStyle="italic">
             With us, you will find the perfect bouquet for any occasion, which
             will leave unforgettable impressions and bring joy to your loved
             ones and friends.
           </Text>
+          <HStack spacing={4} justify="center" mt={4} flexWrap="wrap">
+            {["Fresh daily", "Custom notes", "Fast delivery"].map((label) => (
+              <Box
+                as={motion.div}
+                key={label}
+                whileHover={{ y: -2, scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300, damping: 16 }}
+              >
+                <Tag
+                  borderRadius="full"
+                  px={3}
+                  py={1}
+                  bg="rgba(255,255,255,0.9)"
+                  border="1px solid #EAEAEA"
+                  boxShadow="0 6px 16px rgba(0,0,0,0.06)"
+                  backdropFilter="saturate(160%) blur(4px)"
+                >
+                  {label}
+                </Tag>
+              </Box>
+            ))}
+          </HStack>
         </Box>
         {/* Top categories */}
         <HStack spacing={3} mb={6} wrap="wrap">
