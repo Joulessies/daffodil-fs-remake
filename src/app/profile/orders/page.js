@@ -78,11 +78,20 @@ export default function OrdersPage() {
                   <Text>Status: {o.status || "Paid"}</Text>
                   <Text>Total: ₱{Number(o.total || 0).toFixed(2)}</Text>
                 </HStack>
-                {o.tracking_url && (
-                  <a href={o.tracking_url} style={{ color: "#3b5bfd" }}>
-                    Track package
-                  </a>
-                )}
+                <HStack mt={3} spacing={4}>
+                  <Link href={`/profile/orders/${o.id}`}>
+                    <Button size="sm" variant="outline">
+                      View details
+                    </Button>
+                  </Link>
+                  {o.tracking_url && (
+                    <a href={o.tracking_url} target="_blank" rel="noreferrer">
+                      <Button size="sm" colorScheme="blue">
+                        Track package
+                      </Button>
+                    </a>
+                  )}
+                </HStack>
               </Box>
             ))}
           </Stack>

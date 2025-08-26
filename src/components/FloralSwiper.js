@@ -40,6 +40,7 @@ export default function FloralSwiper({
       );
     });
 
+  // Use app-relative seasonal images (public/seasonal-flowers/...)
   const keywordImageMap = [
     {
       k: "tulip",

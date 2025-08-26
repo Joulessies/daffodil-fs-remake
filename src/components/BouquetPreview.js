@@ -27,18 +27,44 @@ export default function BouquetPreview({
 }) {
   const scale = Math.min(1.2, 0.6 + Math.log10(Math.max(8, stems)) * 0.25);
   const [aiImage, setAiImage] = useState(null);
+  const [aiAvailable, setAiAvailable] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/ai/verify", { cache: "no-store" });
+        const j = await r.json();
+        if (!active) return;
+        if (!j?.ok) setAiAvailable(false);
+      } catch (_) {
+        if (!active) return;
+        setAiAvailable(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let ignore = false;
     async function generate() {
       try {
-        const res = await fetch("/api/preview", {
+        if (!aiAvailable) return;
+        const res = await fetch("/api/ai/preview", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ flowerType, color, stems, wrap, addons }),
+          body: JSON.stringify({
+            flowerType,
+            color,
+            stems,
+            wrap,
+            addons: addons || [],
+          }),
         });
         const data = await res.json();
-        if (!ignore) setAiImage(data.image);
+        if (!ignore) setAiImage(data.imageUrl || null);
       } catch (e) {
         // ignore failures; fallback to layered assets
       }
@@ -47,7 +73,7 @@ export default function BouquetPreview({
     return () => {
       ignore = true;
     };
-  }, [flowerType, color, stems, wrap, addons]);
+  }, [aiAvailable, flowerType, color, stems, wrap, addons]);
 
   return (
     <Box bg="white" border="1px solid #EFEFEF" borderRadius="12" p={4}>
@@ -76,6 +102,7 @@ export default function BouquetPreview({
             zIndex={1}
           />
         )}
+        {/* Wrap layer */}
         <Image
           src={wrapSprite(wrap)}
           alt="wrap"
@@ -85,6 +112,7 @@ export default function BouquetPreview({
           opacity={0.95}
         />
 
+        {/* Flowers layer */}
         <Image
           src={flowerSprite(flowerType, color)}
           alt="bouquet"
@@ -94,6 +122,7 @@ export default function BouquetPreview({
           zIndex={2}
         />
 
+        {/* Addons layer */}
         {addons?.includes("vase") && (
           <Image
             src={addonSprite("vase")}

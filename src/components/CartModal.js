@@ -71,9 +71,30 @@ export default function CartModal() {
             )}
             {cart.items.map((item) => {
               const prod = PRODUCTS.find((p) => p.id === item.id);
+              // Normalize spaces and special chars in internal asset paths
+              const normalize = (src) => {
+                if (!src || typeof src !== "string") return "";
+                try {
+                  const parts = src.split("/");
+                  return parts
+                    .map((seg, idx) =>
+                      idx === 0 && seg === "" ? "" : encodeURIComponent(seg)
+                    )
+                    .join("/");
+                } catch {
+                  return src;
+                }
+              };
+              // Prefer app-relative seasonal paths without leading /images
+              const seasonal = (src) =>
+                typeof src === "string" && src.startsWith("/seasonal-flowers/")
+                  ? src
+                  : "";
               const imageSrc =
-                item.image ||
-                prod?.images?.[0] ||
+                seasonal(item.image) ||
+                seasonal(prod?.images?.[0]) ||
+                normalize(item.image) ||
+                normalize(prod?.images?.[0]) ||
                 "https://images.unsplash.com/photo-1520256862855-398228c41684?q=80&w=1600&auto=format&fit=crop";
               const lineTotal =
                 (Number(item.price) || 0) * (item.quantity || 1);

@@ -69,10 +69,33 @@ export default function CustomizePage() {
   const [color, setColor] = useState("red");
   const [note, setNote] = useState("");
   const [aiImage, setAiImage] = useState("");
+  const [aiNote, setAiNote] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiAvailable, setAiAvailable] = useState(true);
   const [autoGenerate, setAutoGenerate] = useState(true);
   const lastSpecRef = useRef("");
   // Always include the gift note text in AI prompt (toggle removed)
+
+  // Check if AI is available (HF token present) once on mount
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/ai/verify", { cache: "no-store" });
+        const j = await r.json();
+        if (!active) return;
+        if (!j?.ok) {
+          setAiAvailable(false);
+        }
+      } catch (_) {
+        if (!active) return;
+        setAiAvailable(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const generateAiPreview = async () => {
     if (aiLoading) return;
@@ -81,7 +104,11 @@ export default function CustomizePage() {
       setAiImage("");
       let resp = await fetch("/api/ai/preview", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+        },
+        cache: "no-store",
         body: JSON.stringify({
           flowerType,
           color,
@@ -96,7 +123,11 @@ export default function CustomizePage() {
         await new Promise((r) => setTimeout(r, 1500));
         resp = await fetch("/api/ai/preview", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+          },
+          cache: "no-store",
           body: JSON.stringify({
             flowerType,
             color,
@@ -107,9 +138,28 @@ export default function CustomizePage() {
           }),
         });
       }
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data?.error || "Failed to generate image");
-      if (data?.imageUrl) setAiImage(data.imageUrl);
+      const ct = resp.headers.get("content-type") || "";
+      const data = ct.includes("application/json")
+        ? await resp.json()
+        : await resp.text();
+      if (!resp.ok) {
+        const errText = typeof data === "string" ? data : data?.error;
+        const details = [
+          errText,
+          data?.status && `status: ${data.status}`,
+          data?.details && `details: ${String(data.details).slice(0, 240)}`,
+        ]
+          .filter(Boolean)
+          .join(" | ");
+        setAiNote(details || `AI preview failed (HTTP ${resp.status})`);
+        // eslint-disable-next-line no-console
+        console.error("AI preview error", data);
+        throw new Error(
+          errText || `Failed to generate image (HTTP ${resp.status})`
+        );
+      }
+      if (typeof data === "object" && data?.imageUrl) setAiImage(data.imageUrl);
+      setAiNote((typeof data === "object" && data?.note) || "");
     } catch (err) {
       toast({
         title: "AI preview failed",
@@ -138,7 +188,7 @@ export default function CustomizePage() {
       lastSpecRef.current = spec;
     }, 800);
     return () => clearTimeout(timer);
-  }, [autoGenerate, flowerType, color, stems, wrap, addons]);
+  }, [autoGenerate, aiAvailable, flowerType, color, stems, wrap, addons]);
 
   const price = useMemo(() => {
     const base = FLOWER_TYPES[flowerType].pricePerStem * stems;
@@ -512,6 +562,11 @@ export default function CustomizePage() {
                 />
               )}
             </Skeleton>
+            {aiNote && (
+              <Text mt={1} color="#5B6B73" fontSize="xs">
+                {aiNote}
+              </Text>
+            )}
             {!aiImage && !aiLoading && (
               <Box
                 border="1px dashed #E2E8F0"

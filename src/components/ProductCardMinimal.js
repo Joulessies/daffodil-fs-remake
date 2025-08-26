@@ -130,7 +130,7 @@ export default function ProductCardMinimal({
                 const ok = cart.addItem({
                   id: id || itemId,
                   title,
-                  image,
+                  image: imgSrc || resolvedImage || image,
                   price,
                   quantity: 1,
                 });

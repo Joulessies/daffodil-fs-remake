@@ -55,6 +55,10 @@ export default function NavigationBar() {
   const [password2, setPassword2] = useState("");
   const [passwordSaving, setPasswordSaving] = useState(false);
 
+  // Avoid SSR/client mismatch by rendering only after mount
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const handleLogout = async () => {
     try {
       const { supabase } = await import("../lib/supabase");
@@ -62,12 +66,10 @@ export default function NavigationBar() {
         await supabase.auth.signOut();
       }
     } catch (err) {
-      // ignore – fall through to local cleanup
     } finally {
       try {
         if (typeof localStorage !== "undefined") {
           localStorage.removeItem("daffodil-auth");
-          // Clear any potential Supabase keys just in case
           Object.keys(localStorage).forEach((k) => {
             if (k.startsWith("sb-") || k.includes("supabase")) {
               localStorage.removeItem(k);
@@ -176,6 +178,7 @@ export default function NavigationBar() {
     if (q) window.location.href = `/search?q=${encodeURIComponent(q)}`;
     else window.location.href = "/search";
   };
+  if (!mounted) return null;
   return (
     <div
       style={{

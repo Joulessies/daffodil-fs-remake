@@ -24,47 +24,35 @@ export default function OrderConfirmationPage() {
     setMounted(true);
     (async () => {
       try {
-        // Try to find the latest order for the signed-in user
+        // If session_id present, confirm with backend to fetch and persist
         const { supabase } = await import("@/lib/supabase");
-        if (supabase) {
-          const params = new URLSearchParams(window.location.search);
-          const sessionId = params.get("session_id");
-          const userRes = await supabase.auth.getUser();
-          const email = userRes?.data?.user?.email;
-          if (email) {
-            const { data } = await supabase
-              .from("orders")
-              .select("*")
-              .eq("customer_email", email)
-              .order("created_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
-            if (data) {
-              setOrder({
-                orderNumber: data.order_number || sessionId || "-",
-                date: data.created_at,
-                items: data.items || [],
-                totals: {
-                  subtotal: data.total || 0,
-                  taxes: (data.total || 0) * 0.12,
-                  shipping: (data.total || 0) > 0 ? 150 : 0,
-                  total:
-                    (data.total || 0) * 1.12 +
-                    ((data.total || 0) > 0 ? 150 : 0),
-                },
-                customer: {
-                  name: data.customer_name,
-                  email: data.customer_email,
-                  shipping: data.shipping_address,
-                  billing: data.billing_address || data.shipping_address,
-                },
-                payment: { method: "card", status: data.status || "Paid" },
-                trackingUrl: data.tracking_url || null,
-              });
-              return;
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get("session_id");
+        if (sessionId) {
+          let userId = null;
+          if (supabase) {
+            const userRes = await supabase.auth.getUser();
+            userId = userRes?.data?.user?.id || null;
+          }
+          const res = await fetch("/api/payments/stripe/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: sessionId, user_id: userId }),
+          });
+          const data = await res.json();
+          if (res.ok && data?.order) {
+            setOrder(data.order);
+            try {
+              localStorage.setItem("lastOrder", JSON.stringify(data.order));
+            } catch {}
+            if (data.dbError) {
+              // eslint-disable-next-line no-console
+              console.warn("Order save warning:", data.dbError);
             }
+            return;
           }
         }
+        // Fallback: read last order
         // Fallback to localStorage if present
         const raw = localStorage.getItem("lastOrder");
         if (raw) setOrder(JSON.parse(raw));
@@ -78,6 +66,7 @@ export default function OrderConfirmationPage() {
     new Intl.NumberFormat("en-PH", {
       style: "currency",
       currency: "PHP",
+      maximumFractionDigits: 2,
     }).format(Number(n) || 0);
 
   return (
@@ -87,14 +76,13 @@ export default function OrderConfirmationPage() {
         <Heading
           as="h1"
           size="lg"
-          textAlign="center"
           mb={2}
           style={{ fontFamily: "var(--font-rothek)", color: "#bc0930" }}
         >
-          Thank you for your purchase!
+          Order Confirmation
         </Heading>
-        <Text textAlign="center" color="#5B6B73" mb={8}>
-          Your order has been received and is being processed.
+        <Text color="#5B6B73" mb={8}>
+          Thanks for your purchase. A confirmation has been emailed to you.
         </Text>
 
         {!order ? (
@@ -152,8 +140,15 @@ export default function OrderConfirmationPage() {
                     Items
                   </Heading>
                   <Stack spacing={4}>
-                    {order.items.map((it) => (
-                      <HStack key={it.id} align="center" gap={3}>
+                    {order.items.map((it, idx) => (
+                      <HStack
+                        key={
+                          it?.id ||
+                          `${it?.title || it?.flowerType || "item"}-${idx}`
+                        }
+                        align="center"
+                        gap={3}
+                      >
                         <ChakraImage
                           src={it.image || "/images/placeholder.png"}
                           alt={it.title || "Item"}
