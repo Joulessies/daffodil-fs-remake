@@ -587,12 +587,64 @@ export const PRODUCTS = [
   },
 ];
 
+function normalizeProduct(raw = {}) {
+  const id =
+    raw.id || (raw.title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const categories = Array.from(
+    new Set([...(raw.categories || []), raw.category].filter(Boolean))
+  );
+  const skuBase = (raw.sku || id || raw.title || "ITEM")
+    .toString()
+    .replace(/[^a-z0-9]+/gi, "-")
+    .toUpperCase()
+    .replace(/(^-|-$)/g, "");
+  const sku = skuBase.startsWith("SKU-") ? skuBase : `SKU-${skuBase}`;
+  const hasNumericStock =
+    typeof raw.stock === "number" && Number.isFinite(raw.stock);
+  const stock = hasNumericStock ? raw.stock : Number(raw.price) > 0 ? 20 : 0;
+  const availability = stock > 0 ? "In stock" : "Out of stock";
+  const features = Array.isArray(raw.features) ? raw.features.slice() : [];
+  const benefits = Array.isArray(raw.benefits) ? raw.benefits.slice() : [];
+  const baseSpecs =
+    raw.specifications && typeof raw.specifications === "object"
+      ? { ...raw.specifications }
+      : {};
+  const computedSpecs = {
+    SKU: sku,
+    Category: categories.join(", "),
+    Colors: Array.isArray(raw.colors) ? raw.colors.join(", ") : undefined,
+    Price: Number.isFinite(raw.price)
+      ? `PHP ${Number(raw.price).toFixed(2)}`
+      : undefined,
+    ...baseSpecs,
+  };
+
+  // Remove undefined spec values
+  Object.keys(computedSpecs).forEach((k) => {
+    if (computedSpecs[k] == null || computedSpecs[k] === "")
+      delete computedSpecs[k];
+  });
+
+  return {
+    ...raw,
+    id,
+    sku,
+    categories,
+    stock,
+    availability,
+    features,
+    specifications: computedSpecs,
+    benefits,
+  };
+}
+
 export function getAllProducts() {
-  return PRODUCTS;
+  return PRODUCTS.map((p) => normalizeProduct(p));
 }
 
 export function findProductById(id) {
-  return PRODUCTS.find((p) => p.id === id);
+  const found = PRODUCTS.find((p) => p.id === id);
+  return found ? normalizeProduct(found) : undefined;
 }
 
 export function searchProducts({
@@ -604,16 +656,30 @@ export function searchProducts({
   sort = "relevance",
 } = {}) {
   const query = (q || "").toLowerCase();
-  let list = PRODUCTS.filter((p) => {
-    const matchesQuery =
+  const base = getAllProducts();
+  let list = base.filter((p) => {
+    const textMatch =
       !query ||
       p.title.toLowerCase().includes(query) ||
-      p.description.toLowerCase().includes(query);
-    const inCategory = category === "all" || p.category === category;
-    const inPrice = p.price >= minPrice && p.price <= maxPrice;
+      (p.description || "").toLowerCase().includes(query) ||
+      (p.sku || "").toLowerCase().includes(query) ||
+      p.categories?.some((c) => (c || "").toLowerCase().includes(query)) ||
+      p.features?.some((f) => (f || "").toLowerCase().includes(query)) ||
+      p.benefits?.some((b) => (b || "").toLowerCase().includes(query)) ||
+      Object.values(p.specifications || {}).some((v) =>
+        String(v || "")
+          .toLowerCase()
+          .includes(query)
+      );
+
+    const inCategory =
+      category === "all" ||
+      p.category === category ||
+      p.categories?.includes(category);
+    const inPrice = Number(p.price) >= minPrice && Number(p.price) <= maxPrice;
     const colorMatch =
       colors.length === 0 || colors.some((c) => p.colors?.includes(c));
-    return matchesQuery && inCategory && inPrice && colorMatch;
+    return textMatch && inCategory && inPrice && colorMatch;
   });
 
   if (sort === "price-asc") list.sort((a, b) => a.price - b.price);

@@ -22,12 +22,39 @@ export default function ProductCardMinimal({
   price,
   onFavorite,
   showAddToCart = false,
+  sku,
+  categories,
+  availability,
+  stock,
+  description,
+  features,
+  specifications,
+  benefits,
 }) {
   const wishlist = useWishlist();
   const cart = useCart();
   const toast = useToast();
   const itemId = (id || title).toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const isSaved = wishlist.contains(itemId);
+  const computedSku = useMemo(() => {
+    let base = (sku || id || title || "ITEM").toString();
+    base = base
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    base = base.toUpperCase();
+    return base.startsWith("SKU-") ? base : `SKU-${base}`;
+  }, [sku, id, title]);
+  const categoryList = useMemo(() => {
+    if (Array.isArray(categories)) return categories.filter(Boolean);
+    if (typeof categories === "string" && categories) return [categories];
+    return [];
+  }, [categories]);
+  const normalizedAvailability = (availability || "").toLowerCase();
+  const stockCount = typeof stock === "number" ? stock : undefined;
+  const isOutOfStock =
+    normalizedAvailability.includes("out") ||
+    (stockCount != null ? stockCount <= 0 : false);
   const encodePathSegments = (path) => {
     if (!path || typeof path !== "string") return "";
     const parts = path.split("/");
@@ -120,13 +147,50 @@ export default function ProductCardMinimal({
               PHP {Number(price).toFixed(2)}
             </Text>
           )}
+          <Text fontSize="xs" color="#8A9AA3" mt={1}>
+            SKU: {computedSku}
+          </Text>
+          {!!categoryList.length && (
+            <Text fontSize="xs" color="#8A9AA3" mt={0.5} noOfLines={1}>
+              Categories: {categoryList.join(", ")}
+            </Text>
+          )}
+          {description && (
+            <Text fontSize="xs" color="#6B7C85" mt={1} noOfLines={2}>
+              {description}
+            </Text>
+          )}
+          <Text
+            fontSize="xs"
+            mt={1}
+            color={isOutOfStock ? "#bc0930" : "#0f8f4d"}
+          >
+            Availability:{" "}
+            {isOutOfStock
+              ? "Out of stock"
+              : stockCount != null
+              ? `In stock (${stockCount})`
+              : "In stock"}
+          </Text>
         </Box>
         <HStack spacing={1}>
           {showAddToCart && (
             <Button
               size="xs"
               colorScheme="red"
+              isDisabled={isOutOfStock}
               onClick={() => {
+                if (isOutOfStock) {
+                  toast({
+                    title: "Unavailable",
+                    description: "This item is currently out of stock",
+                    status: "warning",
+                    duration: 1500,
+                    isClosable: true,
+                    position: "top",
+                  });
+                  return;
+                }
                 const ok = cart.addItem({
                   id: id || itemId,
                   title,
@@ -146,7 +210,7 @@ export default function ProductCardMinimal({
                 }
               }}
             >
-              Add
+              {isOutOfStock ? "Out" : "Add"}
             </Button>
           )}
           <IconButton

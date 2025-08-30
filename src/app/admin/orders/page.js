@@ -26,6 +26,7 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     load();
   }, []);
+
   return (
     <Box p={6}>
       <Heading size="lg" mb={4} style={{ fontFamily: "var(--font-rothek)" }}>

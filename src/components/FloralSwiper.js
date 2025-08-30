@@ -238,6 +238,11 @@ export default function FloralSwiper({
                 title={p.title}
                 image={p.images?.[0]}
                 price={p.price}
+                sku={p.sku}
+                categories={p.categories || [p.category].filter(Boolean)}
+                availability={p.availability}
+                stock={p.stock}
+                description={p.description}
                 showAddToCart
               />
             </Box>
