@@ -57,6 +57,13 @@ export default function ProductCardMinimal({
     (stockCount != null ? stockCount <= 0 : false);
   const encodePathSegments = (path) => {
     if (!path || typeof path !== "string") return "";
+    if (
+      /^https?:\/\//i.test(path) ||
+      path.startsWith("data:") ||
+      path.startsWith("blob:")
+    ) {
+      return path;
+    }
     const parts = path.split("/");
     const encoded = parts
       .map((seg, idx) =>
@@ -70,12 +77,24 @@ export default function ProductCardMinimal({
     const fallback =
       "https://images.unsplash.com/photo-1520256862855-398228c41684?q=80&w=1600&auto=format&fit=crop";
     if (typeof image !== "string" || image.trim().length === 0) return fallback;
-    // Encode segments to handle spaces and special characters like &
+    let src = String(image).trim();
+    // Fix cases where a full URL was percent-encoded and/or prefixed with '/'
+    if (src.startsWith("/https%3A") || src.startsWith("https%3A")) {
+      try {
+        src = decodeURIComponent(src.replace(/^\//, ""));
+      } catch {}
+    }
+    if (
+      /^https?:\/\//i.test(src) ||
+      src.startsWith("data:") ||
+      src.startsWith("blob:")
+    ) {
+      return src;
+    }
     try {
-      const encoded = encodePathSegments(image);
-      return encoded || fallback;
+      return encodePathSegments(src) || fallback;
     } catch {
-      return image;
+      return src || fallback;
     }
   }, [image]);
 

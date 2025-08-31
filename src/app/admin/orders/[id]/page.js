@@ -12,6 +12,8 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { Flex } from "@chakra-ui/react";
+import AdminBackButton from "@/components/AdminBackButton";
 import { useParams } from "next/navigation";
 
 export default function AdminOrderDetailPage() {
@@ -49,9 +51,12 @@ export default function AdminOrderDetailPage() {
   if (!order) return null;
   return (
     <Box p={6}>
-      <Heading size="lg" mb={4} style={{ fontFamily: "var(--font-rothek)" }}>
-        Order {order.order_number}
-      </Heading>
+      <Flex align="center" justify="space-between" mb={4}>
+        <Heading size="lg" style={{ fontFamily: "var(--font-rothek)" }}>
+          Order {order.order_number}
+        </Heading>
+        <AdminBackButton />
+      </Flex>
       <Stack spacing={3}>
         <HStack>
           <Text w="140px" color="#5B6B73">

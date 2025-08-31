@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 
 export default function FloralSwiper({
   sections = [],
+  products = null,
   randomizePrice = false,
   randomPriceRange = { min: 499, max: 1999, step: 50 },
   showSwipeHint = true,
@@ -21,24 +22,50 @@ export default function FloralSwiper({
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
 
-  let items = sections
-    .flatMap((sec) => sec.items || [])
-    .map((title) => {
-      const slug = toSlug(title);
-      const prod =
-        PRODUCTS.find((p) => p.id === slug) ||
-        PRODUCTS.find(
-          (p) => p.title.toLowerCase() === String(title).toLowerCase()
-        );
-      return (
-        prod || {
-          id: slug,
-          title,
-          price: 0,
-          images: [],
-        }
-      );
-    });
+  const [dbProducts, setDbProducts] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        if (!supabase) return;
+        const { data } = await supabase
+          .from("products")
+          .select(
+            "id, title, description, price, category, status, stock, images"
+          )
+          .eq("status", "active")
+          .order("created_at", { ascending: false });
+        if (mounted) setDbProducts(data || []);
+      } catch {}
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  let items =
+    Array.isArray(products) && products.length
+      ? products.slice()
+      : sections
+          .flatMap((sec) => sec.items || [])
+          .map((title) => {
+            const slug = toSlug(title);
+            const prod =
+              PRODUCTS.find((p) => p.id === slug) ||
+              PRODUCTS.find(
+                (p) => p.title.toLowerCase() === String(title).toLowerCase()
+              );
+            return (
+              prod || {
+                id: slug,
+                title,
+                price: 0,
+                images: [],
+              }
+            );
+          });
 
   // Use app-relative seasonal images (public/seasonal-flowers/...)
   const keywordImageMap = [
@@ -169,6 +196,22 @@ export default function FloralSwiper({
     });
   }
 
+  // Prefer Supabase data when available
+  const byId = (dbProducts || []).reduce((acc, x) => {
+    acc[x.id] = x;
+    return acc;
+  }, {});
+  const displayItems = items.map((p) => {
+    const match = byId[p.id];
+    if (match) return { ...p, ...match };
+    const titleMatch = (dbProducts || []).find(
+      (x) =>
+        String(x.title || "").toLowerCase() ===
+        String(p.title || "").toLowerCase()
+    );
+    return titleMatch ? { ...p, ...titleMatch } : p;
+  });
+
   const [hintVisible, setHintVisible] = useState(false);
   useEffect(() => {
     if (!showSwipeHint) return;
@@ -224,7 +267,7 @@ export default function FloralSwiper({
         }}
         style={{ paddingBottom: 24 }}
       >
-        {items.map((p) => (
+        {displayItems.map((p) => (
           <SwiperSlide key={p.id}>
             <Box
               as={motion.div}

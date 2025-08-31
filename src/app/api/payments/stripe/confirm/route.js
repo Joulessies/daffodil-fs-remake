@@ -49,7 +49,7 @@ export async function POST(request) {
     };
     if (user_id) orderPayload.user_id = user_id;
 
-    // Persist to Supabase if envs present
+    // Persist to Supabase (and decrement stock) if envs present
     let saved = null;
     let dbError = null;
     if (
@@ -60,13 +60,101 @@ export async function POST(request) {
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.SUPABASE_SERVICE_ROLE
       );
-      const { data, error } = await admin
-        .from("orders")
-        .insert(orderPayload)
-        .select("*")
-        .single();
-      if (!error) saved = data;
-      else dbError = error.message;
+
+      // Try to load the draft order created at checkout to get product ids
+      let draft = null;
+      try {
+        const { data: draftRow } = await admin
+          .from("orders")
+          .select("id, items, status")
+          .eq("order_number", session.id)
+          .maybeSingle();
+        draft = draftRow || null;
+      } catch {}
+
+      // Use draft items (with product ids) when available; else fall back to Stripe names
+      const itemsForStock =
+        Array.isArray(draft?.items) && draft.items.length ? draft.items : items;
+
+      // Avoid double-decrement if already paid
+      const shouldDecrement = !(
+        draft && String(draft.status || "").toLowerCase() === "paid"
+      );
+
+      if (shouldDecrement) {
+        for (const it of itemsForStock) {
+          const qty = Math.max(1, Number(it.quantity) || 1);
+          let productId = it.id;
+          try {
+            if (!productId && it.title) {
+              const { data: prodByTitle } = await admin
+                .from("products")
+                .select("id, stock")
+                .eq("title", it.title)
+                .maybeSingle();
+              if (prodByTitle) productId = prodByTitle.id;
+            }
+            if (productId) {
+              let moved = false;
+              try {
+                const { error: rpcErr } = await admin.rpc(
+                  "create_stock_movement_safe",
+                  {
+                    p_product_id: productId,
+                    p_qty_delta: -qty,
+                    p_reason: "sale",
+                    p_note: `stripe:${session.id}`,
+                    p_actor_email: session.customer_details?.email || null,
+                  }
+                );
+                if (!rpcErr) moved = true;
+              } catch {}
+              if (!moved) {
+                // Fallback: direct decrement
+                const { data: prod } = await admin
+                  .from("products")
+                  .select("stock")
+                  .eq("id", productId)
+                  .maybeSingle();
+                const current = Number(prod?.stock) || 0;
+                const newStock = Math.max(0, current - qty);
+                await admin
+                  .from("products")
+                  .update({ stock: newStock })
+                  .eq("id", productId);
+              }
+            }
+          } catch {}
+        }
+      }
+
+      // Upsert order: update existing draft or insert new
+      try {
+        if (draft) {
+          const { data, error } = await admin
+            .from("orders")
+            .update({
+              status: orderPayload.status,
+              total: orderPayload.total,
+              items: draft.items && draft.items.length ? draft.items : items,
+            })
+            .eq("order_number", session.id)
+            .select("*")
+            .single();
+          if (!error) saved = data;
+          else dbError = error.message;
+        } else {
+          const { data, error } = await admin
+            .from("orders")
+            .insert(orderPayload)
+            .select("*")
+            .single();
+          if (!error) saved = data;
+          else dbError = error.message;
+        }
+      } catch (e) {
+        dbError = e?.message || String(e);
+      }
     } else {
       dbError =
         "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE env; order not persisted.";

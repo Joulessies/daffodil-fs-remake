@@ -71,21 +71,38 @@ export default function CartModal() {
             )}
             {cart.items.map((item) => {
               const prod = PRODUCTS.find((p) => p.id === item.id);
-              // Normalize spaces and special chars in internal asset paths
-              const normalize = (src) => {
-                if (!src || typeof src !== "string") return "";
-                try {
-                  const parts = src.split("/");
-                  return parts
-                    .map((seg, idx) =>
-                      idx === 0 && seg === "" ? "" : encodeURIComponent(seg)
-                    )
-                    .join("/");
-                } catch {
-                  return src;
+              const encodePathSegments = (path) => {
+                if (!path || typeof path !== "string") return "";
+                if (
+                  /^https?:\/\//i.test(path) ||
+                  path.startsWith("data:") ||
+                  path.startsWith("blob:")
+                ) {
+                  return path;
                 }
+                const parts = path.split("/");
+                return parts
+                  .map((seg, idx) =>
+                    idx === 0 && seg === "" ? "" : encodeURIComponent(seg)
+                  )
+                  .join("/");
               };
-              // Prefer app-relative seasonal paths without leading /images
+              const sanitize = (src) => {
+                if (!src || typeof src !== "string") return "";
+                let s = src.trim();
+                if (s.startsWith("/https%3A") || s.startsWith("https%3A")) {
+                  try {
+                    s = decodeURIComponent(s.replace(/^\//, ""));
+                  } catch {}
+                }
+                if (
+                  /^https?:\/\//i.test(s) ||
+                  s.startsWith("data:") ||
+                  s.startsWith("blob:")
+                )
+                  return s;
+                return encodePathSegments(s);
+              };
               const seasonal = (src) =>
                 typeof src === "string" && src.startsWith("/seasonal-flowers/")
                   ? src
@@ -93,8 +110,8 @@ export default function CartModal() {
               const imageSrc =
                 seasonal(item.image) ||
                 seasonal(prod?.images?.[0]) ||
-                normalize(item.image) ||
-                normalize(prod?.images?.[0]) ||
+                sanitize(item.image) ||
+                sanitize(prod?.images?.[0]) ||
                 "https://images.unsplash.com/photo-1520256862855-398228c41684?q=80&w=1600&auto=format&fit=crop";
               const lineTotal =
                 (Number(item.price) || 0) * (item.quantity || 1);

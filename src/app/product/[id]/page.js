@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import NavigationBar from "@/components/navigationbar";
 import {
@@ -16,7 +16,7 @@ import {
 import { findProductById } from "@/lib/products";
 import { useCart } from "@/components/CartContext";
 import { useWishlist } from "@/components/WishlistContext";
-import { useEffect, useState } from "react";
+import { useEffect as useEffect2, useState as useState2 } from "react";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -26,9 +26,35 @@ export default function ProductDetailPage() {
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
+  const [dbProduct, setDbProduct] = useState(null);
 
   const productId = String(params?.id || "");
-  const product = useMemo(() => findProductById(productId), [productId]);
+  const product = useMemo(() => {
+    if (dbProduct) return dbProduct;
+    return findProductById(productId);
+  }, [dbProduct, productId]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        if (!productId) return;
+        const { supabase } = await import("@/lib/supabase");
+        if (!supabase) return;
+        const { data } = await supabase
+          .from("products")
+          .select(
+            "id, title, description, price, category, status, stock, images"
+          )
+          .eq("id", productId)
+          .maybeSingle();
+        if (mounted && data) setDbProduct(data);
+      } catch {}
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [productId]);
 
   // Load reviews for this product id
   useEffect(() => {

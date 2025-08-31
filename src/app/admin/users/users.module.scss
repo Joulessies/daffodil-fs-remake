@@ -1,0 +1,74 @@
+.usersPage {
+  :global(.chakra-input) {
+    border-radius: 10px;
+  }
+}
+
+.header {
+  h2,
+  h1,
+  .chakra-heading {
+    font-family: var(--font-rothek);
+    letter-spacing: -0.015em;
+  }
+}
+
+.search {
+  width: 280px;
+}
+
+.table {
+  border: 1px solid #efefef;
+  border-radius: 12px;
+  overflow: hidden;
+  thead tr {
+    background: #fff8f3;
+  }
+}
+
+.row {
+  td {
+    vertical-align: middle;
+  }
+}
+
+.email {
+  font-weight: 500;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+}
+.badgeYes {
+  background: #e7f5ff;
+  color: #0b5cab;
+  border: 1px solid #d0e7ff;
+}
+.badgeNo {
+  background: #f7f7f7;
+  color: #555;
+  border: 1px solid #eee;
+}
+.badgeOk {
+  background: #e9f9f0;
+  color: #0f8f4d;
+  border: 1px solid #d7f2e4;
+}
+.badgeWarn {
+  background: #fff1f1;
+  color: #bc0930;
+  border: 1px solid #ffdede;
+}
+
+.action {
+  border-radius: 9999px;
+}
+.actionWarn {
+  border-radius: 9999px;
+  color: #bc0930;
+  border: 1px solid #f3b5c0;
+  background: #fff;
+}

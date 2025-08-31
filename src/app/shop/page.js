@@ -19,6 +19,7 @@ import { Image as ChakraImage, Grid, GridItem, Tag } from "@chakra-ui/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
 
 const FloralSwiper = dynamic(() => import("@/components/FloralSwiper"), {
   ssr: false,
@@ -134,6 +135,68 @@ const CATALOG = [
 
 export default function ShopPage() {
   const cart = useCart();
+  const [dbProducts, setDbProducts] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/products", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted) setDbProducts(data.items || []);
+          return;
+        }
+      } catch {}
+      // Fallback to anon Supabase client
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        if (!supabase) return;
+        const { data } = await supabase
+          .from("products")
+          .select(
+            "id, title, description, price, category, status, stock, images"
+          )
+          .eq("status", "active");
+        if (mounted) setDbProducts(data || []);
+      } catch {}
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Realtime: refresh products on any product change so stock updates are reflected
+  useEffect(() => {
+    let channel;
+    (async () => {
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        if (!supabase) return;
+        channel = supabase
+          .channel("rt-products")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "products" },
+            async () => {
+              try {
+                const res = await fetch("/api/products", { cache: "no-store" });
+                if (res.ok) {
+                  const data = await res.json();
+                  setDbProducts(data.items || []);
+                }
+              } catch {}
+            }
+          )
+          .subscribe();
+      } catch {}
+    })();
+    return () => {
+      try {
+        channel && channel.unsubscribe();
+      } catch {}
+    };
+  }, []);
 
   return (
     <>
@@ -369,6 +432,33 @@ export default function ShopPage() {
         </Grid>
 
         <Stack spacing={14} mt={10}>
+          {/* Newest products */}
+          <Box
+            as={motion.div}
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.4 }}
+          >
+            <Heading as="h2" size="md" mb={3}>
+              New Arrivals
+            </Heading>
+            <Divider mb={4} />
+            {(() => {
+              const newest = (dbProducts || [])
+                .slice()
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 12);
+              return (
+                <FloralSwiper
+                  products={newest}
+                  sections={[]}
+                  randomizePrice={false}
+                />
+              );
+            })()}
+          </Box>
+
           {CATALOG.map((category, idx) => (
             <Box
               key={category.title}
@@ -382,12 +472,29 @@ export default function ShopPage() {
                 {category.title}
               </Heading>
               <Divider mb={4} />
-              {/* Floral arrangements as Swiper carousel */}
-              <FloralSwiper
-                sections={category.sections}
-                randomizePrice={category.title === "Seasonal Flowers"}
-                randomPriceRange={{ min: 599, max: 2499, step: 50 }}
-              />
+              {/* Prefer DB products for this top-level category */}
+              {(() => {
+                const top = category.title;
+                const key =
+                  top === "Floral Arrangements"
+                    ? "floral"
+                    : top === "Seasonal Flowers"
+                    ? "seasonal"
+                    : top === "Gift Collections"
+                    ? "gifts"
+                    : null;
+                const filtered = key
+                  ? (dbProducts || []).filter((p) => (p.category || "") === key)
+                  : [];
+                return (
+                  <FloralSwiper
+                    products={filtered}
+                    sections={category.sections}
+                    randomizePrice={category.title === "Seasonal Flowers"}
+                    randomPriceRange={{ min: 599, max: 2499, step: 50 }}
+                  />
+                );
+              })()}
             </Box>
           ))}
         </Stack>

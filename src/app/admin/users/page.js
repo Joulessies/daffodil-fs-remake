@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Heading,
+  Input,
   Table,
   Tbody,
   Td,
@@ -13,10 +14,14 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { Flex } from "@chakra-ui/react";
+import AdminBackButton from "@/components/AdminBackButton";
+import styles from "./users.module.scss";
 
 export default function AdminUsersPage() {
   const toast = useToast();
   const [items, setItems] = useState([]);
+  const [query, setQuery] = useState("");
   const load = async () => {
     const res = await fetch("/api/admin/users");
     const data = await res.json();
@@ -46,12 +51,35 @@ export default function AdminUsersPage() {
     load();
   };
 
+  const filtered = (items || []).filter(
+    (u) =>
+      !query ||
+      String(u.email || "")
+        .toLowerCase()
+        .includes(query.toLowerCase())
+  );
+
   return (
-    <Box p={6}>
-      <Heading size="lg" mb={4} style={{ fontFamily: "var(--font-rothek)" }}>
-        Users
-      </Heading>
-      <Table size="sm">
+    <Box p={6} className={styles.usersPage}>
+      <Flex
+        align="center"
+        justify="space-between"
+        mb={4}
+        className={styles.header}
+      >
+        <Heading size="lg">Users</Heading>
+        <Flex gap={3} align="center">
+          <Input
+            placeholder="Search by email"
+            size="sm"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className={styles.search}
+          />
+          <AdminBackButton />
+        </Flex>
+      </Flex>
+      <Table size="sm" className={styles.table}>
         <Thead>
           <Tr>
             <Th>Email</Th>
@@ -61,20 +89,43 @@ export default function AdminUsersPage() {
           </Tr>
         </Thead>
         <Tbody>
-          {items.map((u) => (
-            <Tr key={u.id}>
-              <Td>{u.email}</Td>
-              <Td>{u.is_admin ? "Yes" : "No"}</Td>
-              <Td>{u.suspended ? "Yes" : "No"}</Td>
+          {filtered.map((u) => (
+            <Tr key={u.id} className={styles.row}>
+              <Td>
+                <span className={styles.email}>{u.email}</span>
+              </Td>
+              <Td>
+                <span
+                  className={`${styles.badge} ${
+                    u.is_admin ? styles.badgeYes : styles.badgeNo
+                  }`}
+                >
+                  {u.is_admin ? "Admin" : "User"}
+                </span>
+              </Td>
+              <Td>
+                <span
+                  className={`${styles.badge} ${
+                    u.suspended ? styles.badgeWarn : styles.badgeOk
+                  }`}
+                >
+                  {u.suspended ? "Suspended" : "Active"}
+                </span>
+              </Td>
               <Td>
                 <Button
                   size="xs"
                   mr={2}
                   onClick={() => promote(u.id, u.is_admin)}
+                  className={styles.action}
                 >
                   {u.is_admin ? "Demote" : "Promote"}
                 </Button>
-                <Button size="xs" onClick={() => suspend(u.id, u.suspended)}>
+                <Button
+                  size="xs"
+                  onClick={() => suspend(u.id, u.suspended)}
+                  className={styles.actionWarn}
+                >
                   {u.suspended ? "Unsuspend" : "Suspend"}
                 </Button>
               </Td>

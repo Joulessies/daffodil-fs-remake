@@ -16,6 +16,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import Link from "next/link";
+import AdminBackButton from "@/components/AdminBackButton";
 
 export default function AdminPage() {
   const { user, isAdmin, isLoading } = useAuth();
@@ -31,9 +32,19 @@ export default function AdminPage() {
 
   return (
     <Box p={6}>
-      <Heading size="lg" mb={2} style={{ fontFamily: "var(--font-rothek)" }}>
-        Admin Dashboard
-      </Heading>
+      <Flex align="center" justify="space-between" mb={2}>
+        <Heading size="lg" style={{ fontFamily: "var(--font-rothek)" }}>
+          Admin Dashboard
+        </Heading>
+        <Flex gap={2}>
+          <AdminBackButton />
+          <Link href="/">
+            <Button size="sm" variant="outline">
+              Home
+            </Button>
+          </Link>
+        </Flex>
+      </Flex>
       <Text color="#5B6B73" mb={6}>
         Welcome, {user.email}
       </Text>

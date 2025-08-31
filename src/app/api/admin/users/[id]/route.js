@@ -19,6 +19,17 @@ export async function PATCH(request, { params }) {
       .select("*")
       .single();
     if (error) throw error;
+
+    // If suspended toggled, also block/unblock auth user
+    try {
+      if (body.suspended !== undefined && admin.auth?.admin) {
+        if (body.suspended)
+          await admin.auth.admin.updateUserById(params.id, { banned: true });
+        else
+          await admin.auth.admin.updateUserById(params.id, { banned: false });
+      }
+    } catch {}
+
     await writeAudit({
       action: "update",
       entity: "user",

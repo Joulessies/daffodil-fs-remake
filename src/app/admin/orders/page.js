@@ -14,6 +14,8 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Flex } from "@chakra-ui/react";
+import AdminBackButton from "@/components/AdminBackButton";
 
 export default function AdminOrdersPage() {
   const toast = useToast();
@@ -29,9 +31,12 @@ export default function AdminOrdersPage() {
 
   return (
     <Box p={6}>
-      <Heading size="lg" mb={4} style={{ fontFamily: "var(--font-rothek)" }}>
-        Orders
-      </Heading>
+      <Flex align="center" justify="space-between" mb={4}>
+        <Heading size="lg" style={{ fontFamily: "var(--font-rothek)" }}>
+          Orders
+        </Heading>
+        <AdminBackButton />
+      </Flex>
       <Table size="sm">
         <Thead>
           <Tr>
