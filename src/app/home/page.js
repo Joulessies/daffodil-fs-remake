@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import "./home.scss";
 
@@ -89,7 +90,7 @@ export default function HomePage() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
           >
-            <a href="/shop">SELECT BOUQUET</a>
+            <Link href="/shop">SELECT BOUQUET</Link>
           </motion.h3>
         </div>
 
@@ -278,53 +279,53 @@ export default function HomePage() {
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
         >
-          <motion.a
-            href="/shop"
-            className={`category ${activeCategory === 0 ? "active" : ""}`}
-            animate={{
-              color: activeCategory === 0 ? "#b30b2f" : "#e8e8e8",
-              opacity: activeCategory === 0 ? 1 : 0.7,
-            }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
-            ALL BOUQUETS
-          </motion.a>
+          <Link href="/shop" className={`category ${activeCategory === 0 ? "active" : ""}`}>
+            <motion.span
+              animate={{
+                color: activeCategory === 0 ? "#b30b2f" : "#e8e8e8",
+                opacity: activeCategory === 0 ? 1 : 0.7,
+              }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              ALL BOUQUETS
+            </motion.span>
+          </Link>
           <span className="separator">—</span>
-          <motion.a
-            href="/shop"
-            className={`category ${activeCategory === 1 ? "active" : ""}`}
-            animate={{
-              color: activeCategory === 1 ? "#b30b2f" : "#e8e8e8",
-              opacity: activeCategory === 1 ? 1 : 0.7,
-            }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
-            COMPOSITIONS
-          </motion.a>
+          <Link href="/shop" className={`category ${activeCategory === 1 ? "active" : ""}`}>
+            <motion.span
+              animate={{
+                color: activeCategory === 1 ? "#b30b2f" : "#e8e8e8",
+                opacity: activeCategory === 1 ? 1 : 0.7,
+              }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              COMPOSITIONS
+            </motion.span>
+          </Link>
           <span className="separator">—</span>
-          <motion.a
-            href="/shop"
-            className={`category ${activeCategory === 2 ? "active" : ""}`}
-            animate={{
-              color: activeCategory === 2 ? "#b30b2f" : "#e8e8e8",
-              opacity: activeCategory === 2 ? 1 : 0.7,
-            }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
-            ARRANGEMENTS
-          </motion.a>
+          <Link href="/shop" className={`category ${activeCategory === 2 ? "active" : ""}`}>
+            <motion.span
+              animate={{
+                color: activeCategory === 2 ? "#b30b2f" : "#e8e8e8",
+                opacity: activeCategory === 2 ? 1 : 0.7,
+              }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              ARRANGEMENTS
+            </motion.span>
+          </Link>
           <span className="separator">—</span>
-          <motion.a
-            href="/shop"
-            className={`category ${activeCategory === 3 ? "active" : ""}`}
-            animate={{
-              color: activeCategory === 3 ? "#b30b2f" : "#e8e8e8",
-              opacity: activeCategory === 3 ? 1 : 0.7,
-            }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-          >
-            FLOWERS
-          </motion.a>
+          <Link href="/shop" className={`category ${activeCategory === 3 ? "active" : ""}`}>
+            <motion.span
+              animate={{
+                color: activeCategory === 3 ? "#b30b2f" : "#e8e8e8",
+                opacity: activeCategory === 3 ? 1 : 0.7,
+              }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              FLOWERS
+            </motion.span>
+          </Link>
           <div className="category-line"></div>
         </motion.div>
       </motion.section>
@@ -516,16 +517,16 @@ export default function HomePage() {
               <h4>Shop</h4>
               <ul>
                 <li>
-                  <a href="/shop">All Products</a>
+                  <Link href="/shop">All Products</Link>
                 </li>
                 <li>
-                  <a href="/shop?category=bouquets">Bouquets</a>
+                  <Link href="/shop?category=bouquets">Bouquets</Link>
                 </li>
                 <li>
-                  <a href="/shop?category=wedding">Wedding Flowers</a>
+                  <Link href="/shop?category=wedding">Wedding Flowers</Link>
                 </li>
                 <li>
-                  <a href="/shop?category=gifts">Gift Collections</a>
+                  <Link href="/shop?category=gifts">Gift Collections</Link>
                 </li>
               </ul>
             </div>
@@ -534,13 +535,13 @@ export default function HomePage() {
               <h4>Company</h4>
               <ul>
                 <li>
-                  <a href="/about">About Us</a>
+                  <Link href="/about">About Us</Link>
                 </li>
                 <li>
-                  <a href="/contact">Contact</a>
+                  <Link href="/contact">Contact</Link>
                 </li>
                 <li>
-                  <a href="/customize">Custom Orders</a>
+                  <Link href="/customize">Custom Orders</Link>
                 </li>
               </ul>
             </div>
@@ -549,13 +550,13 @@ export default function HomePage() {
               <h4>Account</h4>
               <ul>
                 <li>
-                  <a href="/profile">My Profile</a>
+                  <Link href="/profile">My Profile</Link>
                 </li>
                 <li>
-                  <a href="/profile/orders">Order History</a>
+                  <Link href="/profile/orders">Order History</Link>
                 </li>
                 <li>
-                  <a href="/wishlist">Wishlist</a>
+                  <Link href="/wishlist">Wishlist</Link>
                 </li>
               </ul>
             </div>
