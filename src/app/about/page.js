@@ -108,17 +108,18 @@ export default function AboutPage() {
                 to transform moments into memories.
               </p>
               <p>
-                Founded in 2018 by passionate florists Maria and Elena, our
-                journey began in a small studio where creativity bloomed
-                alongside our flowers. What started as a dream to bring
-                exceptional floral artistry to our community has grown into a
-                beloved destination for those seeking to express their deepest
-                emotions through nature's most beautiful creations.
+                This project began as a school assignment for our Web Systems
+                course, where we were challenged to create a comprehensive
+                e-commerce platform. What started as an academic exercise has
+                evolved into a fully-featured floral marketplace, showcasing
+                modern web development techniques and technologies.
               </p>
               <p>
-                Today, we continue to honor our founding principles: sourcing
-                the finest blooms, crafting each arrangement with meticulous
-                care, and treating every customer's story as our own.
+                Our team has remade and enhanced this system with better
+                architecture, improved APIs, and a more intuitive user
+                experience. This project demonstrates our commitment to learning
+                cutting-edge web development while creating something beautiful
+                and functional.
               </p>
             </div>
           </div>
@@ -209,27 +210,41 @@ export default function AboutPage() {
             <div className="team-member">
               <div className="member-image">
                 <div className="image-placeholder">
-                  <span className="placeholder-icon">👩‍🎨</span>
+                  <span className="placeholder-icon">👨‍💼</span>
                 </div>
               </div>
-              <h3>Maria Chen</h3>
-              <p className="member-role">Co-Founder & Lead Designer</p>
+              <h3>Shawn Agres</h3>
+              <p className="member-role">Admin Frontend Developer</p>
               <p className="member-bio">
-                With 15 years in floral design, Maria brings artistic vision and
-                innovative techniques to every creation.
+                Shawn develops and maintains our administrative systems,
+                ensuring smooth backend operations and management interfaces.
               </p>
             </div>
             <div className="team-member">
               <div className="member-image">
                 <div className="image-placeholder">
-                  <span className="placeholder-icon">👩‍💼</span>
+                  <span className="placeholder-icon">👩‍🎨</span>
                 </div>
               </div>
-              <h3>Elena Rodriguez</h3>
-              <p className="member-role">Co-Founder & Operations</p>
+              <h3>Kimberly Bombita</h3>
+              <p className="member-role">Home Page Developer & Assets</p>
               <p className="member-bio">
-                Elena ensures every order exceeds expectations, managing our
-                team with warmth and precision.
+                Kimberly crafts our beautiful home page experience and manages
+                digital assets, bringing our floral vision to life online.
+              </p>
+            </div>
+            <div className="team-member">
+              <div className="member-image">
+                <div className="image-placeholder">
+                  <span className="placeholder-icon">👨‍💻</span>
+                </div>
+              </div>
+              <h3>Julius San Jose</h3>
+              <p className="member-role">Owner & Website Operations</p>
+              <p className="member-bio">
+                Julius is the owner of Daffodil and operates the entire website,
+                overseeing all aspects of our digital presence and business
+                operations.
               </p>
             </div>
             <div className="team-member">
@@ -238,11 +253,26 @@ export default function AboutPage() {
                   <span className="placeholder-icon">👨‍🌾</span>
                 </div>
               </div>
-              <h3>James Park</h3>
-              <p className="member-role">Head of Sourcing</p>
+              <h3>Sean Rikcel Catapang</h3>
+              <p className="member-role">Home Page Developer & Assets</p>
               <p className="member-bio">
-                James cultivates relationships with the finest growers to bring
-                you the freshest, most vibrant blooms.
+                Sean Rikcel focuses on home page development and asset
+                management, ensuring our website showcases our floral offerings
+                beautifully.
+              </p>
+            </div>
+            <div className="team-member">
+              <div className="member-image">
+                <div className="image-placeholder">
+                  <span className="placeholder-icon">👨‍🚚</span>
+                </div>
+              </div>
+              <h3>Lee Andre Sumayod</h3>
+              <p className="member-role">Home Page Developer & Assets</p>
+              <p className="member-bio">
+                Lee Andre develops our home page functionality and manages
+                visual assets, creating an engaging user experience for our
+                customers.
               </p>
             </div>
           </div>
@@ -301,7 +331,9 @@ export default function AboutPage() {
             <h2 className="section-title">Our Core Values</h2>
             <div className="values-showcase">
               <div className="value-item">
-                <div className="value-icon">🌹</div>
+                <div className="value-icon">
+                  <img src="/images/home/home3.svg" alt="Love" />
+                </div>
                 <h3>Love</h3>
                 <p>In every petal we place</p>
               </div>

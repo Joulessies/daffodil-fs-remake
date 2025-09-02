@@ -33,6 +33,15 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
           href="https://fonts.cdnfonts.com/css/santa-catarina"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+              }
+            `,
+          }}
+        />
       </head>
       <body className={`${inter.variable} font-rothek`}>
         <CacheProvider>

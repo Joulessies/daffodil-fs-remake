@@ -1,9 +1,686 @@
-.home-title {
-  font-family: var(--font-rothek);
-  font-size: 2rem;
-  font-weight: 200;
-  font-style: normal;
+// Hero Section
+.hero {
+  position: relative;
+  text-align: center;
+  padding: 80px 40px;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  background: #b30b2f;
+  z-index: 1;
+}
+.circle.big {
+  width: 150px;
+  height: 150px;
+  top: 50px;
+  left: 40px;
+}
+.circle.medium {
+  width: 70px;
+  height: 70px;
+  bottom: 140px;
+  right: 400px;
+}
+.circle.small {
+  width: 30px;
+  height: 30px;
+  top: 20%;
+  right: 300px;
+}
+
+.hero-content {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-image {
+  max-width: 800px;
+  border-radius: 50%;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-title,
+.hero-title2 {
+  position: absolute;
+  font-family: "Santa Catarina", cursive;
+  font-weight: 400;
+  z-index: 2;
+}
+
+.hero-title {
+  font-size: 120px;
+  top: 50%;
+  left: 10%;
+  transform: translate(-45%, -100%);
+}
+
+.hero-title2 {
+  font-size: 100px;
+  top: 50%;
+  left: 10%;
+  transform: translate(-60%, -2%);
+}
+
+.red-part {
+  color: #b30b2f;
+}
+.white-part {
+  color: #fff;
+}
+
+.vertical {
+  position: absolute;
+  top: 50%;
+  right: -50%;
+  font: 400 20px "Rothek", sans-serif;
+  writing-mode: vertical-rl;
+  transform: translateY(-50%) rotate(180deg);
+  z-index: 2;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: #b30b2f;
+    }
+  }
+}
+
+// Caption
+.hero-caption {
+  margin-top: 24px;
+  font-family: "Rothek", sans-serif;
+
+  h2 {
+    font: 400 30px "Santa Catarina", sans-serif;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 14px;
+    color: #5b6b73;
+  }
+}
+
+// Sell Section
+.sell {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 80px 5%;
+  min-height: 100vh;
+}
+
+.sell-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sell-h2 {
+  font: 400 100px "Santa Catarina", sans-serif;
+}
+
+.sell-text {
+  max-width: 400px;
+  text-align: right;
+  font: 25px "Rothek", sans-serif;
+  color: #5b6b73;
+  cursor: pointer;
+
+  &:hover {
+    color: #b30b2f;
+  }
+}
+
+.images {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.pics {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #e8b4cb;
+  padding: 10px;
+  background: white;
+}
+
+// Enhanced styling for all draggable products in WE SELL section
+.sell .draggable-pic {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="white" stroke="%23b30b2f" stroke-width="3" opacity="0.9"/><text x="24" y="28" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="%23b30b2f">DRAG</text></svg>')
+      24 24,
+    grab;
+  user-select: none;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &:hover {
+    box-shadow: 0 10px 30px rgba(179, 11, 47, 0.25);
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="%23b30b2f" stroke="%23b30b2f" stroke-width="3"/><text x="24" y="28" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">DRAG</text></svg>')
+        24 24,
+      grab;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="%23b30b2f" stroke="%23b30b2f" stroke-width="3"/><text x="24" y="28" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="white">DRAG</text></svg>')
+        24 24,
+      grabbing;
+    box-shadow: 0 15px 40px rgba(179, 11, 47, 0.35);
+  }
+
+  // Add subtle animation to indicate interactivity
+  &::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    border: 2px solid rgba(179, 11, 47, 0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  &:hover::before {
+    opacity: 1;
+    animation: pulse 2s infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+}
+
+// Ensure other .pics images in other sections use default cursor
+.pics:not(.draggable-pic) {
+  cursor: default;
+}
+
+.pic-caption {
+  font: 16px "Rothek", sans-serif;
+  color: #5b6b73;
+  margin: 15px 0 0 0;
+  text-align: center;
+}
+
+.pic-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.pic-caption-container {
+  position: relative;
+  width: 100%;
+}
+
+.heart-icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  margin: 10px auto 0;
+  font-size: 20px;
+  color: #5b6b73;
+  user-select: none;
+  transition: color 0.2s;
+  display: block;
+  text-align: center;
+
+  &:hover,
+  &.favorited {
+    color: #b30b2f;
+  }
+}
+
+// Categories
+.categories {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "all sep1 comp ."
+    "arr sep2 flowers .";
+  justify-content: center;
+  align-items: center;
+  gap: 30px 80px;
+  margin-top: 60px;
+  font-family: "Santa Catarina", cursive, sans-serif;
+  font-weight: 400;
   line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: var(--color-primary);
+}
+
+.categories .category:nth-child(1) {
+  grid-area: all;
+  color: #e8e8e8;
+  opacity: 0.7;
+}
+.categories .separator:nth-child(2) {
+  grid-area: sep1;
+}
+.categories .category:nth-child(3) {
+  grid-area: comp;
+  color: #e8e8e8;
+  opacity: 0.7;
+}
+.categories .separator:nth-child(4) {
+  grid-area: sep2;
+}
+.categories .category:nth-child(5) {
+  grid-area: arr;
+  color: #e8e8e8;
+  opacity: 0.7;
+}
+.categories .separator:nth-child(6) {
+  display: none;
+}
+.categories .category:nth-child(7) {
+  grid-area: flowers;
+  color: #e8e8e8;
+  opacity: 0.7;
+}
+.category-line {
+  display: none;
+}
+
+.categories .category {
+  transition: color 0.2s;
+  text-decoration: none;
+  font-size: 70px;
+  text-align: center;
+  font-family: "Santa Catarina", cursive, sans-serif;
+  font-weight: 400;
+
+  &:hover {
+    color: #b30b2f;
+    opacity: 1;
+  }
+}
+
+.separator {
+  color: #e8e8e8;
+  user-select: none;
+  font-size: 70px;
+  opacity: 0.7;
+  font-family: "Santa Catarina", cursive, sans-serif;
+}
+
+// Instructions
+.instructions {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 5%;
+  min-height: 80vh;
+  padding: 60px 0;
+}
+
+.rose-pic {
+  width: 40%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.rose-pic2-container {
+  width: 50%;
+  position: relative;
+}
+
+.i-p {
+  font: 400 14px "Rothek", sans-serif;
+  margin-bottom: 20px;
+  color: #5b6b73;
+}
+
+.rose-text-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.rose-pic2 {
+  width: 300px;
+  margin-left: 50%;
+  position: relative;
+  z-index: 2;
+  display: block;
+  border-radius: 8px;
+}
+
+.i-h3 {
+  font: 400 50px "Santa Catarina", sans-serif;
+  margin-top: -20px;
+  transform: translateX(25%);
+  position: relative;
+  z-index: 2;
+  color: #333;
+}
+
+.behind-circle {
+  position: absolute;
+  bottom: -90px;
+  left: 300px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: #b30b2f;
+  z-index: 1;
+}
+
+// Novelties
+.novelties {
+  padding: 80px 5%;
+  min-height: 100vh;
+}
+
+.novelties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.n-h2 {
+  font: 400 100px "Santa Catarina", sans-serif;
+}
+
+.catalog-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 18px "Rothek", sans-serif;
+  cursor: pointer;
+  color: #5b6b73;
+
+  &:hover {
+    color: #b30b2f;
+  }
+}
+
+.novelties-content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 60px;
+}
+
+.n-pic {
+  width: 450px;
+  height: 375px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.n-pic2 {
+  width: 300px;
+  height: 225px;
+  margin-top: 25%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.novelty-text {
+  display: flex;
+  align-items: center;
+  margin-top: 5%;
+}
+
+.n-p {
+  font: 24px/1.5 "Rothek", sans-serif;
+  max-width: 300px;
+  color: #5b6b73;
+}
+
+.circle-container {
+  position: relative;
+}
+
+.drag-circle {
+  position: absolute;
+  top: 10px;
+  right: -20px;
+  width: 120px;
+  height: 120px;
+  border: 3px solid crimson;
+  border-radius: 50%;
+  background: #fff;
+  font: 18px "Rothek", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-20deg);
+  cursor: pointer;
+
+  &:hover {
+    background: #b30b2f;
+    color: white;
+  }
+}
+
+// Last Page
+.last {
+  min-height: 100vh;
+  padding: 80px 0;
+}
+
+.l-h2 {
+  font: 400 80px "Santa Catarina", sans-serif;
+  color: #b30b2f;
+  text-align: left;
+  margin: 10% 0 0 17%;
+}
+
+.bride {
+  width: 800px;
+  height: 500px;
+  margin: 5% 0 0 25%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.l-h3 {
+  font: 400 30px "Santa Catarina", sans-serif;
+  text-align: center;
+  margin-top: 2%;
+  color: #333;
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+  .hero-title {
+    font-size: 80px;
+  }
+
+  .hero-title2 {
+    font-size: 60px;
+  }
+
+  .sell-h2,
+  .n-h2 {
+    font-size: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-image {
+    max-width: 400px;
+  }
+
+  .hero-title {
+    font-size: 60px;
+  }
+
+  .hero-title2 {
+    font-size: 40px;
+  }
+
+  .images {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .pics {
+    width: 280px;
+    height: 280px;
+  }
+
+  .instructions {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .rose-pic,
+  .rose-pic2-container {
+    width: 100%;
+  }
+
+  .novelties-content {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .bride {
+    width: 100%;
+    height: 300px;
+    margin: 5% 0 0 0;
+  }
+
+  .categories {
+    font-size: 40px;
+    flex-wrap: wrap;
+  }
+}
+
+// Footer
+.footer {
+  background-color: #fffcf2;
+  border-top: 1px solid #e0e0e0;
+  padding: 60px 0 20px;
+  margin-top: 80px;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 60px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+
+.footer-logo-img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.footer-brand {
+  font: 400 32px "Santa Catarina", sans-serif;
+  color: #b30b2f;
+}
+
+.footer-links {
+  display: flex;
+  gap: 60px;
+  flex-wrap: wrap;
+}
+
+.footer-section {
+  h4 {
+    font: 600 18px "Rothek", sans-serif;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      margin-bottom: 12px;
+
+      a {
+        font: 400 16px "Rothek", sans-serif;
+        color: #5b6b73;
+        text-decoration: none;
+        transition: color 0.3s ease;
+
+        &:hover {
+          color: #b30b2f;
+        }
+      }
+    }
+  }
+}
+
+.footer-bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 5% 0;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+  margin-top: 40px;
+
+  p {
+    font: 400 14px "Rothek", sans-serif;
+    color: #5b6b73;
+    margin: 5px 0;
+
+    &:first-child {
+      font-weight: 500;
+      color: #333;
+    }
+  }
+}
+
+// Footer responsive design
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 40px;
+    text-align: center;
+  }
+
+  .footer-links {
+    justify-content: center;
+    gap: 40px;
+  }
+
+  .footer-section {
+    text-align: center;
+  }
 }
