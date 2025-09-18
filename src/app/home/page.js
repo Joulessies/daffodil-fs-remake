@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import "./home.scss";
 
 export default function HomePage() {
-  const [activeCategory, setActiveCategory] = useState(2); // Start with "ARRANGEMENTS" (index 2)
+  const [activeCategory, setActiveCategory] = useState(2);
   const categories = [
     "ALL BOUQUETS",
     "COMPOSITIONS",
@@ -279,7 +279,10 @@ export default function HomePage() {
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
         >
-          <Link href="/shop" className={`category ${activeCategory === 0 ? "active" : ""}`}>
+          <Link
+            href="/shop"
+            className={`category ${activeCategory === 0 ? "active" : ""}`}
+          >
             <motion.span
               animate={{
                 color: activeCategory === 0 ? "#b30b2f" : "#e8e8e8",
@@ -291,7 +294,10 @@ export default function HomePage() {
             </motion.span>
           </Link>
           <span className="separator">—</span>
-          <Link href="/shop" className={`category ${activeCategory === 1 ? "active" : ""}`}>
+          <Link
+            href="/shop"
+            className={`category ${activeCategory === 1 ? "active" : ""}`}
+          >
             <motion.span
               animate={{
                 color: activeCategory === 1 ? "#b30b2f" : "#e8e8e8",
@@ -303,7 +309,10 @@ export default function HomePage() {
             </motion.span>
           </Link>
           <span className="separator">—</span>
-          <Link href="/shop" className={`category ${activeCategory === 2 ? "active" : ""}`}>
+          <Link
+            href="/shop"
+            className={`category ${activeCategory === 2 ? "active" : ""}`}
+          >
             <motion.span
               animate={{
                 color: activeCategory === 2 ? "#b30b2f" : "#e8e8e8",
@@ -315,7 +324,10 @@ export default function HomePage() {
             </motion.span>
           </Link>
           <span className="separator">—</span>
-          <Link href="/shop" className={`category ${activeCategory === 3 ? "active" : ""}`}>
+          <Link
+            href="/shop"
+            className={`category ${activeCategory === 3 ? "active" : ""}`}
+          >
             <motion.span
               animate={{
                 color: activeCategory === 3 ? "#b30b2f" : "#e8e8e8",
@@ -565,7 +577,7 @@ export default function HomePage() {
 
         <div className="footer-bottom">
           <p>&copy; 2024 Daffodil. All rights reserved.</p>
-          <p>Crafting floral poetry since 2018</p>
+          <p>Crafting floral poetry since 2024</p>
         </div>
       </footer>
     </div>
