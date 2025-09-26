@@ -130,6 +130,13 @@ $accent-yellow: #ffd93d;
   position: relative;
 }
 
+.hero-heading {
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
 .hero-title {
   display: flex;
   flex-direction: column;
@@ -455,7 +462,6 @@ $accent-yellow: #ffd93d;
 // Team Section
 .team-section {
   @include section-padding;
-  background: $white;
 }
 
 .section-title {
@@ -536,7 +542,6 @@ $accent-yellow: #ffd93d;
 // Testimonials Section
 .testimonials-section {
   @include section-padding;
-  background: linear-gradient(180deg, $secondary-color 0%, $white 100%);
 }
 
 .testimonials-grid {
@@ -591,7 +596,6 @@ $accent-yellow: #ffd93d;
 // Enhanced Values Section
 .values-section {
   @include section-padding;
-  background: $white;
 }
 
 .values-content {
@@ -637,12 +641,7 @@ $accent-yellow: #ffd93d;
 // Call to Action Section
 .cta-section {
   @include section-padding;
-  background: linear-gradient(
-    135deg,
-    $primary-color 0%,
-    darken($primary-color, 10%) 100%
-  );
-  color: $white;
+  background: linear-gradient(135deg, $primary-color 0%);
   text-align: center;
 }
 
@@ -686,7 +685,6 @@ $accent-yellow: #ffd93d;
       color: $primary-color;
 
       &:hover {
-        background: darken($white, 5%);
         transform: translateY(-2px);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
       }

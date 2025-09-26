@@ -71,15 +71,17 @@ export default function AboutPage() {
           <div className="floating-petal petal-3">🌷</div>
         </div>
         <div className="hero-content">
-          <h1 className="hero-title">
-            <span className="title-line-1">Crafting</span>
-            <span className="title-line-2">Floral Poetry</span>
-            <span className="title-line-3">Since 2025</span>
-          </h1>
-          <p className="hero-subtitle">
-            Where every bloom tells a story and every arrangement speaks the
-            language of love
-          </p>
+          <div className="hero-heading">
+            <h1 className="hero-title">
+              <span className="title-line-1">Crafting</span>
+              <span className="title-line-2">Floral Poetry</span>
+              <span className="title-line-3">Since 2025</span>
+            </h1>
+            <p className="hero-subtitle">
+              Where every bloom tells a story and every arrangement speaks the
+              language of love
+            </p>
+          </div>
           <div className="hero-cta">
             <a href="#our-story" className="scroll-down">
               <span>Discover Our Story</span>
