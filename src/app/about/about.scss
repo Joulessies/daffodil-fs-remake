@@ -135,6 +135,7 @@ $accent-yellow: #ffd93d;
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 2rem;
+  align-items: center;
 
   span {
     display: block;
@@ -161,6 +162,7 @@ $accent-yellow: #ffd93d;
       font-weight: 200;
       color: $text-light;
       animation-delay: 0.6s;
+      margin-top: 0.25rem;
     }
   }
 

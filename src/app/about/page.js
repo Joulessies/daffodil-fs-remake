@@ -74,7 +74,7 @@ export default function AboutPage() {
           <h1 className="hero-title">
             <span className="title-line-1">Crafting</span>
             <span className="title-line-2">Floral Poetry</span>
-            <span className="title-line-3">Since 2018</span>
+            <span className="title-line-3">Since 2025</span>
           </h1>
           <p className="hero-subtitle">
             Where every bloom tells a story and every arrangement speaks the
