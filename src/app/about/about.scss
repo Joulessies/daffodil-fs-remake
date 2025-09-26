@@ -277,7 +277,6 @@ $accent-yellow: #ffd93d;
 // Story Section
 .story-section {
   @include section-padding;
-  background: $white;
 }
 
 .story-content {
@@ -360,7 +359,6 @@ $accent-yellow: #ffd93d;
 // Enhanced Philosophy Section
 .philosophy-section {
   @include section-padding;
-  background: linear-gradient(180deg, $secondary-color 0%, $white 100%);
 }
 
 .philosophy-content {
@@ -422,8 +420,6 @@ $accent-yellow: #ffd93d;
 // Statistics Section
 .stats-section {
   @include section-padding;
-  background: $primary-color;
-  color: $white;
 }
 
 .stats-grid {
@@ -641,8 +637,6 @@ $accent-yellow: #ffd93d;
 // Call to Action Section
 .cta-section {
   @include section-padding;
-  background: linear-gradient(135deg, $primary-color 0%);
-  text-align: center;
 }
 
 .cta-content {
