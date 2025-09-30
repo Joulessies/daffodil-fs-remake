@@ -28,6 +28,7 @@ export default function OrderConfirmationPage() {
         const { supabase } = await import("@/lib/supabase");
         const params = new URLSearchParams(window.location.search);
         const sessionId = params.get("session_id");
+        const pmRef = params.get("pm_ref");
         if (sessionId) {
           let userId = null;
           if (supabase) {
@@ -38,6 +39,30 @@ export default function OrderConfirmationPage() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ session_id: sessionId, user_id: userId }),
+          });
+          const data = await res.json();
+          if (res.ok && data?.order) {
+            setOrder(data.order);
+            try {
+              localStorage.setItem("lastOrder", JSON.stringify(data.order));
+            } catch {}
+            if (data.dbError) {
+              // eslint-disable-next-line no-console
+              console.warn("Order save warning:", data.dbError);
+            }
+            return;
+          }
+        }
+        if (pmRef) {
+          let userId = null;
+          if (supabase) {
+            const userRes = await supabase.auth.getUser();
+            userId = userRes?.data?.user?.id || null;
+          }
+          const res = await fetch("/api/payments/paymongo/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reference: pmRef, user_id: userId }),
           });
           const data = await res.json();
           if (res.ok && data?.order) {

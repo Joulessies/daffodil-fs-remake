@@ -592,6 +592,38 @@ export default function AuthCard({ mode = "login" }) {
             />
             <span>Continue with Google</span>
           </button>
+          <button
+            onClick={async () => {
+              if (!supabase) {
+                alert("Auth is not configured. Please try again later.");
+                return;
+              }
+
+              try {
+                await supabase.auth.signOut({ scope: "local" });
+              } catch {}
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "azure",
+                options: {
+                  redirectTo: `${window.location.origin}/auth/callback`,
+                  flowType: "pkce",
+                  scopes: "openid profile email offline_access",
+                  queryParams: { prompt: "select_account" },
+                },
+              });
+              if (error) alert(error.message);
+            }}
+            style={buttonBaseStyle}
+            disabled={isLoggedIn || isSubmitting}
+          >
+            <Image
+              src="/images/microsoft-logo.png"
+              alt="Microsoft"
+              width={24}
+              height={24}
+            />
+            <span>Continue with Microsoft</span>
+          </button>
         </div>
 
         <div

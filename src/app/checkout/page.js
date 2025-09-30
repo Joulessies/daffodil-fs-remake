@@ -24,6 +24,11 @@ import {
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/CartContext";
 import NavigationBar from "@/components/navigationbar";
+import dynamic from "next/dynamic";
+
+const PayPalButton = dynamic(() => import("@/components/PayPalButton"), {
+  ssr: false,
+});
 
 export default function CheckoutPage() {
   const toast = useToast();
@@ -118,6 +123,76 @@ export default function CheckoutPage() {
     } catch (err) {
       toast({
         title: "Unable to place order",
+        description: err.message,
+        status: "error",
+      });
+    }
+  };
+
+  const handlePayMongo = async () => {
+    try {
+      if (cart.items.length === 0) throw new Error("Your cart is empty");
+      const resp = await fetch("/api/payments/paymongo/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: cart.items,
+          customerEmail: email,
+          // Intentionally omit successUrl so server sets pm_ref in redirect
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data?.error || "PayMongo init failed");
+
+      // Save a draft order in Supabase (for history) with status pending
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        if (supabase) {
+          await supabase.from("orders").insert({
+            order_number: data.reference || data.id,
+            status: "pending",
+            total: cart.total,
+            items: cart.items,
+            customer_name: name,
+            customer_email: email,
+            shipping_address: shipping,
+          });
+        }
+      } catch {}
+
+      // Persist a lightweight copy locally for fallback on confirmation page
+      try {
+        const subtotal = cart.total;
+        const taxes = subtotal * 0.12;
+        const shippingFee = subtotal > 0 ? 150 : 0;
+        const total = subtotal * 1.12 + shippingFee;
+        const draftOrder = {
+          orderNumber: data.reference || data.id,
+          date: Date.now(),
+          items: cart.items,
+          totals: {
+            subtotal,
+            taxes,
+            shipping: shippingFee,
+            total,
+          },
+          customer: {
+            name,
+            email,
+            shipping,
+            billing: billingSame ? shipping : billing,
+            phone,
+          },
+          payment: { method: "paymongo", status: "Paid" },
+        };
+        localStorage.setItem("lastOrder", JSON.stringify(draftOrder));
+      } catch {}
+
+      // Redirect user to PayMongo Checkout URL
+      window.location.href = data.url;
+    } catch (err) {
+      toast({
+        title: "Unable to start PayMongo checkout",
         description: err.message,
         status: "error",
       });
@@ -424,19 +499,46 @@ export default function CheckoutPage() {
                       bg="#635bff"
                       _hover={{ bg: "#5851df" }}
                       color="white"
+                      size="sm"
                       isDisabled={cart.items.length === 0}
                     >
                       Pay with Stripe
                     </Button>
-                    <Button as="a" href="/" variant="ghost">
+                    <Button
+                      type="button"
+                      onClick={handlePayMongo}
+                      bg="#0ea5e9"
+                      _hover={{ bg: "#0284c7" }}
+                      color="white"
+                      size="sm"
+                      isDisabled={cart.items.length === 0}
+                    >
+                      Pay with PayMongo (Sandbox)
+                    </Button>
+                    <Button as="a" href="/" variant="ghost" size="sm">
                       Back to Cart
                     </Button>
                   </Stack>
 
+                  <Divider my={6} />
+                  <Heading size="sm" mb={2}>
+                    Or pay with PayPal (Sandbox)
+                  </Heading>
+                  <PayPalButton
+                    amount={(
+                      cart.total * 1.12 +
+                      (cart.total > 0 ? 150 : 0)
+                    ).toFixed(2)}
+                    currency="PHP"
+                    onSuccess={(result) => {
+                      console.log("PayPal capture result", result);
+                    }}
+                  />
+
                   <HStack mt={3} spacing={2} color="#5B6B73">
                     <Text fontSize="sm">Powered by</Text>
                     <Text fontSize="sm" fontWeight={600}>
-                      Stripe
+                      Stripe & PayPal Sandbox
                     </Text>
                   </HStack>
 
