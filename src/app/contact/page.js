@@ -12,6 +12,7 @@ import {
   Textarea,
   useToast,
 } from "@chakra-ui/react";
+import styles from "./ContactPage.module.scss";
 
 export default function ContactPage() {
   const toast = useToast();
@@ -31,7 +32,7 @@ export default function ContactPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed to send");
-      toast({ title: "Message sent", status: "success" });
+      toast({ title: "Message sent!", status: "success" });
       setName("");
       setEmail("");
       setMessage("");
@@ -49,32 +50,42 @@ export default function ContactPage() {
   return (
     <>
       <NavigationBar />
-      <Box maxW={820} mx="auto" px={{ base: 4, md: 6 }} py={8}>
-        <Heading size="lg" mb={4} style={{ fontFamily: "var(--font-rothek)" }}>
-          Contact Us
-        </Heading>
-        <form onSubmit={onSubmit}>
-          <FormControl mb={3} isRequired>
+      <Box className={styles.contactContainer}>
+        <Heading className={styles.heading}>Contact Us</Heading>
+        <form onSubmit={onSubmit} className={styles.form}>
+          <FormControl className={styles.formControl} isRequired>
             <FormLabel>Your Name</FormLabel>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Input
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </FormControl>
-          <FormControl mb={3} isRequired>
+          <FormControl className={styles.formControl} isRequired>
             <FormLabel>Email</FormLabel>
             <Input
               type="email"
+              placeholder="john@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </FormControl>
-          <FormControl mb={3} isRequired>
+          <FormControl className={styles.formControl} isRequired>
             <FormLabel>Message</FormLabel>
             <Textarea
               rows={5}
+              placeholder="Write your message here..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
           </FormControl>
-          <Button type="submit" colorScheme="red" isLoading={sending}>
+          <Button
+            type="submit"
+            className={styles.submitBtn}
+            colorScheme="red"
+            isLoading={sending}
+            isDisabled={!name || !email || !message}
+          >
             Send
           </Button>
         </form>

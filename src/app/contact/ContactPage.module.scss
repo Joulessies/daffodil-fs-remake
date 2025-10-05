@@ -1,0 +1,59 @@
+.contactContainer {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.heading {
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+  color: #2d2d2d;
+  margin-bottom: 2rem;
+  font-family: var(--font-rothek);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formControl {
+  margin-bottom: 0;
+}
+
+.formControl label {
+  font-weight: 500;
+  color: #444;
+}
+
+/* Scope inputs to this page only */
+.contactContainer :where(input, textarea) {
+  border-radius: 10px !important;
+  padding: 0.75rem !important;
+  font-size: 1rem !important;
+  border: 1px solid #ddd !important;
+  transition: border 0.3s ease;
+}
+
+.contactContainer :where(input:focus, textarea:focus) {
+  border-color: #ff4d4f !important;
+  box-shadow: 0 0 0 1px #ff4d4f !important;
+}
+
+.submitBtn {
+  align-self: flex-end;
+  padding: 0.8rem 2rem !important;
+  font-size: 1rem;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: background-color 0.3s ease;
+}
+
+.submitBtn:hover {
+  background-color: #e63946 !important;
+}
