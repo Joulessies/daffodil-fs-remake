@@ -12,13 +12,16 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import NavigationBar from "@/components/navigationbar";
+import { useCart } from "@/components/CartContext";
 
 export default function OrderConfirmationPage() {
   const [order, setOrder] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const cart = useCart();
+  const clearedRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
@@ -84,6 +87,16 @@ export default function OrderConfirmationPage() {
       } catch {}
     })();
   }, []);
+
+  // Clear the shopping cart once when we have a confirmed order loaded
+  useEffect(() => {
+    try {
+      if (order && !clearedRef.current) {
+        clearedRef.current = true;
+        cart.clearCart();
+      }
+    } catch {}
+  }, [order, cart]);
 
   if (!mounted) return null;
 

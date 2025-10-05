@@ -97,9 +97,11 @@ export default function AboutPage() {
           <div className="story-content">
             <div className="story-image">
               <div className="image-frame">
-                <div className="image-placeholder">
-                  <span className="placeholder-icon">🌻</span>
-                </div>
+                <img
+                  src="/images/shoppage.jpg"
+                  alt="Our Story"
+                  className="story-photo"
+                />
               </div>
               <div className="accent-circle"></div>
             </div>
@@ -211,70 +213,78 @@ export default function AboutPage() {
           <div className="team-grid">
             <div className="team-member">
               <div className="member-image">
-                <div className="image-placeholder">
-                  <span className="placeholder-icon">👨‍💼</span>
-                </div>
+                <img
+                  src="/images/about-us-pictures-members/agres.png"
+                  alt="Shawn Agres"
+                  className="member-photo"
+                />
               </div>
               <h3>Shawn Agres</h3>
               <p className="member-role">Admin Frontend Developer</p>
               <p className="member-bio">
                 Shawn develops and maintains our administrative systems,
-                ensuring smooth backend operations and management interfaces.
+                ensuring smooth backend operations.
               </p>
             </div>
             <div className="team-member">
               <div className="member-image">
-                <div className="image-placeholder">
-                  <span className="placeholder-icon">👩‍🎨</span>
-                </div>
+                <img
+                  src="/images/about-us-pictures-members/kim.png"
+                  alt="Kimberly Bombita"
+                  className="member-photo"
+                />
               </div>
               <h3>Kimberly Bombita</h3>
               <p className="member-role">Home Page Developer & Assets</p>
               <p className="member-bio">
-                Kimberly crafts our beautiful home page experience and manages
-                digital assets, bringing our floral vision to life online.
+                Kimberly crafts our home page experience and manages digital
+                assets, bringing our floral vision to life online.
               </p>
             </div>
             <div className="team-member">
               <div className="member-image">
-                <div className="image-placeholder">
-                  <span className="placeholder-icon">👨‍💻</span>
-                </div>
+                <img
+                  src="/images/about-us-pictures-members/julius.png"
+                  alt="Julius San Jose"
+                  className="member-photo"
+                />
               </div>
               <h3>Julius San Jose</h3>
               <p className="member-role">Owner & Website Operations</p>
               <p className="member-bio">
                 Julius is the owner of Daffodil and operates the entire website,
-                overseeing all aspects of our digital presence and business
-                operations.
+                overseeing our digital presence.
               </p>
             </div>
             <div className="team-member">
               <div className="member-image">
-                <div className="image-placeholder">
-                  <span className="placeholder-icon">👨‍🌾</span>
-                </div>
+                <img
+                  src="/images/about-us-pictures-members/catapang.png"
+                  alt="Sean Rikcel Catapang"
+                  className="member-photo"
+                />
               </div>
               <h3>Sean Rikcel Catapang</h3>
               <p className="member-role">Home Page Developer & Assets</p>
               <p className="member-bio">
                 Sean Rikcel focuses on home page development and asset
-                management, ensuring our website showcases our floral offerings
+                management, ensuring our website showcases our offerings
                 beautifully.
               </p>
             </div>
             <div className="team-member">
               <div className="member-image">
-                <div className="image-placeholder">
-                  <span className="placeholder-icon">👨‍🚚</span>
-                </div>
+                <img
+                  src="/images/about-us-pictures-members/sumayod.png"
+                  alt="Lee Andre Sumayod"
+                  className="member-photo"
+                />
               </div>
               <h3>Lee Andre Sumayod</h3>
               <p className="member-role">Home Page Developer & Assets</p>
               <p className="member-bio">
                 Lee Andre develops our home page functionality and manages
-                visual assets, creating an engaging user experience for our
-                customers.
+                visual assets, creating an engaging user experience.
               </p>
             </div>
           </div>

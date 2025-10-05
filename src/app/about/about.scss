@@ -131,7 +131,8 @@ $accent-yellow: #ffd93d;
 }
 
 .hero-heading {
-  width: fit-content;
+  width: 100%;
+  max-width: 900px;
   margin-left: auto;
   margin-right: auto;
   text-align: center;
@@ -458,6 +459,7 @@ $accent-yellow: #ffd93d;
 // Team Section
 .team-section {
   @include section-padding;
+  background: $secondary-color;
 }
 
 .section-title {
@@ -483,33 +485,50 @@ $accent-yellow: #ffd93d;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 3rem;
+  justify-items: center;
+
+  @media (min-width: 969px) {
+    grid-template-columns: repeat(6, 1fr);
+    > .team-member {
+      grid-column: span 2;
+    }
+    > .team-member:nth-child(4) {
+      grid-column: 2 / span 2;
+    }
+    > .team-member:nth-child(5) {
+      grid-column: 4 / span 2;
+    }
+  }
 
   @media (max-width: 968px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
     grid-template-columns: 1fr;
-    gap: 2rem;
   }
 }
 
 .team-member {
   text-align: center;
+  padding: 2rem;
+  background: $white;
+  border-radius: 20px;
+  @include card-shadow;
 
   .member-image {
     margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: center;
 
-    .image-placeholder {
-      width: 200px;
-      height: 200px;
-      margin: 0 auto;
-      background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+    .member-photo {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 1rem;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      @include card-shadow;
-
-      .placeholder-icon {
-        font-size: 4rem;
-      }
+      object-fit: cover;
+      object-position: center;
+      display: block;
     }
   }
 
@@ -530,9 +549,19 @@ $accent-yellow: #ffd93d;
     font-size: 1rem;
     color: $text-light;
     line-height: 1.6;
-    max-width: 300px;
+    max-width: 280px;
     margin: 0 auto;
   }
+}
+
+// Story image enhancement to match request
+.story-photo {
+  width: 100%;
+  border-radius: 20px;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 4/5;
+  @include card-shadow;
 }
 
 // Testimonials Section
@@ -686,12 +715,12 @@ $accent-yellow: #ffd93d;
 
     &.btn-secondary {
       background: transparent;
-      color: $white;
-      border: 2px solid $white;
+      color: $primary-color;
+      border: 2px solid $primary-color;
 
       &:hover {
-        background: $white;
-        color: $primary-color;
+        background: $primary-color;
+        color: $white;
       }
     }
   }
