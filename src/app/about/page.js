@@ -265,11 +265,10 @@ export default function AboutPage() {
                 />
               </div>
               <h3>Sean Rikcel Catapang</h3>
-              <p className="member-role">Home Page Developer & Assets</p>
+              <p className="member-role">About & Contact Page Developer</p>
               <p className="member-bio">
-                Sean Rikcel focuses on home page development and asset
-                management, ensuring our website showcases our offerings
-                beautifully.
+                Sean Rikcel built the About and Contact pages and helps manage
+                project assets and visual consistency across the site.
               </p>
             </div>
             <div className="team-member">
