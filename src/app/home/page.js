@@ -108,7 +108,7 @@ export default function HomePage() {
         </motion.div>
       </motion.section>
 
-      {/* We Sell Section */}
+      {/* New Arrivals Section */}
       <motion.section
         className="sell"
         initial={{ opacity: 0, y: 100 }}
@@ -123,8 +123,8 @@ export default function HomePage() {
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
         >
-          <h2 className="sell-h2">WE SELL</h2>
-          <p className="sell-text">TO THE CATALOG</p>
+          <h2 className="sell-h2">NEW ARRIVALS</h2>
+          <p className="sell-text">VIEW ALL</p>
         </motion.div>
 
         <motion.div
@@ -380,9 +380,9 @@ export default function HomePage() {
         transition={{ duration: 1, ease: "easeOut" }}
       >
         <div className="novelties-header">
-          <h2 className="n-h2">NOVELTIES</h2>
+          <h2 className="n-h2">Promotions</h2>
           <div className="catalog-link">
-            <span className="catalog-text">TO THE CATALOG</span>
+            <span className="catalog-text">VIEW ALL</span>
           </div>
         </div>
 

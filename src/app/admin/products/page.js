@@ -364,30 +364,59 @@ export default function AdminProductsPage() {
                 <Heading size="sm">All Products</Heading>
               </GridItem>
               <GridItem textAlign={{ base: "left", md: "right" }}>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={async () => {
-                    const res = await fetch("/api/admin/products/import", {
-                      method: "POST",
-                    });
-                    const data = await res.json();
-                    if (!res.ok) {
-                      return toast({
-                        title: "Import failed",
-                        description: data.error,
-                        status: "error",
+                <HStack spacing={2} justify={{ base: "start", md: "end" }}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      const res = await fetch("/api/admin/products/import", {
+                        method: "POST",
                       });
-                    }
-                    toast({
-                      title: `Imported ${data.imported} products`,
-                      status: "success",
-                    });
-                    load();
-                  }}
-                >
-                  Import shop catalog
-                </Button>
+                      const data = await res.json();
+                      if (!res.ok) {
+                        return toast({
+                          title: "Import failed",
+                          description: data.error,
+                          status: "error",
+                        });
+                      }
+                      toast({
+                        title: `Imported ${data.imported} products`,
+                        status: "success",
+                      });
+                      load();
+                    }}
+                  >
+                    Import catalog
+                  </Button>
+                  <Button
+                    size="sm"
+                    colorScheme="orange"
+                    variant="outline"
+                    onClick={async () => {
+                      const res = await fetch("/api/admin/products/seed", {
+                        method: "POST",
+                      });
+                      const data = await res.json();
+                      if (!res.ok) {
+                        return toast({
+                          title: "Seed failed",
+                          description: data.error,
+                          status: "error",
+                        });
+                      }
+                      toast({
+                        title: `Seeded ${data.inserted} low stock products`,
+                        description: `${data.inserted} added, ${data.errors} errors`,
+                        status: "success",
+                        duration: 5000,
+                      });
+                      load();
+                    }}
+                  >
+                    Seed Low Stock
+                  </Button>
+                </HStack>
               </GridItem>
             </Grid>
             <Table size="sm">

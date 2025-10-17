@@ -1,11 +1,12 @@
 "use client";
 
-import { Box, Text } from "@chakra-ui/react";
+import { Box, Text, useDisclosure } from "@chakra-ui/react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { A11y } from "swiper/modules";
 import "swiper/css";
 import { PRODUCTS } from "@/lib/products";
 import ProductCardMinimal from "./ProductCardMinimal";
+import ProductDetailsModal from "./ProductDetailsModal";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
@@ -23,6 +24,13 @@ export default function FloralSwiper({
       .replace(/(^-|-$)/g, "");
 
   const [dbProducts, setDbProducts] = useState([]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
+    onOpen();
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -287,11 +295,18 @@ export default function FloralSwiper({
                 stock={p.stock}
                 description={p.description}
                 showAddToCart
+                onCardClick={() => handleProductClick(p)}
               />
             </Box>
           </SwiperSlide>
         ))}
       </Swiper>
+
+      <ProductDetailsModal
+        isOpen={isOpen}
+        onClose={onClose}
+        product={selectedProduct}
+      />
     </Box>
   );
 }

@@ -14,7 +14,8 @@ export default function AuthCard({ mode = "login" }) {
     mode === "signup" ? "signup" : "login"
   );
   const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +25,8 @@ export default function AuthCard({ mode = "login" }) {
     email: "",
     password: "",
     passwordConfirm: "",
-    fullName: "",
+    firstName: "",
+    lastName: "",
   });
 
   useEffect(() => {
@@ -36,8 +38,14 @@ export default function AuthCard({ mode = "login" }) {
   const adminDetected = isAdminEmail((email || "").trim());
 
   const currentUserDisplay = useMemo(() => {
+    const meta = user?.user_metadata || {};
     const name =
-      user?.user_metadata?.full_name || user?.user_metadata?.name || "";
+      meta.full_name ||
+      (meta.first_name || meta.last_name
+        ? `${meta.first_name || ""} ${meta.last_name || ""}`.trim()
+        : "") ||
+      meta.name ||
+      "";
     const emailAddr = user?.email || "";
     return name ? `${name} (${emailAddr})` : emailAddr;
   }, [user]);
@@ -47,7 +55,8 @@ export default function AuthCard({ mode = "login" }) {
       email: "",
       password: "",
       passwordConfirm: "",
-      fullName: "",
+      firstName: "",
+      lastName: "",
     };
     const trimmedEmail = (email || "").trim();
     if (!trimmedEmail) errors.email = "Email is required";
@@ -55,7 +64,8 @@ export default function AuthCard({ mode = "login" }) {
       errors.email = "Enter a valid email";
 
     if (isSignup) {
-      if (!fullName.trim()) errors.fullName = "Full name is required";
+      if (!firstName.trim()) errors.firstName = "First name is required";
+      if (!lastName.trim()) errors.lastName = "Last name is required";
       if (!password) errors.password = "Password is required";
       else if (password.length < 6) errors.password = "Minimum 6 characters";
       if (!passwordConfirm) errors.passwordConfirm = "Confirm your password";
@@ -96,7 +106,11 @@ export default function AuthCard({ mode = "login" }) {
           email: trimmedEmail,
           password,
           options: {
-            data: { full_name: fullName },
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+              full_name: `${firstName} ${lastName}`.trim(),
+            },
             emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         });
@@ -263,52 +277,100 @@ export default function AuthCard({ mode = "login" }) {
           )}
 
           {isSignup && (
-            <div style={{ marginBottom: 10 }}>
-              <label
-                htmlFor="fullName"
-                style={{
-                  display: "block",
-                  fontSize: 14,
-                  color: "#374151",
-                  marginBottom: 6,
-                }}
-              >
-                Full name*
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => {
-                  setFullName(e.target.value);
-                  if (fieldErrors.fullName)
-                    setFieldErrors({ ...fieldErrors, fullName: "" });
-                }}
-                placeholder="e.g. John Doe"
-                aria-invalid={!!fieldErrors.fullName}
-                aria-describedby={
-                  fieldErrors.fullName ? "fullName-error" : undefined
-                }
-                disabled={isLoggedIn || isSubmitting}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  border: `1px solid ${
-                    fieldErrors.fullName ? "#ef4444" : "#d1d5db"
-                  }`,
-                  borderRadius: 8,
-                  outline: "none",
-                }}
-              />
-              {fieldErrors.fullName && (
-                <div
-                  id="fullName-error"
-                  style={{ color: "#b91c1c", fontSize: 12, marginTop: 6 }}
+            <>
+              <div style={{ marginBottom: 10 }}>
+                <label
+                  htmlFor="firstName"
+                  style={{
+                    display: "block",
+                    fontSize: 14,
+                    color: "#374151",
+                    marginBottom: 6,
+                  }}
                 >
-                  {fieldErrors.fullName}
-                </div>
-              )}
-            </div>
+                  First name*
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => {
+                    setFirstName(e.target.value);
+                    if (fieldErrors.firstName)
+                      setFieldErrors({ ...fieldErrors, firstName: "" });
+                  }}
+                  placeholder="e.g. John"
+                  aria-invalid={!!fieldErrors.firstName}
+                  aria-describedby={
+                    fieldErrors.firstName ? "firstName-error" : undefined
+                  }
+                  disabled={isLoggedIn || isSubmitting}
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    border: `1px solid ${
+                      fieldErrors.firstName ? "#ef4444" : "#d1d5db"
+                    }`,
+                    borderRadius: 8,
+                    outline: "none",
+                  }}
+                />
+                {fieldErrors.firstName && (
+                  <div
+                    id="firstName-error"
+                    style={{ color: "#b91c1c", fontSize: 12, marginTop: 6 }}
+                  >
+                    {fieldErrors.firstName}
+                  </div>
+                )}
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <label
+                  htmlFor="lastName"
+                  style={{
+                    display: "block",
+                    fontSize: 14,
+                    color: "#374151",
+                    marginBottom: 6,
+                  }}
+                >
+                  Last name*
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => {
+                    setLastName(e.target.value);
+                    if (fieldErrors.lastName)
+                      setFieldErrors({ ...fieldErrors, lastName: "" });
+                  }}
+                  placeholder="e.g. Doe"
+                  aria-invalid={!!fieldErrors.lastName}
+                  aria-describedby={
+                    fieldErrors.lastName ? "lastName-error" : undefined
+                  }
+                  disabled={isLoggedIn || isSubmitting}
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    border: `1px solid ${
+                      fieldErrors.lastName ? "#ef4444" : "#d1d5db"
+                    }`,
+                    borderRadius: 8,
+                    outline: "none",
+                  }}
+                />
+                {fieldErrors.lastName && (
+                  <div
+                    id="lastName-error"
+                    style={{ color: "#b91c1c", fontSize: 12, marginTop: 6 }}
+                  >
+                    {fieldErrors.lastName}
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
           <div style={{ marginBottom: 10 }}>

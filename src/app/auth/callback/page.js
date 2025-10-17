@@ -49,6 +49,25 @@ export default function AuthCallbackPage() {
         }
 
         if (isMounted) {
+          try {
+            const sess = await supabase.auth.getSession();
+            const user = sess?.data?.session?.user;
+            const provider = user?.app_metadata?.provider || "";
+            if (provider === "google") {
+              const nameMeta = user?.user_metadata || {};
+              const name =
+                nameMeta.full_name ||
+                [nameMeta.first_name, nameMeta.last_name]
+                  .filter(Boolean)
+                  .join(" ");
+              fetch("/api/auth/welcome", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: user?.email, name }),
+              }).catch(() => {});
+            }
+          } catch {}
+
           // Clean up URL and redirect home
           const redirectTo = "/";
           const { origin } = window.location;

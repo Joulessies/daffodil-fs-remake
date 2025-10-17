@@ -19,6 +19,26 @@ export async function POST(request) {
       });
     }
 
+    // Calculate total amount
+    const totalAmount = items.reduce((sum, item) => {
+      const price = Number(item.price) || 0;
+      const quantity = Math.max(1, Number(item.quantity) || 1);
+      return sum + price * quantity;
+    }, 0);
+
+    // Stripe minimum for PHP is ₱20.00 (2000 cents)
+    const MINIMUM_PHP = 20;
+    if (totalAmount < MINIMUM_PHP) {
+      return new Response(
+        JSON.stringify({
+          error: `Minimum order amount is ₱${MINIMUM_PHP}.00. Current total: ₱${totalAmount.toFixed(
+            2
+          )}`,
+        }),
+        { status: 400 }
+      );
+    }
+
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: "2024-12-18.acacia",
     });

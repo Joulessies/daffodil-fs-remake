@@ -56,6 +56,31 @@ export default function CheckoutPage() {
   const handleSubmit = async (e) => {
     if (e && typeof e.preventDefault === "function") e.preventDefault();
     try {
+      // Validate minimum order amount for Stripe (₱20.00 minimum)
+      const MINIMUM_ORDER_PHP = 20;
+      if (cart.total < MINIMUM_ORDER_PHP) {
+        toast({
+          title: "Minimum order amount",
+          description: `Minimum order is ₱${MINIMUM_ORDER_PHP}.00. Please add more items to your cart.`,
+          status: "warning",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      // Validate required fields
+      if (!email || !name) {
+        toast({
+          title: "Missing information",
+          description: "Please fill in your email and name.",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
       // Only Stripe (card) is supported now
       // Create Stripe Checkout session
       const stripeInit = await fetch("/api/payments/stripe/checkout", {
@@ -204,12 +229,19 @@ export default function CheckoutPage() {
   return (
     <>
       <NavigationBar />
-      <Box maxW="1200px" mx="auto" px={{ base: 4, md: 6 }} py={8} bg="#FFF8F3">
+      <Box
+        maxW="1200px"
+        mx="auto"
+        px={{ base: 4, md: 6 }}
+        py={8}
+        bg="bg.canvas"
+      >
         <Heading
           as="h1"
           size="lg"
           mb={6}
-          style={{ fontFamily: "var(--font-rothek)", color: "#bc0930" }}
+          color="brand.600"
+          style={{ fontFamily: "var(--font-rothek)" }}
         >
           Checkout
         </Heading>
@@ -218,7 +250,8 @@ export default function CheckoutPage() {
             <form onSubmit={handleSubmit}>
               <Stack spacing={8}>
                 <Box
-                  border="1px solid #EFEFEF"
+                  border="1px solid"
+                  borderColor="border.muted"
                   p={5}
                   borderRadius="12"
                   bg="white"
@@ -447,7 +480,8 @@ export default function CheckoutPage() {
                 </Box>
 
                 <Box
-                  border="1px solid #EFEFEF"
+                  border="1px solid"
+                  borderColor="border.muted"
                   p={5}
                   borderRadius="12"
                   bg="white"
@@ -456,7 +490,7 @@ export default function CheckoutPage() {
                   <Heading size="md" mb={4}>
                     Payment
                   </Heading>
-                  <Text color="#5B6B73" mb={4}>
+                  <Text color="text.muted" mb={4}>
                     We accept major credit and debit cards. Payments are
                     securely processed via Stripe. You will be redirected to
                     Stripe Checkout to complete your purchase.
@@ -535,7 +569,7 @@ export default function CheckoutPage() {
                     }}
                   />
 
-                  <HStack mt={3} spacing={2} color="#5B6B73">
+                  <HStack mt={3} spacing={2} color="text.muted">
                     <Text fontSize="sm">Powered by</Text>
                     <Text fontSize="sm" fontWeight={600}>
                       Stripe & PayPal Sandbox
@@ -543,7 +577,7 @@ export default function CheckoutPage() {
                   </HStack>
 
                   <Divider my={6} />
-                  <HStack spacing={4} color="#5B6B73">
+                  <HStack spacing={4} color="text.muted">
                     <Icon viewBox="0 0 24 24" boxSize="20px">
                       <path
                         fill="currentColor"
@@ -552,11 +586,17 @@ export default function CheckoutPage() {
                     </Icon>
                     <Text fontSize="sm">Secure checkout — SSL encrypted</Text>
                     <Text fontSize="sm">•</Text>
-                    <a href="/privacy" style={{ color: "#3b5bfd" }}>
+                    <a
+                      href="/privacy"
+                      style={{ color: "var(--chakra-colors-link)" }}
+                    >
                       Privacy Policy
                     </a>
                     <Text fontSize="sm">•</Text>
-                    <a href="/refund" style={{ color: "#3b5bfd" }}>
+                    <a
+                      href="/refund"
+                      style={{ color: "var(--chakra-colors-link)" }}
+                    >
                       Refund Policy
                     </a>
                   </HStack>
@@ -567,7 +607,8 @@ export default function CheckoutPage() {
 
           <GridItem>
             <Box
-              border="1px solid #EFEFEF"
+              border="1px solid"
+              borderColor="border.muted"
               p={5}
               borderRadius="12"
               bg="white"
@@ -579,7 +620,7 @@ export default function CheckoutPage() {
               </Heading>
               <Stack spacing={4}>
                 {cart.items.length === 0 && (
-                  <Text color="#5B6B73">Your cart is empty.</Text>
+                  <Text color="text.muted">Your cart is empty.</Text>
                 )}
                 {cart.items.map((item) => (
                   <Flex key={item.id} gap={3} align="center">
@@ -594,7 +635,7 @@ export default function CheckoutPage() {
                       <Text fontWeight={600}>
                         {item.title || item.flowerType || "Item"}
                       </Text>
-                      <Text fontSize="sm" color="#5B6B73">
+                      <Text fontSize="sm" color="text.muted">
                         {item.description || ""}
                       </Text>
                     </Box>
@@ -619,15 +660,15 @@ export default function CheckoutPage() {
               <Divider my={4} />
               <Stack spacing={2} fontSize="sm">
                 <HStack justify="space-between">
-                  <Text color="#5B6B73">Subtotal</Text>
+                  <Text color="text.muted">Subtotal</Text>
                   <Text>₱{cart.total.toFixed(2)}</Text>
                 </HStack>
                 <HStack justify="space-between">
-                  <Text color="#5B6B73">Taxes & Fees (12%)</Text>
+                  <Text color="text.muted">Taxes & Fees (12%)</Text>
                   <Text>₱{(cart.total * 0.12).toFixed(2)}</Text>
                 </HStack>
                 <HStack justify="space-between">
-                  <Text color="#5B6B73">Shipping</Text>
+                  <Text color="text.muted">Shipping</Text>
                   <Text>₱{cart.total > 0 ? "150.00" : "0.00"}</Text>
                 </HStack>
                 <Divider />
@@ -640,6 +681,15 @@ export default function CheckoutPage() {
                     )}
                   </Text>
                 </HStack>
+                <Button
+                  mt={3}
+                  size="sm"
+                  variant="brand"
+                  onClick={handleSubmit}
+                  isDisabled={cart.items.length === 0}
+                >
+                  Pay Now
+                </Button>
               </Stack>
             </Box>
           </GridItem>

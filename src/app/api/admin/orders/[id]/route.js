@@ -34,6 +34,9 @@ export async function PATCH(request, { params }) {
     if (body.status) updates.status = body.status;
     if (body.tracking_url !== undefined)
       updates.tracking_url = body.tracking_url;
+    if (body.notes !== undefined) updates.notes = body.notes;
+    updates.updated_at = new Date().toISOString();
+
     const { data, error } = await admin
       .from("orders")
       .update(updates)

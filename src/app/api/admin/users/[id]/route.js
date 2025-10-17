@@ -16,8 +16,9 @@ export async function PATCH(request, { params }) {
       .from("users")
       .update(updates)
       .eq("id", params.id)
-      .select("*")
-      .single();
+      .select("id, email, is_admin, suspended")
+      .limit(1)
+      .maybeSingle();
     if (error) throw error;
 
     // If suspended toggled, also block/unblock auth user

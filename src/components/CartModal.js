@@ -205,6 +205,21 @@ export default function CartModal() {
             <Text fontSize="xs" color="#5B6B73">
               Taxes and shipping calculated at checkout
             </Text>
+            {cart.total < 20 && cart.total > 0 && (
+              <Box
+                mt={2}
+                p={2}
+                bg="orange.50"
+                borderRadius="8px"
+                border="1px solid"
+                borderColor="orange.200"
+              >
+                <Text fontSize="xs" color="orange.700" fontWeight="500">
+                  ⚠️ Minimum order: ₱20.00 (₱{(20 - cart.total).toFixed(2)} more
+                  needed)
+                </Text>
+              </Box>
+            )}
           </Stack>
         </ModalBody>
         <ModalFooter

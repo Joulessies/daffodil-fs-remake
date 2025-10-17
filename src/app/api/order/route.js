@@ -56,7 +56,9 @@ export async function POST(request) {
     }
 
     const info = await transporter.sendMail({
-      from: `Daffodil Shop <no-reply@daffodilflower.page>`,
+      from:
+        process.env.EMAIL_FROM ||
+        `Daffodil Shop <no-reply@daffodilflower.page>`,
       to: email,
       subject: "Order Confirmation - Daffodil Flower Shop",
       html,

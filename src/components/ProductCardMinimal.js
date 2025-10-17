@@ -30,6 +30,7 @@ export default function ProductCardMinimal({
   features,
   specifications,
   benefits,
+  onCardClick,
 }) {
   const wishlist = useWishlist();
   const cart = useCart();
@@ -133,6 +134,10 @@ export default function ProductCardMinimal({
         justifyContent="center"
         alignItems="center"
         minH="220px"
+        cursor={onCardClick ? "pointer" : "default"}
+        onClick={onCardClick}
+        transition="transform 0.2s"
+        _hover={onCardClick ? { transform: "scale(1.05)" } : {}}
       >
         <ChakraImage
           src={imgSrc}
@@ -198,7 +203,8 @@ export default function ProductCardMinimal({
               size="xs"
               colorScheme="red"
               isDisabled={isOutOfStock}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 if (isOutOfStock) {
                   toast({
                     title: "Unavailable",
@@ -236,7 +242,10 @@ export default function ProductCardMinimal({
             aria-label={isSaved ? "Remove from wishlist" : "Add to wishlist"}
             icon={<Heart size={16} color={isSaved ? "#bc0930" : undefined} />}
             variant="ghost"
-            onClick={() => wishlist.toggle({ id: itemId, title, image, price })}
+            onClick={(e) => {
+              e.stopPropagation();
+              wishlist.toggle({ id: itemId, title, image, price });
+            }}
           />
         </HStack>
       </HStack>
