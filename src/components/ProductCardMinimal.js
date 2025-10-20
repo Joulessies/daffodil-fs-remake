@@ -120,32 +120,64 @@ export default function ProductCardMinimal({
   return (
     <Box
       as={motion.div}
-      whileHover={{ y: -3, boxShadow: "0 12px 24px rgba(0,0,0,0.06)" }}
-      transition={{ type: "spring", stiffness: 260, damping: 22 }}
-      borderRadius="18"
+      whileHover={{
+        y: -4,
+        boxShadow: "0 16px 32px rgba(188, 9, 48, 0.12)",
+      }}
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
+      borderRadius="16"
       overflow="hidden"
-      border="1px solid #F5C7CF" /* thin pink border */
-      bg="#FFF8F3" /* soft cream/blush background */
+      border="1px solid #F5C7CF"
+      bg="white"
       position="relative"
+      boxShadow="0 4px 12px rgba(0,0,0,0.04)"
+      h="100%"
+      display="flex"
+      flexDirection="column"
     >
       <Box
-        p={4}
+        p={5}
         display="flex"
         justifyContent="center"
         alignItems="center"
-        minH="220px"
+        minH="240px"
+        bg="#fffcf2"
         cursor={onCardClick ? "pointer" : "default"}
         onClick={onCardClick}
-        transition="transform 0.2s"
-        _hover={onCardClick ? { transform: "scale(1.05)" } : {}}
+        transition="all 0.3s ease"
+        _hover={
+          onCardClick
+            ? {
+                bg: "#fff8f3",
+              }
+            : {}
+        }
+        position="relative"
       >
+        {isOutOfStock && (
+          <Box
+            position="absolute"
+            top={3}
+            right={3}
+            bg="#bc0930"
+            color="white"
+            px={3}
+            py={1}
+            borderRadius="full"
+            fontSize="xs"
+            fontWeight="600"
+            boxShadow="0 2px 8px rgba(188, 9, 48, 0.3)"
+          >
+            Out of Stock
+          </Box>
+        )}
         <ChakraImage
           src={imgSrc}
           alt={title}
           objectFit="contain"
-          maxH="200px"
+          maxH="220px"
           borderRadius="12"
-          filter="drop-shadow(0 6px 16px rgba(0,0,0,0.08))"
+          filter="drop-shadow(0 8px 20px rgba(0,0,0,0.12))"
           fallbackSrc={"/images/logo.png"}
           onError={() => {
             const alt = tryAlternateSeasonalPath(imgSrc);
@@ -155,53 +187,71 @@ export default function ProductCardMinimal({
         />
       </Box>
 
-      <HStack justify="space-between" align="center" px={4} py={3}>
-        <Box>
+      <Box p={4} flex="1" display="flex" flexDirection="column">
+        <Box flex="1">
           <Text
-            fontWeight={300}
-            letterSpacing={0.3}
-            fontSize="sm"
-            color="#5B6B73"
+            fontWeight={600}
+            fontSize="md"
+            color="#2B2B2B"
+            mb={2}
+            noOfLines={2}
             style={{ fontFamily: "var(--font-rothek)" }}
           >
             {title}
           </Text>
           {price != null && (
-            <Text fontSize="sm" color="#2B2B2B" mt={1}>
-              PHP {Number(price).toFixed(2)}
-            </Text>
-          )}
-          <Text fontSize="xs" color="#8A9AA3" mt={1}>
-            SKU: {computedSku}
-          </Text>
-          {!!categoryList.length && (
-            <Text fontSize="xs" color="#8A9AA3" mt={0.5} noOfLines={1}>
-              Categories: {categoryList.join(", ")}
+            <Text fontSize="lg" color="#bc0930" fontWeight="700" mb={2}>
+              ₱{Number(price).toFixed(2)}
             </Text>
           )}
           {description && (
-            <Text fontSize="xs" color="#6B7C85" mt={1} noOfLines={2}>
+            <Text fontSize="xs" color="#5B6B73" mt={2} noOfLines={2}>
               {description}
             </Text>
           )}
-          <Text
-            fontSize="xs"
-            mt={1}
-            color={isOutOfStock ? "#bc0930" : "#0f8f4d"}
-          >
-            Availability:{" "}
-            {isOutOfStock
-              ? "Out of stock"
-              : stockCount != null
-              ? `In stock (${stockCount})`
-              : "In stock"}
-          </Text>
         </Box>
-        <HStack spacing={1}>
+
+        <Box pt={3} mt={3} borderTop="1px solid" borderColor="#f5e6e8">
+          <HStack justify="space-between" align="center" mb={2}>
+            <Text
+              fontSize="xs"
+              color={isOutOfStock ? "#E53E3E" : "#38A169"}
+              fontWeight="600"
+            >
+              {isOutOfStock
+                ? "Unavailable"
+                : stockCount != null
+                ? `Stock: ${stockCount}`
+                : "In Stock"}
+            </Text>
+            <IconButton
+              aria-label={isSaved ? "Remove from wishlist" : "Add to wishlist"}
+              icon={
+                <Heart
+                  size={18}
+                  fill={isSaved ? "#bc0930" : "none"}
+                  color={isSaved ? "#bc0930" : "#5B6B73"}
+                />
+              }
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                wishlist.toggle({ id: itemId, title, image, price });
+              }}
+              _hover={{
+                bg: "#fff8f3",
+                color: "#bc0930",
+              }}
+            />
+          </HStack>
+
           {showAddToCart && (
             <Button
-              size="xs"
-              colorScheme="red"
+              w="100%"
+              size="md"
+              bg="#bc0930"
+              color="white"
               isDisabled={isOutOfStock}
               onClick={(e) => {
                 e.stopPropagation();
@@ -210,7 +260,7 @@ export default function ProductCardMinimal({
                     title: "Unavailable",
                     description: "This item is currently out of stock",
                     status: "warning",
-                    duration: 1500,
+                    duration: 2000,
                     isClosable: true,
                     position: "top",
                   });
@@ -226,29 +276,33 @@ export default function ProductCardMinimal({
                 if (ok) {
                   toast({
                     title: "Added to cart",
-                    description: `${title} × 1`,
+                    description: `${title} added to your cart`,
                     status: "success",
-                    duration: 1500,
+                    duration: 2000,
                     isClosable: true,
                     position: "top",
                   });
                 }
               }}
+              _hover={{
+                bg: "#a10828",
+                transform: "translateY(-1px)",
+                boxShadow: "md",
+              }}
+              _disabled={{
+                bg: "#E2E8F0",
+                color: "#A0AEC0",
+                cursor: "not-allowed",
+              }}
+              borderRadius="md"
+              fontWeight="600"
+              transition="all 0.2s"
             >
-              {isOutOfStock ? "Out" : "Add"}
+              {isOutOfStock ? "Out of Stock" : "Add to Cart"}
             </Button>
           )}
-          <IconButton
-            aria-label={isSaved ? "Remove from wishlist" : "Add to wishlist"}
-            icon={<Heart size={16} color={isSaved ? "#bc0930" : undefined} />}
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              wishlist.toggle({ id: itemId, title, image, price });
-            }}
-          />
-        </HStack>
-      </HStack>
+        </Box>
+      </Box>
     </Box>
   );
 }

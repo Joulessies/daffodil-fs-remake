@@ -20,11 +20,22 @@ import {
   Text,
   Textarea,
   useToast,
+  VStack,
+  Badge,
+  IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/CartContext";
 import NavigationBar from "@/components/navigationbar";
 import dynamic from "next/dynamic";
+import {
+  ShoppingBag,
+  Lock,
+  CreditCard,
+  Truck,
+  ShieldCheck,
+  ArrowLeft,
+} from "lucide-react";
 
 const PayPalButton = dynamic(() => import("@/components/PayPalButton"), {
   ssr: false,
@@ -50,13 +61,16 @@ export default function CheckoutPage() {
   const [instructions, setInstructions] = useState("");
   const [promo, setPromo] = useState("");
   const [saveInfo, setSaveInfo] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
   const handleSubmit = async (e) => {
     if (e && typeof e.preventDefault === "function") e.preventDefault();
+    if (isProcessing) return; // Prevent double submission
+
     try {
-      // Validate minimum order amount for Stripe (₱20.00 minimum)
+      // Validation
       const MINIMUM_ORDER_PHP = 20;
       if (cart.total < MINIMUM_ORDER_PHP) {
         toast({
@@ -69,7 +83,6 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Validate required fields
       if (!email || !name) {
         toast({
           title: "Missing information",
@@ -81,6 +94,29 @@ export default function CheckoutPage() {
         return;
       }
 
+      if (!shipping.address1 || !shipping.city) {
+        toast({
+          title: "Missing shipping address",
+          description:
+            "Please fill in your shipping address (street address and city are required).",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      setIsProcessing(true);
+
+      // Show loading toast
+      toast({
+        title: "Processing...",
+        description: "Redirecting to payment gateway...",
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+      });
+
       // Only Stripe (card) is supported now
       // Create Stripe Checkout session
       const stripeInit = await fetch("/api/payments/stripe/checkout", {
@@ -89,8 +125,6 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: cart.items,
           customerEmail: email,
-          // Include the session id placeholder so the confirmation page
-          // can fetch the exact order by session_id
           successUrl: `${window.location.origin}/order/confirmation?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/checkout`,
         }),
@@ -99,7 +133,6 @@ export default function CheckoutPage() {
       if (!stripeInit.ok)
         throw new Error(session?.error || "Failed to init payment");
 
-      // Save a draft order in Supabase (for history) with status pending
       try {
         const { supabase } = await import("@/lib/supabase");
         if (supabase) {
@@ -115,7 +148,6 @@ export default function CheckoutPage() {
         }
       } catch {}
 
-      // Persist a lightweight copy locally for fallback on confirmation page
       try {
         const subtotal = cart.total;
         const taxes = subtotal * 0.12;
@@ -143,33 +175,82 @@ export default function CheckoutPage() {
         localStorage.setItem("lastOrder", JSON.stringify(draftOrder));
       } catch {}
 
-      // Redirect to Stripe Checkout (server returns URL)
       window.location.href = session.url;
     } catch (err) {
+      setIsProcessing(false);
       toast({
         title: "Unable to place order",
         description: err.message,
         status: "error",
+        duration: 5000,
+        isClosable: true,
       });
     }
   };
 
   const handlePayMongo = async () => {
+    if (isProcessing) return; // Prevent double submission
+
     try {
+      // Validation
+      const MINIMUM_ORDER_PHP = 20;
+      if (cart.total < MINIMUM_ORDER_PHP) {
+        toast({
+          title: "Minimum order amount",
+          description: `Minimum order is ₱${MINIMUM_ORDER_PHP}.00. Please add more items to your cart.`,
+          status: "warning",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      if (!email || !name) {
+        toast({
+          title: "Missing information",
+          description: "Please fill in your email and name.",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      if (!shipping.address1 || !shipping.city) {
+        toast({
+          title: "Missing shipping address",
+          description:
+            "Please fill in your shipping address (street address and city are required).",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
       if (cart.items.length === 0) throw new Error("Your cart is empty");
+
+      setIsProcessing(true);
+
+      // Show loading toast
+      toast({
+        title: "Processing...",
+        description: "Redirecting to PayMongo...",
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+      });
       const resp = await fetch("/api/payments/paymongo/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: cart.items,
           customerEmail: email,
-          // Intentionally omit successUrl so server sets pm_ref in redirect
         }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data?.error || "PayMongo init failed");
 
-      // Save a draft order in Supabase (for history) with status pending
       try {
         const { supabase } = await import("@/lib/supabase");
         if (supabase) {
@@ -216,10 +297,13 @@ export default function CheckoutPage() {
       // Redirect user to PayMongo Checkout URL
       window.location.href = data.url;
     } catch (err) {
+      setIsProcessing(false);
       toast({
         title: "Unable to start PayMongo checkout",
         description: err.message,
         status: "error",
+        duration: 5000,
+        isClosable: true,
       });
     }
   };
@@ -229,471 +313,828 @@ export default function CheckoutPage() {
   return (
     <>
       <NavigationBar />
-      <Box
-        maxW="1200px"
-        mx="auto"
-        px={{ base: 4, md: 6 }}
-        py={8}
-        bg="bg.canvas"
-      >
-        <Heading
-          as="h1"
-          size="lg"
-          mb={6}
-          color="brand.600"
-          style={{ fontFamily: "var(--font-rothek)" }}
-        >
-          Checkout
-        </Heading>
-        <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={8}>
-          <GridItem>
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={8}>
-                <Box
-                  border="1px solid"
-                  borderColor="border.muted"
-                  p={5}
-                  borderRadius="12"
-                  bg="white"
-                  boxShadow="sm"
-                >
-                  <Heading size="md" mb={4}>
-                    Customer Information
-                  </Heading>
-                  <Grid
-                    templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-                    gap={4}
-                  >
-                    <FormControl isRequired>
-                      <FormLabel>Full Name</FormLabel>
-                      <Input
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Full name"
-                      />
-                    </FormControl>
-                    <FormControl isRequired>
-                      <FormLabel>Email</FormLabel>
-                      <Input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com"
-                      />
-                    </FormControl>
-                    <FormControl>
-                      <FormLabel>Phone</FormLabel>
-                      <Input
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="(+63) 900 000 0000"
-                      />
-                    </FormControl>
-                  </Grid>
-                  <Divider my={4} />
+      <Box bg="#fffcf2" minH="100vh" py={8}>
+        <Box maxW="1200px" mx="auto" px={{ base: 4, md: 6 }}>
+          {/* Header */}
+          <HStack spacing={4} mb={8}>
+            <Button
+              as="a"
+              href="/"
+              leftIcon={<ArrowLeft size={18} />}
+              variant="ghost"
+              color="#5B6B73"
+              _hover={{ bg: "#fff8f3", color: "#bc0930" }}
+            >
+              Back to Shop
+            </Button>
+          </HStack>
 
-                  <Heading size="sm" mb={3}>
-                    Shipping Address
-                  </Heading>
-                  <Stack spacing={3}>
-                    <FormControl isRequired>
-                      <FormLabel>Street Address</FormLabel>
-                      <Input
-                        value={shipping.address1}
-                        onChange={(e) =>
-                          setShipping({ ...shipping, address1: e.target.value })
-                        }
-                      />
-                    </FormControl>
-                    <FormControl>
-                      <FormLabel>Apartment, suite, etc. (optional)</FormLabel>
-                      <Input
-                        value={shipping.address2}
-                        onChange={(e) =>
-                          setShipping({ ...shipping, address2: e.target.value })
-                        }
-                      />
-                    </FormControl>
+          <VStack spacing={4} mb={8} align="start">
+            <HStack spacing={3}>
+              <Box
+                p={3}
+                bg="#bc0930"
+                borderRadius="full"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <ShoppingBag size={24} color="white" />
+              </Box>
+              <Heading
+                as="h1"
+                fontSize="3xl"
+                color="#bc0930"
+                style={{ fontFamily: "var(--font-rothek)" }}
+              >
+                Checkout
+              </Heading>
+            </HStack>
+            <HStack spacing={6} flexWrap="wrap">
+              <HStack spacing={2} color="#5B6B73">
+                <ShieldCheck size={16} />
+                <Text fontSize="sm" fontWeight="500">
+                  Secure Checkout
+                </Text>
+              </HStack>
+              <HStack spacing={2} color="#5B6B73">
+                <Lock size={16} />
+                <Text fontSize="sm" fontWeight="500">
+                  SSL Encrypted
+                </Text>
+              </HStack>
+              <HStack spacing={2} color="#5B6B73">
+                <Truck size={16} />
+                <Text fontSize="sm" fontWeight="500">
+                  Fast Delivery
+                </Text>
+              </HStack>
+            </HStack>
+          </VStack>
+          <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={8}>
+            <GridItem>
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={6}>
+                  <Box
+                    border="2px solid"
+                    borderColor="#F5C7CF"
+                    p={6}
+                    borderRadius="16px"
+                    bg="white"
+                    boxShadow="lg"
+                    _hover={{
+                      boxShadow: "xl",
+                      borderColor: "#bc0930",
+                    }}
+                    transition="all 0.3s"
+                  >
+                    <HStack spacing={3} mb={5}>
+                      <Box
+                        p={2}
+                        bg="#fff8f3"
+                        borderRadius="lg"
+                        border="1px solid"
+                        borderColor="#F5C7CF"
+                      >
+                        <CreditCard size={20} color="#bc0930" />
+                      </Box>
+                      <Heading
+                        size="md"
+                        color="#2B2B2B"
+                        style={{ fontFamily: "var(--font-rothek)" }}
+                      >
+                        Customer Information
+                      </Heading>
+                    </HStack>
                     <Grid
                       templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-                      gap={3}
+                      gap={4}
                     >
-                      <FormControl>
-                        <FormLabel>City</FormLabel>
+                      <FormControl isRequired>
+                        <FormLabel
+                          color="#5B6B73"
+                          fontWeight="600"
+                          fontSize="sm"
+                        >
+                          Full Name
+                        </FormLabel>
                         <Input
-                          value={shipping.city}
-                          onChange={(e) =>
-                            setShipping({ ...shipping, city: e.target.value })
-                          }
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Juan Dela Cruz"
+                          borderColor="#F5C7CF"
+                          _hover={{ borderColor: "#bc0930" }}
+                          _focus={{
+                            borderColor: "#bc0930",
+                            boxShadow: "0 0 0 1px #bc0930",
+                          }}
+                        />
+                      </FormControl>
+                      <FormControl isRequired>
+                        <FormLabel
+                          color="#5B6B73"
+                          fontWeight="600"
+                          fontSize="sm"
+                        >
+                          Email
+                        </FormLabel>
+                        <Input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@example.com"
+                          borderColor="#F5C7CF"
+                          _hover={{ borderColor: "#bc0930" }}
+                          _focus={{
+                            borderColor: "#bc0930",
+                            boxShadow: "0 0 0 1px #bc0930",
+                          }}
                         />
                       </FormControl>
                       <FormControl>
-                        <FormLabel>State/Province</FormLabel>
+                        <FormLabel
+                          color="#5B6B73"
+                          fontWeight="600"
+                          fontSize="sm"
+                        >
+                          Phone
+                        </FormLabel>
                         <Input
-                          value={shipping.state}
-                          onChange={(e) =>
-                            setShipping({ ...shipping, state: e.target.value })
-                          }
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="(+63) 900 000 0000"
+                          borderColor="#F5C7CF"
+                          _hover={{ borderColor: "#bc0930" }}
+                          _focus={{
+                            borderColor: "#bc0930",
+                            boxShadow: "0 0 0 1px #bc0930",
+                          }}
                         />
                       </FormControl>
                     </Grid>
-                    <Grid
-                      templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-                      gap={3}
-                    >
-                      <FormControl>
-                        <FormLabel>ZIP/Postal Code</FormLabel>
+                    <Divider my={5} borderColor="#F5C7CF" />
+
+                    <HStack spacing={2} mb={4}>
+                      <Truck size={18} color="#bc0930" />
+                      <Heading size="sm" color="#2B2B2B">
+                        Shipping Address
+                      </Heading>
+                    </HStack>
+                    <Stack spacing={3}>
+                      <FormControl isRequired>
+                        <FormLabel
+                          color="#5B6B73"
+                          fontWeight="600"
+                          fontSize="sm"
+                        >
+                          Street Address
+                        </FormLabel>
                         <Input
-                          value={shipping.zip}
-                          onChange={(e) =>
-                            setShipping({ ...shipping, zip: e.target.value })
-                          }
-                        />
-                      </FormControl>
-                      <FormControl>
-                        <FormLabel>Country</FormLabel>
-                        <Select
-                          value={shipping.country}
+                          value={shipping.address1}
                           onChange={(e) =>
                             setShipping({
                               ...shipping,
-                              country: e.target.value,
+                              address1: e.target.value,
                             })
                           }
-                        >
-                          <option value="PH">Philippines</option>
-                          <option value="US">United States</option>
-                          <option value="CA">Canada</option>
-                          <option value="GB">United Kingdom</option>
-                        </Select>
+                          borderColor="#F5C7CF"
+                          _hover={{ borderColor: "#bc0930" }}
+                          _focus={{
+                            borderColor: "#bc0930",
+                            boxShadow: "0 0 0 1px #bc0930",
+                          }}
+                        />
                       </FormControl>
-                    </Grid>
-                    <Checkbox
-                      isChecked={billingSame}
-                      onChange={(e) => setBillingSame(e.target.checked)}
-                    >
-                      Billing address is same as shipping
-                    </Checkbox>
-                  </Stack>
-
-                  {!billingSame && (
-                    <Box mt={4}>
-                      <Heading size="sm" mb={3}>
-                        Billing Address
-                      </Heading>
-                      <Stack spacing={3}>
+                      <FormControl>
+                        <FormLabel
+                          color="#5B6B73"
+                          fontWeight="600"
+                          fontSize="sm"
+                        >
+                          Apartment, suite, etc. (optional)
+                        </FormLabel>
+                        <Input
+                          value={shipping.address2}
+                          onChange={(e) =>
+                            setShipping({
+                              ...shipping,
+                              address2: e.target.value,
+                            })
+                          }
+                          borderColor="#F5C7CF"
+                          _hover={{ borderColor: "#bc0930" }}
+                          _focus={{
+                            borderColor: "#bc0930",
+                            boxShadow: "0 0 0 1px #bc0930",
+                          }}
+                        />
+                      </FormControl>
+                      <Grid
+                        templateColumns={{ base: "1fr", md: "1fr 1fr" }}
+                        gap={3}
+                      >
                         <FormControl>
-                          <FormLabel>Street Address</FormLabel>
-                          <Input
-                            value={billing.address1}
-                            onChange={(e) =>
-                              setBilling({
-                                ...billing,
-                                address1: e.target.value,
-                              })
-                            }
-                          />
-                        </FormControl>
-                        <FormControl>
-                          <FormLabel>
-                            Apartment, suite, etc. (optional)
+                          <FormLabel
+                            color="#5B6B73"
+                            fontWeight="600"
+                            fontSize="sm"
+                          >
+                            City
                           </FormLabel>
                           <Input
-                            value={billing.address2}
+                            value={shipping.city}
                             onChange={(e) =>
-                              setBilling({
-                                ...billing,
-                                address2: e.target.value,
-                              })
+                              setShipping({ ...shipping, city: e.target.value })
                             }
+                            borderColor="#F5C7CF"
+                            _hover={{ borderColor: "#bc0930" }}
+                            _focus={{
+                              borderColor: "#bc0930",
+                              boxShadow: "0 0 0 1px #bc0930",
+                            }}
                           />
                         </FormControl>
-                        <Grid
-                          templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-                          gap={3}
-                        >
+                        <FormControl>
+                          <FormLabel
+                            color="#5B6B73"
+                            fontWeight="600"
+                            fontSize="sm"
+                          >
+                            State/Province
+                          </FormLabel>
+                          <Input
+                            value={shipping.state}
+                            onChange={(e) =>
+                              setShipping({
+                                ...shipping,
+                                state: e.target.value,
+                              })
+                            }
+                            borderColor="#F5C7CF"
+                            _hover={{ borderColor: "#bc0930" }}
+                            _focus={{
+                              borderColor: "#bc0930",
+                              boxShadow: "0 0 0 1px #bc0930",
+                            }}
+                          />
+                        </FormControl>
+                      </Grid>
+                      <Grid
+                        templateColumns={{ base: "1fr", md: "1fr 1fr" }}
+                        gap={3}
+                      >
+                        <FormControl>
+                          <FormLabel
+                            color="#5B6B73"
+                            fontWeight="600"
+                            fontSize="sm"
+                          >
+                            ZIP/Postal Code
+                          </FormLabel>
+                          <Input
+                            value={shipping.zip}
+                            onChange={(e) =>
+                              setShipping({ ...shipping, zip: e.target.value })
+                            }
+                            borderColor="#F5C7CF"
+                            _hover={{ borderColor: "#bc0930" }}
+                            _focus={{
+                              borderColor: "#bc0930",
+                              boxShadow: "0 0 0 1px #bc0930",
+                            }}
+                          />
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel
+                            color="#5B6B73"
+                            fontWeight="600"
+                            fontSize="sm"
+                          >
+                            Country
+                          </FormLabel>
+                          <Select
+                            value={shipping.country}
+                            onChange={(e) =>
+                              setShipping({
+                                ...shipping,
+                                country: e.target.value,
+                              })
+                            }
+                            borderColor="#F5C7CF"
+                            _hover={{ borderColor: "#bc0930" }}
+                            _focus={{
+                              borderColor: "#bc0930",
+                              boxShadow: "0 0 0 1px #bc0930",
+                            }}
+                          >
+                            <option value="PH">Philippines</option>
+                            <option value="US">United States</option>
+                            <option value="CA">Canada</option>
+                            <option value="GB">United Kingdom</option>
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                      <Checkbox
+                        isChecked={billingSame}
+                        onChange={(e) => setBillingSame(e.target.checked)}
+                        colorScheme="red"
+                        size="md"
+                      >
+                        <Text fontSize="sm" color="#2B2B2B">
+                          Billing address is same as shipping
+                        </Text>
+                      </Checkbox>
+                    </Stack>
+
+                    {!billingSame && (
+                      <Box mt={4}>
+                        <Heading size="sm" mb={3}>
+                          Billing Address
+                        </Heading>
+                        <Stack spacing={3}>
                           <FormControl>
-                            <FormLabel>City</FormLabel>
+                            <FormLabel>Street Address</FormLabel>
                             <Input
-                              value={billing.city}
-                              onChange={(e) =>
-                                setBilling({ ...billing, city: e.target.value })
-                              }
-                            />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel>State/Province</FormLabel>
-                            <Input
-                              value={billing.state}
+                              value={billing.address1}
                               onChange={(e) =>
                                 setBilling({
                                   ...billing,
-                                  state: e.target.value,
+                                  address1: e.target.value,
                                 })
                               }
                             />
                           </FormControl>
-                        </Grid>
-                        <Grid
-                          templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-                          gap={3}
-                        >
                           <FormControl>
-                            <FormLabel>ZIP/Postal Code</FormLabel>
+                            <FormLabel>
+                              Apartment, suite, etc. (optional)
+                            </FormLabel>
                             <Input
-                              value={billing.zip}
-                              onChange={(e) =>
-                                setBilling({ ...billing, zip: e.target.value })
-                              }
-                            />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel>Country</FormLabel>
-                            <Select
-                              value={billing.country}
+                              value={billing.address2}
                               onChange={(e) =>
                                 setBilling({
                                   ...billing,
-                                  country: e.target.value,
+                                  address2: e.target.value,
                                 })
                               }
-                            >
-                              <option value="PH">Philippines</option>
-                              <option value="US">United States</option>
-                              <option value="CA">Canada</option>
-                              <option value="GB">United Kingdom</option>
-                            </Select>
+                            />
                           </FormControl>
-                        </Grid>
-                      </Stack>
+                          <Grid
+                            templateColumns={{ base: "1fr", md: "1fr 1fr" }}
+                            gap={3}
+                          >
+                            <FormControl>
+                              <FormLabel>City</FormLabel>
+                              <Input
+                                value={billing.city}
+                                onChange={(e) =>
+                                  setBilling({
+                                    ...billing,
+                                    city: e.target.value,
+                                  })
+                                }
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel>State/Province</FormLabel>
+                              <Input
+                                value={billing.state}
+                                onChange={(e) =>
+                                  setBilling({
+                                    ...billing,
+                                    state: e.target.value,
+                                  })
+                                }
+                              />
+                            </FormControl>
+                          </Grid>
+                          <Grid
+                            templateColumns={{ base: "1fr", md: "1fr 1fr" }}
+                            gap={3}
+                          >
+                            <FormControl>
+                              <FormLabel>ZIP/Postal Code</FormLabel>
+                              <Input
+                                value={billing.zip}
+                                onChange={(e) =>
+                                  setBilling({
+                                    ...billing,
+                                    zip: e.target.value,
+                                  })
+                                }
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel>Country</FormLabel>
+                              <Select
+                                value={billing.country}
+                                onChange={(e) =>
+                                  setBilling({
+                                    ...billing,
+                                    country: e.target.value,
+                                  })
+                                }
+                              >
+                                <option value="PH">Philippines</option>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="GB">United Kingdom</option>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                        </Stack>
+                      </Box>
+                    )}
+
+                    <FormControl mt={4}>
+                      <FormLabel color="#5B6B73" fontWeight="600" fontSize="sm">
+                        Delivery Instructions (optional)
+                      </FormLabel>
+                      <Textarea
+                        rows={3}
+                        value={instructions}
+                        onChange={(e) => setInstructions(e.target.value)}
+                        placeholder="Add any special delivery instructions..."
+                        borderColor="#F5C7CF"
+                        _hover={{ borderColor: "#bc0930" }}
+                        _focus={{
+                          borderColor: "#bc0930",
+                          boxShadow: "0 0 0 1px #bc0930",
+                        }}
+                      />
+                    </FormControl>
+                  </Box>
+
+                  <Box
+                    border="2px solid"
+                    borderColor="#F5C7CF"
+                    p={6}
+                    borderRadius="16px"
+                    bg="white"
+                    boxShadow="lg"
+                    _hover={{
+                      boxShadow: "xl",
+                      borderColor: "#bc0930",
+                    }}
+                    transition="all 0.3s"
+                  >
+                    <HStack spacing={3} mb={5}>
+                      <Box
+                        p={2}
+                        bg="#fff8f3"
+                        borderRadius="lg"
+                        border="1px solid"
+                        borderColor="#F5C7CF"
+                      >
+                        <Lock size={20} color="#bc0930" />
+                      </Box>
+                      <Heading
+                        size="md"
+                        color="#2B2B2B"
+                        style={{ fontFamily: "var(--font-rothek)" }}
+                      >
+                        Payment
+                      </Heading>
+                    </HStack>
+                    <Box
+                      bg="#fffcf2"
+                      p={4}
+                      borderRadius="12px"
+                      border="1px solid"
+                      borderColor="#F5C7CF"
+                      mb={5}
+                    >
+                      <HStack spacing={2} mb={2}>
+                        <ShieldCheck size={18} color="#bc0930" />
+                        <Text fontSize="sm" fontWeight="600" color="#2B2B2B">
+                          Secure Payment
+                        </Text>
+                      </HStack>
+                      <Text color="#5B6B73" fontSize="sm">
+                        We accept major credit and debit cards. Payments are
+                        securely processed via Stripe. You will be redirected to
+                        Stripe Checkout to complete your purchase.
+                      </Text>
+                    </Box>
+
+                    <Grid
+                      templateColumns={{ base: "1fr", md: "2fr 1fr" }}
+                      gap={3}
+                    >
+                      <FormControl>
+                        <FormLabel
+                          color="#5B6B73"
+                          fontWeight="600"
+                          fontSize="sm"
+                        >
+                          Promo / Discount Code
+                        </FormLabel>
+                        <Input
+                          value={promo}
+                          onChange={(e) => setPromo(e.target.value)}
+                          placeholder="ENTERPROMO"
+                          borderColor="#F5C7CF"
+                          _hover={{ borderColor: "#bc0930" }}
+                          _focus={{
+                            borderColor: "#bc0930",
+                            boxShadow: "0 0 0 1px #bc0930",
+                          }}
+                        />
+                      </FormControl>
+                      <FormControl alignSelf="end">
+                        <Button
+                          variant="outline"
+                          borderColor="#bc0930"
+                          color="#bc0930"
+                          _hover={{
+                            bg: "#fff8f3",
+                          }}
+                          w="100%"
+                        >
+                          Apply
+                        </Button>
+                      </FormControl>
+                    </Grid>
+
+                    <Checkbox
+                      mt={5}
+                      isChecked={saveInfo}
+                      onChange={(e) => setSaveInfo(e.target.checked)}
+                      colorScheme="red"
+                      size="md"
+                    >
+                      <Text fontSize="sm" color="#2B2B2B">
+                        Save payment and address info for next time
+                      </Text>
+                    </Checkbox>
+
+                    <VStack spacing={3} mt={6} align="stretch">
+                      <Button
+                        type="button"
+                        onClick={handleSubmit}
+                        bg="#635bff"
+                        _hover={{
+                          bg: "#5851df",
+                          transform: "translateY(-2px)",
+                          boxShadow: "lg",
+                        }}
+                        color="white"
+                        size="lg"
+                        isDisabled={cart.items.length === 0 || isProcessing}
+                        isLoading={isProcessing}
+                        loadingText="Processing..."
+                        fontWeight="600"
+                        transition="all 0.2s"
+                      >
+                        Pay with Stripe
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handlePayMongo}
+                        bg="#0ea5e9"
+                        _hover={{
+                          bg: "#0284c7",
+                          transform: "translateY(-2px)",
+                          boxShadow: "lg",
+                        }}
+                        color="white"
+                        size="lg"
+                        isDisabled={cart.items.length === 0 || isProcessing}
+                        isLoading={isProcessing}
+                        loadingText="Processing..."
+                        fontWeight="600"
+                        transition="all 0.2s"
+                      >
+                        Pay with PayMongo (Sandbox)
+                      </Button>
+                    </VStack>
+
+                    <Divider my={6} borderColor="#F5C7CF" />
+                    <Heading size="sm" mb={3} color="#2B2B2B">
+                      Or pay with PayPal (Sandbox)
+                    </Heading>
+                    {mounted && cart.items.length > 0 && (
+                      <PayPalButton
+                        amount={(
+                          cart.total * 1.12 +
+                          (cart.total > 0 ? 150 : 0)
+                        ).toFixed(2)}
+                        currency="PHP"
+                        onSuccess={(result) => {
+                          console.log("PayPal capture result", result);
+                        }}
+                      />
+                    )}
+
+                    <HStack mt={4} spacing={2} color="#5B6B73" justify="center">
+                      <Text fontSize="xs">Powered by</Text>
+                      <Text fontSize="xs" fontWeight={600} color="#2B2B2B">
+                        Stripe & PayPal Sandbox
+                      </Text>
+                    </HStack>
+
+                    <Divider my={6} borderColor="#F5C7CF" />
+                    <VStack spacing={3} align="stretch">
+                      <HStack spacing={3} justify="center" color="#5B6B73">
+                        <Lock size={16} />
+                        <Text fontSize="sm" fontWeight="500">
+                          Secure checkout — SSL encrypted
+                        </Text>
+                      </HStack>
+                      <HStack
+                        spacing={4}
+                        justify="center"
+                        fontSize="sm"
+                        flexWrap="wrap"
+                      >
+                        <a
+                          href="/privacy"
+                          style={{
+                            color: "#bc0930",
+                            textDecoration: "underline",
+                          }}
+                        >
+                          Privacy Policy
+                        </a>
+                        <Text color="#5B6B73">•</Text>
+                        <a
+                          href="/refund"
+                          style={{
+                            color: "#bc0930",
+                            textDecoration: "underline",
+                          }}
+                        >
+                          Refund Policy
+                        </a>
+                      </HStack>
+                    </VStack>
+                  </Box>
+                </Stack>
+              </form>
+            </GridItem>
+
+            <GridItem>
+              <Box
+                border="2px solid"
+                borderColor="#F5C7CF"
+                p={6}
+                borderRadius="16px"
+                bg="white"
+                position="sticky"
+                top={24}
+                boxShadow="lg"
+              >
+                <HStack spacing={3} mb={5}>
+                  <Box
+                    p={2}
+                    bg="#fff8f3"
+                    borderRadius="lg"
+                    border="1px solid"
+                    borderColor="#F5C7CF"
+                  >
+                    <ShoppingBag size={20} color="#bc0930" />
+                  </Box>
+                  <Heading
+                    size="md"
+                    color="#2B2B2B"
+                    style={{ fontFamily: "var(--font-rothek)" }}
+                  >
+                    Order Summary
+                  </Heading>
+                </HStack>
+                <Stack spacing={4}>
+                  {cart.items.length === 0 && (
+                    <Box textAlign="center" py={6}>
+                      <Text color="#5B6B73" fontSize="sm">
+                        Your cart is empty.
+                      </Text>
                     </Box>
                   )}
+                  {cart.items.map((item, index) => {
+                    const uniqueKey =
+                      item.id ||
+                      `${item.title || item.flowerType || "item"}-${index}-${
+                        item.price || 0
+                      }`;
+                    return (
+                      <Box
+                        key={uniqueKey}
+                        p={3}
+                        bg="#fffcf2"
+                        borderRadius="12px"
+                        border="1px solid"
+                        borderColor="#F5C7CF"
+                      >
+                        <Flex gap={3} align="start">
+                          <ChakraImage
+                            src={item.image || "/images/placeholder.png"}
+                            alt={item.title || item.flowerType || "Item"}
+                            boxSize="60px"
+                            borderRadius="8px"
+                            objectFit="cover"
+                            border="1px solid"
+                            borderColor="#F5C7CF"
+                          />
+                          <Box flex="1">
+                            <Text
+                              fontWeight={600}
+                              fontSize="sm"
+                              color="#2B2B2B"
+                              noOfLines={1}
+                            >
+                              {item.title || item.flowerType || "Item"}
+                            </Text>
+                            <HStack spacing={2} mt={1}>
+                              <Text fontSize="xs" color="#5B6B73">
+                                Qty: {item.quantity || 1}
+                              </Text>
+                              <Text fontSize="xs" color="#5B6B73">
+                                •
+                              </Text>
+                              <Text fontSize="xs" color="#5B6B73">
+                                ₱{(Number(item.price) || 0).toFixed(2)}
+                              </Text>
+                            </HStack>
+                            <Text
+                              fontSize="sm"
+                              fontWeight="700"
+                              color="#bc0930"
+                              mt={1}
+                            >
+                              ₱
+                              {(
+                                (Number(item.price) || 0) * (item.quantity || 1)
+                              ).toFixed(2)}
+                            </Text>
+                          </Box>
+                        </Flex>
+                      </Box>
+                    );
+                  })}
+                </Stack>
 
-                  <FormControl mt={4}>
-                    <FormLabel>Delivery Instructions (optional)</FormLabel>
-                    <Textarea
-                      rows={3}
-                      value={instructions}
-                      onChange={(e) => setInstructions(e.target.value)}
-                    />
-                  </FormControl>
-                </Box>
-
-                <Box
-                  border="1px solid"
-                  borderColor="border.muted"
-                  p={5}
-                  borderRadius="12"
-                  bg="white"
-                  boxShadow="sm"
-                >
-                  <Heading size="md" mb={4}>
-                    Payment
-                  </Heading>
-                  <Text color="text.muted" mb={4}>
-                    We accept major credit and debit cards. Payments are
-                    securely processed via Stripe. You will be redirected to
-                    Stripe Checkout to complete your purchase.
-                  </Text>
-
-                  <Grid
-                    templateColumns={{ base: "1fr", md: "2fr 1fr" }}
-                    gap={3}
+                <Divider my={5} borderColor="#F5C7CF" />
+                <VStack spacing={3} align="stretch">
+                  <HStack justify="space-between">
+                    <Text color="#5B6B73" fontSize="sm" fontWeight="500">
+                      Subtotal
+                    </Text>
+                    <Text fontSize="sm" fontWeight="600" color="#2B2B2B">
+                      ₱{cart.total.toFixed(2)}
+                    </Text>
+                  </HStack>
+                  <HStack justify="space-between">
+                    <Text color="#5B6B73" fontSize="sm" fontWeight="500">
+                      Taxes & Fees (12%)
+                    </Text>
+                    <Text fontSize="sm" fontWeight="600" color="#2B2B2B">
+                      ₱{(cart.total * 0.12).toFixed(2)}
+                    </Text>
+                  </HStack>
+                  <HStack justify="space-between">
+                    <Text color="#5B6B73" fontSize="sm" fontWeight="500">
+                      Shipping
+                    </Text>
+                    <Text fontSize="sm" fontWeight="600" color="#2B2B2B">
+                      ₱{cart.total > 0 ? "150.00" : "0.00"}
+                    </Text>
+                  </HStack>
+                  <Divider borderColor="#F5C7CF" />
+                  <HStack justify="space-between" pt={2}>
+                    <Text fontSize="lg" fontWeight="700" color="#2B2B2B">
+                      Total
+                    </Text>
+                    <Text fontSize="xl" fontWeight="700" color="#bc0930">
+                      ₱
+                      {(cart.total * 1.12 + (cart.total > 0 ? 150 : 0)).toFixed(
+                        2
+                      )}
+                    </Text>
+                  </HStack>
+                  <Button
                     mt={4}
-                  >
-                    <FormControl>
-                      <FormLabel>Promo / Discount Code</FormLabel>
-                      <Input
-                        value={promo}
-                        onChange={(e) => setPromo(e.target.value)}
-                        placeholder="ENTERPROMO"
-                      />
-                    </FormControl>
-                    <FormControl alignSelf="end">
-                      <Button variant="outline">Apply</Button>
-                    </FormControl>
-                  </Grid>
-
-                  <Checkbox
-                    mt={4}
-                    isChecked={saveInfo}
-                    onChange={(e) => setSaveInfo(e.target.checked)}
-                  >
-                    Save payment and address info for next time
-                  </Checkbox>
-
-                  <Stack
-                    mt={6}
-                    spacing={3}
-                    direction={{ base: "column", sm: "row" }}
-                  >
-                    <Button
-                      type="button"
-                      onClick={handleSubmit}
-                      bg="#635bff"
-                      _hover={{ bg: "#5851df" }}
-                      color="white"
-                      size="sm"
-                      isDisabled={cart.items.length === 0}
-                    >
-                      Pay with Stripe
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handlePayMongo}
-                      bg="#0ea5e9"
-                      _hover={{ bg: "#0284c7" }}
-                      color="white"
-                      size="sm"
-                      isDisabled={cart.items.length === 0}
-                    >
-                      Pay with PayMongo (Sandbox)
-                    </Button>
-                    <Button as="a" href="/" variant="ghost" size="sm">
-                      Back to Cart
-                    </Button>
-                  </Stack>
-
-                  <Divider my={6} />
-                  <Heading size="sm" mb={2}>
-                    Or pay with PayPal (Sandbox)
-                  </Heading>
-                  <PayPalButton
-                    amount={(
-                      cart.total * 1.12 +
-                      (cart.total > 0 ? 150 : 0)
-                    ).toFixed(2)}
-                    currency="PHP"
-                    onSuccess={(result) => {
-                      console.log("PayPal capture result", result);
+                    size="lg"
+                    bg="#bc0930"
+                    color="white"
+                    onClick={handleSubmit}
+                    isDisabled={cart.items.length === 0 || isProcessing}
+                    isLoading={isProcessing}
+                    loadingText="Processing..."
+                    _hover={{
+                      bg: "#a10828",
+                      transform: "translateY(-2px)",
+                      boxShadow: "lg",
                     }}
-                  />
-
-                  <HStack mt={3} spacing={2} color="text.muted">
-                    <Text fontSize="sm">Powered by</Text>
-                    <Text fontSize="sm" fontWeight={600}>
-                      Stripe & PayPal Sandbox
-                    </Text>
-                  </HStack>
-
-                  <Divider my={6} />
-                  <HStack spacing={4} color="text.muted">
-                    <Icon viewBox="0 0 24 24" boxSize="20px">
-                      <path
-                        fill="currentColor"
-                        d="M12 2a5 5 0 00-5 5v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V7a5 5 0 00-5-5zm3 8H9V7a3 3 0 116 0v3zm-3 9a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"
-                      />
-                    </Icon>
-                    <Text fontSize="sm">Secure checkout — SSL encrypted</Text>
-                    <Text fontSize="sm">•</Text>
-                    <a
-                      href="/privacy"
-                      style={{ color: "var(--chakra-colors-link)" }}
-                    >
-                      Privacy Policy
-                    </a>
-                    <Text fontSize="sm">•</Text>
-                    <a
-                      href="/refund"
-                      style={{ color: "var(--chakra-colors-link)" }}
-                    >
-                      Refund Policy
-                    </a>
-                  </HStack>
-                </Box>
-              </Stack>
-            </form>
-          </GridItem>
-
-          <GridItem>
-            <Box
-              border="1px solid"
-              borderColor="border.muted"
-              p={5}
-              borderRadius="12"
-              bg="white"
-              position="sticky"
-              top={16}
-            >
-              <Heading size="md" mb={4}>
-                Order Summary
-              </Heading>
-              <Stack spacing={4}>
-                {cart.items.length === 0 && (
-                  <Text color="text.muted">Your cart is empty.</Text>
-                )}
-                {cart.items.map((item) => (
-                  <Flex key={item.id} gap={3} align="center">
-                    <ChakraImage
-                      src={item.image || "/images/placeholder.png"}
-                      alt={item.title || item.flowerType || "Item"}
-                      boxSize="56px"
-                      borderRadius="8"
-                      objectFit="cover"
-                    />
-                    <Box flex="1">
-                      <Text fontWeight={600}>
-                        {item.title || item.flowerType || "Item"}
-                      </Text>
-                      <Text fontSize="sm" color="text.muted">
-                        {item.description || ""}
-                      </Text>
-                    </Box>
-                    <Box>
-                      <Input
-                        width="70px"
-                        type="number"
-                        min={1}
-                        value={item.quantity || 1}
-                        onChange={(e) =>
-                          cart.updateQuantity(item.id, e.target.value)
-                        }
-                      />
-                    </Box>
-                    <Text width="80px" textAlign="right">
-                      ₱{(Number(item.price) || 0).toFixed(2)}
-                    </Text>
-                  </Flex>
-                ))}
-              </Stack>
-
-              <Divider my={4} />
-              <Stack spacing={2} fontSize="sm">
-                <HStack justify="space-between">
-                  <Text color="text.muted">Subtotal</Text>
-                  <Text>₱{cart.total.toFixed(2)}</Text>
-                </HStack>
-                <HStack justify="space-between">
-                  <Text color="text.muted">Taxes & Fees (12%)</Text>
-                  <Text>₱{(cart.total * 0.12).toFixed(2)}</Text>
-                </HStack>
-                <HStack justify="space-between">
-                  <Text color="text.muted">Shipping</Text>
-                  <Text>₱{cart.total > 0 ? "150.00" : "0.00"}</Text>
-                </HStack>
-                <Divider />
-                <HStack justify="space-between" fontWeight={700}>
-                  <Text>Total</Text>
-                  <Text>
-                    ₱
-                    {(cart.total * 1.12 + (cart.total > 0 ? 150 : 0)).toFixed(
-                      2
-                    )}
-                  </Text>
-                </HStack>
-                <Button
-                  mt={3}
-                  size="sm"
-                  variant="brand"
-                  onClick={handleSubmit}
-                  isDisabled={cart.items.length === 0}
-                >
-                  Pay Now
-                </Button>
-              </Stack>
-            </Box>
-          </GridItem>
-        </Grid>
+                    fontWeight="600"
+                    transition="all 0.2s"
+                    borderRadius="full"
+                  >
+                    Complete Order
+                  </Button>
+                </VStack>
+              </Box>
+            </GridItem>
+          </Grid>
+        </Box>
       </Box>
     </>
   );

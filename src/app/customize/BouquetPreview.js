@@ -1,6 +1,7 @@
 "use client";
 
-import { Box, Heading, Image, Text } from "@chakra-ui/react";
+import { Box, Heading, Image, Text, VStack, HStack } from "@chakra-ui/react";
+import { Eye } from "lucide-react";
 
 // Simple layered preview using public images. You can replace these
 // with high-quality layered assets (PNG/SVG) for production.
@@ -31,10 +32,33 @@ export default function BouquetPreview({
   const scale = Math.min(1.2, 0.6 + Math.log10(Math.max(8, stems)) * 0.25);
 
   return (
-    <Box bg="white" border="1px solid #EFEFEF" borderRadius="12" p={4}>
-      <Heading size="md" mb={2}>
-        Preview
-      </Heading>
+    <Box
+      bg="white"
+      border="2px solid"
+      borderColor="#F5C7CF"
+      borderRadius="16px"
+      p={6}
+      boxShadow="lg"
+    >
+      <HStack spacing={3} mb={4}>
+        <Box
+          p={2}
+          bg="#fff8f3"
+          borderRadius="lg"
+          border="1px solid"
+          borderColor="#F5C7CF"
+        >
+          <Eye size={20} color="#bc0930" />
+        </Box>
+        <Heading
+          size="md"
+          color="#2B2B2B"
+          style={{ fontFamily: "var(--font-rothek)" }}
+        >
+          Live Preview
+        </Heading>
+      </HStack>
+
       <Box
         position="relative"
         w="full"
@@ -43,7 +67,10 @@ export default function BouquetPreview({
         display="flex"
         alignItems="center"
         justifyContent="center"
-        style={{ background: "#FFFCF2" }}
+        bg="#fffcf2"
+        borderRadius="12px"
+        border="2px solid"
+        borderColor="#F5C7CF"
       >
         {/* Wrap layer */}
         <Image
@@ -99,7 +126,8 @@ export default function BouquetPreview({
           />
         )}
       </Box>
-      <Text mt={2} fontSize="xs" color="#5B6B73">
+
+      <Text mt={3} fontSize="sm" color="#5B6B73" textAlign="center">
         Visual preview updates live based on your selections.
       </Text>
     </Box>

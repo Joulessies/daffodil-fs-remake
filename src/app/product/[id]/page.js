@@ -119,123 +119,220 @@ export default function ProductDetailPage() {
   return (
     <>
       <NavigationBar />
-      <Box maxW={1100} mx="auto" px={{ base: 4, md: 6 }} py={8}>
-        <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={8}>
-          <GridItem>
-            <Stack spacing={3}>
-              {(product.images || []).map((src, i) => (
-                <ChakraImage
-                  key={src + i}
-                  src={src}
-                  alt={product.title}
-                  borderRadius={12}
-                  objectFit="cover"
-                  w="100%"
-                />
-              ))}
-            </Stack>
-          </GridItem>
-          <GridItem>
-            <Stack spacing={3}>
-              <Text
-                fontSize="2xl"
-                fontWeight={700}
-                style={{ fontFamily: "var(--font-rothek)" }}
-              >
-                {product.title}
-              </Text>
-              <Text color="#5B6B73">
-                PHP {Number(product.price).toFixed(2)}
-              </Text>
-              <Text>{product.description}</Text>
-              <HStack spacing={3} mt={2}>
-                <Button
-                  colorScheme="red"
-                  onClick={() =>
-                    cart.addItem({
-                      id: product.id,
-                      title: product.title,
-                      price: product.price,
-                      image: product.images?.[0],
-                    })
-                  }
-                >
-                  Add to Cart
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    wishlist.toggle({
-                      id: product.id,
-                      title: product.title,
-                      image: product.images?.[0],
-                      price: product.price,
-                    })
-                  }
-                >
-                  Save to Wishlist
-                </Button>
-              </HStack>
-
-              {/* Reviews */}
-              <Box mt={6}>
-                <Text
-                  fontWeight={700}
-                  style={{ fontFamily: "var(--font-rothek)" }}
-                >
-                  Reviews
-                </Text>
-                {reviews.length === 0 ? (
-                  <Text color="#5B6B73">No reviews yet.</Text>
-                ) : (
-                  <Stack spacing={2} mt={2}>
-                    {reviews.map((r) => (
-                      <Box
-                        key={r.id}
-                        border="1px solid #efefef"
-                        p={3}
-                        borderRadius={8}
-                      >
-                        <HStack justify="space-between">
-                          <Text>Rating: {r.rating}/5</Text>
-                          <Text color="#5B6B73" fontSize="sm">
-                            {new Date(r.created_at).toLocaleString()}
-                          </Text>
-                        </HStack>
-                        <Text mt={1}>{r.content}</Text>
-                      </Box>
-                    ))}
-                  </Stack>
-                )}
-                <Box mt={4}>
-                  <HStack>
-                    <InputRating value={rating} onChange={setRating} />
-                  </HStack>
-                  <textarea
-                    value={reviewText}
-                    onChange={(e) => setReviewText(e.target.value)}
-                    rows={3}
-                    style={{
-                      width: "100%",
-                      marginTop: 8,
-                      padding: 8,
-                      borderRadius: 8,
-                      border: "1px solid #e5e7eb",
-                    }}
-                  />
-                  <Button
-                    mt={2}
-                    onClick={submitReview}
-                    isLoading={submitting}
-                    colorScheme="red"
+      <Box bg="#fffcf2" minH="100vh" py={8}>
+        <Box maxW={1200} mx="auto" px={{ base: 4, md: 6 }}>
+          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={8}>
+            <GridItem>
+              <Stack spacing={3}>
+                {(product.images || []).map((src, i) => (
+                  <Box
+                    key={src + i}
+                    border="1px solid"
+                    borderColor="#F5C7CF"
+                    borderRadius={16}
+                    overflow="hidden"
+                    bg="white"
+                    boxShadow="0 4px 12px rgba(0,0,0,0.04)"
                   >
-                    Submit Review
-                  </Button>
-                </Box>
+                    <ChakraImage
+                      src={src}
+                      alt={product.title}
+                      borderRadius={0}
+                      objectFit="cover"
+                      w="100%"
+                    />
+                  </Box>
+                ))}
+              </Stack>
+            </GridItem>
+            <GridItem>
+              <Box
+                border="1px solid"
+                borderColor="#F5C7CF"
+                borderRadius={16}
+                p={6}
+                bg="white"
+                boxShadow="0 4px 12px rgba(0,0,0,0.04)"
+                h="fit-content"
+                position="sticky"
+                top={4}
+              >
+                <Stack spacing={4}>
+                  <Text
+                    fontSize="3xl"
+                    fontWeight={700}
+                    color="#2B2B2B"
+                    style={{ fontFamily: "var(--font-rothek)" }}
+                  >
+                    {product.title}
+                  </Text>
+                  <Text fontSize="2xl" color="#bc0930" fontWeight="700">
+                    ₱{Number(product.price).toFixed(2)}
+                  </Text>
+                  <Text color="#5B6B73" fontSize="md" lineHeight="1.7">
+                    {product.description}
+                  </Text>
+                  <HStack spacing={3} mt={4}>
+                    <Button
+                      flex={1}
+                      size="lg"
+                      bg="#bc0930"
+                      color="white"
+                      onClick={() =>
+                        cart.addItem({
+                          id: product.id,
+                          title: product.title,
+                          price: product.price,
+                          image: product.images?.[0],
+                        })
+                      }
+                      _hover={{
+                        bg: "#a10828",
+                        transform: "translateY(-1px)",
+                        boxShadow: "md",
+                      }}
+                      borderRadius="md"
+                      fontWeight="600"
+                      transition="all 0.2s"
+                    >
+                      Add to Cart
+                    </Button>
+                    <Button
+                      flex={1}
+                      size="lg"
+                      variant="outline"
+                      borderColor="#bc0930"
+                      color="#bc0930"
+                      onClick={() =>
+                        wishlist.toggle({
+                          id: product.id,
+                          title: product.title,
+                          image: product.images?.[0],
+                          price: product.price,
+                        })
+                      }
+                      _hover={{
+                        bg: "#fff8f3",
+                      }}
+                      borderRadius="md"
+                      fontWeight="600"
+                    >
+                      Save to Wishlist
+                    </Button>
+                  </HStack>
+
+                  {/* Reviews */}
+                  <Box
+                    mt={6}
+                    pt={6}
+                    borderTop="1px solid"
+                    borderColor="#f5e6e8"
+                  >
+                    <Text
+                      fontSize="xl"
+                      fontWeight={700}
+                      mb={4}
+                      color="#bc0930"
+                      style={{ fontFamily: "var(--font-rothek)" }}
+                    >
+                      Customer Reviews
+                    </Text>
+                    {reviews.length === 0 ? (
+                      <Box
+                        textAlign="center"
+                        py={6}
+                        bg="#fffcf2"
+                        borderRadius={12}
+                      >
+                        <Text color="#5B6B73">
+                          No reviews yet. Be the first to review!
+                        </Text>
+                      </Box>
+                    ) : (
+                      <Stack spacing={3} mt={3}>
+                        {reviews.map((r) => (
+                          <Box
+                            key={r.id}
+                            border="1px solid"
+                            borderColor="#f5e6e8"
+                            p={4}
+                            borderRadius={12}
+                            bg="#fffcf2"
+                          >
+                            <HStack justify="space-between" mb={2}>
+                              <HStack spacing={1}>
+                                {[1, 2, 3, 4, 5].map((n) => (
+                                  <Box
+                                    key={n}
+                                    w="16px"
+                                    h="16px"
+                                    borderRadius={2}
+                                    bg={n <= r.rating ? "#f59e0b" : "#e5e7eb"}
+                                  />
+                                ))}
+                              </HStack>
+                              <Text color="#5B6B73" fontSize="xs">
+                                {new Date(r.created_at).toLocaleDateString()}
+                              </Text>
+                            </HStack>
+                            <Text color="#2B2B2B" fontSize="sm">
+                              {r.content}
+                            </Text>
+                          </Box>
+                        ))}
+                      </Stack>
+                    )}
+                    <Box mt={5}>
+                      <Text
+                        fontSize="md"
+                        fontWeight={600}
+                        mb={3}
+                        color="#2B2B2B"
+                      >
+                        Write a Review
+                      </Text>
+                      <HStack mb={3}>
+                        <Text fontSize="sm" color="#5B6B73">
+                          Your Rating:
+                        </Text>
+                        <InputRating value={rating} onChange={setRating} />
+                      </HStack>
+                      <textarea
+                        value={reviewText}
+                        onChange={(e) => setReviewText(e.target.value)}
+                        rows={3}
+                        placeholder="Share your thoughts about this product..."
+                        style={{
+                          width: "100%",
+                          padding: 12,
+                          borderRadius: 8,
+                          border: "1px solid #F5C7CF",
+                          fontFamily: "inherit",
+                          fontSize: "14px",
+                          resize: "vertical",
+                        }}
+                      />
+                      <Button
+                        mt={3}
+                        onClick={submitReview}
+                        isLoading={submitting}
+                        bg="#bc0930"
+                        color="white"
+                        _hover={{
+                          bg: "#a10828",
+                        }}
+                        borderRadius="md"
+                        fontWeight="600"
+                      >
+                        Submit Review
+                      </Button>
+                    </Box>
+                  </Box>
+                </Stack>
               </Box>
-            </Stack>
-          </GridItem>
-        </Grid>
+            </GridItem>
+          </Grid>
+        </Box>
       </Box>
     </>
   );

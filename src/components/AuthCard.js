@@ -7,9 +7,28 @@ import { supabase } from "../lib/supabase";
 import { isAdminEmail } from "../lib/admin";
 import { useAuth } from "./AuthProvider";
 import { AlertCircle, Eye, EyeOff, LogOut } from "lucide-react";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  InputGroup,
+  InputRightElement,
+  IconButton,
+  Text,
+  VStack,
+  HStack,
+  Divider,
+  Alert,
+  AlertIcon,
+  useToast,
+  Heading,
+} from "@chakra-ui/react";
 
 export default function AuthCard({ mode = "login" }) {
   const { user } = useAuth();
+  const toast = useToast();
   const [activeMode, setActiveMode] = useState(
     mode === "signup" ? "signup" : "login"
   );
@@ -120,7 +139,13 @@ export default function AuthCard({ mode = "login" }) {
             : error.message;
           setFormError(msg);
         } else {
-          alert("Check your email to confirm your account.");
+          toast({
+            title: "Account Created!",
+            description: "Please check your email to confirm your account.",
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+          });
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -134,97 +159,67 @@ export default function AuthCard({ mode = "login" }) {
     }
   };
 
-  const buttonBaseStyle = {
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: "12px 16px",
-    border: "1px solid #e5e7eb",
-    borderRadius: 8,
-    background: "#fff",
-    cursor: "pointer",
-    justifyContent: "flex-start",
-  };
-
   return (
-    <div
-      style={{
-        width: "100%",
-        minHeight: "70vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "40px 16px",
-      }}
+    <Box
+      bg="#fffcf2"
+      minH="100vh"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      py={8}
+      px={4}
     >
-      <div
-        style={{
-          width: 420,
-          maxWidth: "100%",
-          background: "#fff",
-          border: "1px solid #f0f0f0",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
-          borderRadius: 12,
-          padding: 28,
-        }}
+      <Box
+        w="100%"
+        maxW="420px"
+        bg="white"
+        borderRadius="16px"
+        boxShadow="lg"
+        border="2px solid"
+        borderColor="#F5C7CF"
+        p={8}
       >
         {isLoggedIn && (
-          <div
-            role="status"
-            aria-live="polite"
-            style={{
-              marginBottom: 12,
-              padding: "12px 14px",
-              borderRadius: 8,
-              background: "#ecfeff",
-              border: "1px solid #a5f3fc",
-              color: "#155e75",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
+          <Alert
+            status="info"
+            borderRadius="12px"
+            mb={4}
+            bg="#fffcf2"
+            border="1px solid"
+            borderColor="#F5C7CF"
           >
-            <AlertCircle size={18} />
-            <div style={{ fontSize: 13 }}>
+            <AlertIcon color="#bc0930" />
+            <Text fontSize="sm" color="#2B2B2B">
               You are already signed in as <strong>{currentUserDisplay}</strong>
               . Forms are disabled. Use Sign Out or Switch User to continue.
-            </div>
-          </div>
+            </Text>
+          </Alert>
         )}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
+
+        <VStack spacing={6} align="center">
           <Image
             src="/images/logo.svg"
             alt="Daffodil"
-            width={200}
-            height={200}
+            width={120}
+            height={120}
           />
-          <h2
-            style={{
-              margin: 0,
-              fontFamily: "var(--font-rothek)",
-              fontSize: 28,
-            }}
+          <Heading
+            fontSize="2xl"
+            color="#bc0930"
+            style={{ fontFamily: "var(--font-rothek)" }}
+            textAlign="center"
           >
             {isSignup ? "Create your account" : "Welcome back"}
-          </h2>
-          <div
-            role="tablist"
-            aria-label="Auth mode"
-            style={{
-              display: "flex",
-              gap: 6,
-              background: "#f3f4f6",
-              borderRadius: 10,
-              padding: 4,
-            }}
+          </Heading>
+
+          {/* Mode Toggle */}
+          <HStack
+            bg="#fffcf2"
+            borderRadius="12px"
+            p={1}
+            border="1px solid"
+            borderColor="#F5C7CF"
+            spacing={0}
           >
             {[
               { key: "login", label: "Login" },
@@ -232,372 +227,316 @@ export default function AuthCard({ mode = "login" }) {
             ].map((tab) => {
               const selected = activeMode === tab.key;
               return (
-                <button
+                <Button
                   key={tab.key}
-                  role="tab"
-                  aria-selected={selected}
                   onClick={() => setActiveMode(tab.key)}
                   disabled={isLoggedIn}
-                  style={{
-                    border: "none",
-                    background: selected ? "#fff" : "transparent",
-                    color: "#111827",
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    cursor: isLoggedIn ? "not-allowed" : "pointer",
-                    boxShadow: selected ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
-                    fontWeight: 600,
+                  bg={selected ? "white" : "transparent"}
+                  color="#2B2B2B"
+                  borderRadius="10px"
+                  fontWeight="600"
+                  fontSize="sm"
+                  px={4}
+                  py={2}
+                  boxShadow={selected ? "sm" : "none"}
+                  border="none"
+                  _hover={{
+                    bg: selected ? "white" : "#fffcf2",
+                  }}
+                  _disabled={{
+                    opacity: 0.5,
+                    cursor: "not-allowed",
                   }}
                 >
                   {tab.label}
-                </button>
+                </Button>
               );
             })}
-          </div>
-        </div>
-        <form onSubmit={handleSubmit} style={{ marginTop: 20 }}>
+          </HStack>
+        </VStack>
+
+        <form onSubmit={handleSubmit} style={{ marginTop: "24px" }}>
           {!!formError && (
-            <div
-              role="alert"
-              style={{
-                marginBottom: 10,
-                padding: "10px 12px",
-                borderRadius: 8,
-                background: "#fef2f2",
-                border: "1px solid #fecaca",
-                color: "#991b1b",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
+            <Alert
+              status="error"
+              borderRadius="12px"
+              mb={4}
+              bg="#fffcf2"
+              border="1px solid"
+              borderColor="#F5C7CF"
             >
-              <AlertCircle size={18} />
-              <span style={{ fontSize: 13 }}>{formError}</span>
-            </div>
+              <AlertIcon color="#bc0930" />
+              <Text fontSize="sm" color="#bc0930">
+                {formError}
+              </Text>
+            </Alert>
           )}
 
-          {isSignup && (
-            <>
-              <div style={{ marginBottom: 10 }}>
-                <label
-                  htmlFor="firstName"
-                  style={{
-                    display: "block",
-                    fontSize: 14,
-                    color: "#374151",
-                    marginBottom: 6,
-                  }}
-                >
-                  First name*
-                </label>
-                <input
-                  id="firstName"
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => {
-                    setFirstName(e.target.value);
-                    if (fieldErrors.firstName)
-                      setFieldErrors({ ...fieldErrors, firstName: "" });
-                  }}
-                  placeholder="e.g. John"
-                  aria-invalid={!!fieldErrors.firstName}
-                  aria-describedby={
-                    fieldErrors.firstName ? "firstName-error" : undefined
-                  }
-                  disabled={isLoggedIn || isSubmitting}
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    border: `1px solid ${
-                      fieldErrors.firstName ? "#ef4444" : "#d1d5db"
-                    }`,
-                    borderRadius: 8,
-                    outline: "none",
-                  }}
-                />
-                {fieldErrors.firstName && (
-                  <div
-                    id="firstName-error"
-                    style={{ color: "#b91c1c", fontSize: 12, marginTop: 6 }}
-                  >
-                    {fieldErrors.firstName}
-                  </div>
-                )}
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <label
-                  htmlFor="lastName"
-                  style={{
-                    display: "block",
-                    fontSize: 14,
-                    color: "#374151",
-                    marginBottom: 6,
-                  }}
-                >
-                  Last name*
-                </label>
-                <input
-                  id="lastName"
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => {
-                    setLastName(e.target.value);
-                    if (fieldErrors.lastName)
-                      setFieldErrors({ ...fieldErrors, lastName: "" });
-                  }}
-                  placeholder="e.g. Doe"
-                  aria-invalid={!!fieldErrors.lastName}
-                  aria-describedby={
-                    fieldErrors.lastName ? "lastName-error" : undefined
-                  }
-                  disabled={isLoggedIn || isSubmitting}
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    border: `1px solid ${
-                      fieldErrors.lastName ? "#ef4444" : "#d1d5db"
-                    }`,
-                    borderRadius: 8,
-                    outline: "none",
-                  }}
-                />
-                {fieldErrors.lastName && (
-                  <div
-                    id="lastName-error"
-                    style={{ color: "#b91c1c", fontSize: 12, marginTop: 6 }}
-                  >
-                    {fieldErrors.lastName}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+          <VStack spacing={4}>
+            {isSignup && (
+              <>
+                <FormControl isInvalid={!!fieldErrors.firstName}>
+                  <FormLabel fontSize="sm" color="#2B2B2B" fontWeight="500">
+                    First name*
+                  </FormLabel>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                      if (fieldErrors.firstName)
+                        setFieldErrors({ ...fieldErrors, firstName: "" });
+                    }}
+                    placeholder="e.g. John"
+                    disabled={isLoggedIn || isSubmitting}
+                    borderColor="#F5C7CF"
+                    borderRadius="12px"
+                    _hover={{
+                      borderColor: "#bc0930",
+                    }}
+                    _focus={{
+                      borderColor: "#bc0930",
+                      boxShadow: "0 0 0 1px #bc0930",
+                    }}
+                    _invalid={{
+                      borderColor: "#bc0930",
+                    }}
+                  />
+                  {fieldErrors.firstName && (
+                    <Text fontSize="xs" color="#bc0930" mt={1}>
+                      {fieldErrors.firstName}
+                    </Text>
+                  )}
+                </FormControl>
 
-          <div style={{ marginBottom: 10 }}>
-            <label
-              htmlFor="email"
-              style={{
-                display: "block",
-                fontSize: 14,
-                color: "#374151",
-                marginBottom: 6,
-              }}
-            >
-              Email address*
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (fieldErrors.email)
-                  setFieldErrors({ ...fieldErrors, email: "" });
-              }}
-              placeholder="you@example.com"
-              aria-invalid={!!fieldErrors.email}
-              aria-describedby={fieldErrors.email ? "email-error" : undefined}
-              disabled={isLoggedIn || isSubmitting}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: `1px solid ${
-                  fieldErrors.email ? "#ef4444" : "#d1d5db"
-                }`,
-                borderRadius: 8,
-                outline: "none",
-              }}
-              required
-            />
-            {fieldErrors.email && (
-              <div
-                id="email-error"
-                style={{ color: "#b91c1c", fontSize: 12, marginTop: 6 }}
-              >
-                {fieldErrors.email}
-              </div>
+                <FormControl isInvalid={!!fieldErrors.lastName}>
+                  <FormLabel fontSize="sm" color="#2B2B2B" fontWeight="500">
+                    Last name*
+                  </FormLabel>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => {
+                      setLastName(e.target.value);
+                      if (fieldErrors.lastName)
+                        setFieldErrors({ ...fieldErrors, lastName: "" });
+                    }}
+                    placeholder="e.g. Doe"
+                    disabled={isLoggedIn || isSubmitting}
+                    borderColor="#F5C7CF"
+                    borderRadius="12px"
+                    _hover={{
+                      borderColor: "#bc0930",
+                    }}
+                    _focus={{
+                      borderColor: "#bc0930",
+                      boxShadow: "0 0 0 1px #bc0930",
+                    }}
+                    _invalid={{
+                      borderColor: "#bc0930",
+                    }}
+                  />
+                  {fieldErrors.lastName && (
+                    <Text fontSize="xs" color="#bc0930" mt={1}>
+                      {fieldErrors.lastName}
+                    </Text>
+                  )}
+                </FormControl>
+              </>
             )}
-            {adminDetected && !fieldErrors.email && (
-              <div style={{ marginTop: 6, fontSize: 12, color: "#065f46" }}>
-                Admin email detected. You will have admin access after login.
-              </div>
-            )}
-          </div>
 
-          <div style={{ marginBottom: 10 }}>
-            <label
-              htmlFor="password"
-              style={{
-                display: "block",
-                fontSize: 14,
-                color: "#374151",
-                marginBottom: 6,
-              }}
-            >
-              Password*
-            </label>
-            <div style={{ position: "relative" }}>
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
+            <FormControl isInvalid={!!fieldErrors.email}>
+              <FormLabel fontSize="sm" color="#2B2B2B" fontWeight="500">
+                Email address*
+              </FormLabel>
+              <Input
+                id="email"
+                type="email"
+                value={email}
                 onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (fieldErrors.password)
-                    setFieldErrors({ ...fieldErrors, password: "" });
+                  setEmail(e.target.value);
+                  if (fieldErrors.email)
+                    setFieldErrors({ ...fieldErrors, email: "" });
                 }}
-                placeholder={isSignup ? "Create a password" : "Your password"}
-                aria-invalid={!!fieldErrors.password}
-                aria-describedby={
-                  fieldErrors.password ? "password-error" : undefined
-                }
+                placeholder="you@example.com"
                 disabled={isLoggedIn || isSubmitting}
-                style={{
-                  width: "100%",
-                  padding: "10px 40px 10px 12px",
-                  border: `1px solid ${
-                    fieldErrors.password ? "#ef4444" : "#d1d5db"
-                  }`,
-                  borderRadius: 8,
-                  outline: "none",
+                borderColor="#F5C7CF"
+                borderRadius="12px"
+                _hover={{
+                  borderColor: "#bc0930",
+                }}
+                _focus={{
+                  borderColor: "#bc0930",
+                  boxShadow: "0 0 0 1px #bc0930",
+                }}
+                _invalid={{
+                  borderColor: "#bc0930",
                 }}
                 required
               />
-              <button
-                type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                onClick={() => setShowPassword((v) => !v)}
-                disabled={isLoggedIn || isSubmitting}
-                style={{
-                  position: "absolute",
-                  right: 8,
-                  top: 8,
-                  border: "none",
-                  background: "transparent",
-                  cursor:
-                    isLoggedIn || isSubmitting ? "not-allowed" : "pointer",
-                  padding: 4,
-                  color: "#6b7280",
-                }}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            {fieldErrors.password && (
-              <div
-                id="password-error"
-                style={{ color: "#b91c1c", fontSize: 12, marginTop: 6 }}
-              >
-                {fieldErrors.password}
-              </div>
-            )}
-          </div>
-
-          {isSignup && (
-            <div style={{ marginBottom: 10 }}>
-              <label
-                htmlFor="passwordConfirm"
-                style={{
-                  display: "block",
-                  fontSize: 14,
-                  color: "#374151",
-                  marginBottom: 6,
-                }}
-              >
-                Confirm password*
-              </label>
-              <input
-                id="passwordConfirm"
-                type={showPassword ? "text" : "password"}
-                value={passwordConfirm}
-                onChange={(e) => {
-                  setPasswordConfirm(e.target.value);
-                  if (fieldErrors.passwordConfirm)
-                    setFieldErrors({ ...fieldErrors, passwordConfirm: "" });
-                }}
-                placeholder="Re-enter your password"
-                aria-invalid={!!fieldErrors.passwordConfirm}
-                aria-describedby={
-                  fieldErrors.passwordConfirm
-                    ? "passwordConfirm-error"
-                    : undefined
-                }
-                disabled={isLoggedIn || isSubmitting}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  border: `1px solid ${
-                    fieldErrors.passwordConfirm ? "#ef4444" : "#d1d5db"
-                  }`,
-                  borderRadius: 8,
-                  outline: "none",
-                }}
-                required
-              />
-              {fieldErrors.passwordConfirm && (
-                <div
-                  id="passwordConfirm-error"
-                  style={{ color: "#b91c1c", fontSize: 12, marginTop: 6 }}
-                >
-                  {fieldErrors.passwordConfirm}
-                </div>
+              {fieldErrors.email && (
+                <Text fontSize="xs" color="#bc0930" mt={1}>
+                  {fieldErrors.email}
+                </Text>
               )}
-            </div>
-          )}
+              {adminDetected && !fieldErrors.email && (
+                <Text fontSize="xs" color="#2f855a" mt={1}>
+                  Admin email detected. You will have admin access after login.
+                </Text>
+              )}
+            </FormControl>
 
-          <button
-            type="submit"
-            disabled={isLoggedIn || isSubmitting}
-            style={{
-              marginTop: 6,
-              width: "100%",
-              background: isLoggedIn ? "#9ca3af" : "#3b5bfd",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "12px 16px",
-              fontWeight: 600,
-              cursor: isLoggedIn ? "not-allowed" : "pointer",
-              opacity: isSubmitting ? 0.9 : 1,
-              transition: "background 150ms ease, opacity 150ms ease",
-            }}
-          >
-            {isSubmitting
-              ? isSignup
-                ? "Creating account..."
-                : "Signing in..."
-              : isSignup
-              ? "Create account"
-              : "Sign in"}
-          </button>
+            <FormControl isInvalid={!!fieldErrors.password}>
+              <FormLabel fontSize="sm" color="#2B2B2B" fontWeight="500">
+                Password*
+              </FormLabel>
+              <InputGroup>
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password)
+                      setFieldErrors({ ...fieldErrors, password: "" });
+                  }}
+                  placeholder={isSignup ? "Create a password" : "Your password"}
+                  disabled={isLoggedIn || isSubmitting}
+                  borderColor="#F5C7CF"
+                  borderRadius="12px"
+                  _hover={{
+                    borderColor: "#bc0930",
+                  }}
+                  _focus={{
+                    borderColor: "#bc0930",
+                    boxShadow: "0 0 0 1px #bc0930",
+                  }}
+                  _invalid={{
+                    borderColor: "#bc0930",
+                  }}
+                  required
+                />
+                <InputRightElement>
+                  <IconButton
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    icon={
+                      showPassword ? <EyeOff size={18} /> : <Eye size={18} />
+                    }
+                    onClick={() => setShowPassword((v) => !v)}
+                    disabled={isLoggedIn || isSubmitting}
+                    variant="ghost"
+                    size="sm"
+                    color="#5B6B73"
+                    _hover={{
+                      bg: "#fffcf2",
+                      color: "#bc0930",
+                    }}
+                  />
+                </InputRightElement>
+              </InputGroup>
+              {fieldErrors.password && (
+                <Text fontSize="xs" color="#bc0930" mt={1}>
+                  {fieldErrors.password}
+                </Text>
+              )}
+            </FormControl>
+
+            {isSignup && (
+              <FormControl isInvalid={!!fieldErrors.passwordConfirm}>
+                <FormLabel fontSize="sm" color="#2B2B2B" fontWeight="500">
+                  Confirm password*
+                </FormLabel>
+                <Input
+                  id="passwordConfirm"
+                  type={showPassword ? "text" : "password"}
+                  value={passwordConfirm}
+                  onChange={(e) => {
+                    setPasswordConfirm(e.target.value);
+                    if (fieldErrors.passwordConfirm)
+                      setFieldErrors({ ...fieldErrors, passwordConfirm: "" });
+                  }}
+                  placeholder="Re-enter your password"
+                  disabled={isLoggedIn || isSubmitting}
+                  borderColor="#F5C7CF"
+                  borderRadius="12px"
+                  _hover={{
+                    borderColor: "#bc0930",
+                  }}
+                  _focus={{
+                    borderColor: "#bc0930",
+                    boxShadow: "0 0 0 1px #bc0930",
+                  }}
+                  _invalid={{
+                    borderColor: "#bc0930",
+                  }}
+                  required
+                />
+                {fieldErrors.passwordConfirm && (
+                  <Text fontSize="xs" color="#bc0930" mt={1}>
+                    {fieldErrors.passwordConfirm}
+                  </Text>
+                )}
+              </FormControl>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isLoggedIn || isSubmitting}
+              bg="#bc0930"
+              color="white"
+              size="lg"
+              borderRadius="12px"
+              fontWeight="600"
+              w="100%"
+              _hover={{
+                bg: "#a10828",
+                transform: "translateY(-2px)",
+                boxShadow: "lg",
+              }}
+              _disabled={{
+                bg: "#9ca3af",
+                cursor: "not-allowed",
+                transform: "none",
+                boxShadow: "none",
+              }}
+              transition="all 0.2s"
+              mt={2}
+            >
+              {isSubmitting
+                ? isSignup
+                  ? "Creating account..."
+                  : "Signing in..."
+                : isSignup
+                ? "Create account"
+                : "Sign in"}
+            </Button>
+          </VStack>
         </form>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            marginTop: 18,
-            color: "#9ca3af",
-          }}
-        >
-          <div style={{ height: 1, background: "#e5e7eb", flex: 1 }} />
-          <span style={{ fontSize: 12 }}>OR</span>
-          <div style={{ height: 1, background: "#e5e7eb", flex: 1 }} />
-        </div>
+        <HStack my={6} color="#5B6B73">
+          <Divider borderColor="#F5C7CF" />
+          <Text fontSize="xs" fontWeight="500">
+            OR
+          </Text>
+          <Divider borderColor="#F5C7CF" />
+        </HStack>
 
-        <div
-          style={{
-            marginTop: 18,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-          }}
-        >
-          <button
+        <VStack spacing={3}>
+          <Button
             onClick={async () => {
               if (!supabase) {
-                alert("Auth is not configured. Please try again later.");
+                toast({
+                  title: "Error",
+                  description:
+                    "Auth is not configured. Please try again later.",
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                });
                 return;
               }
               try {
@@ -610,23 +549,51 @@ export default function AuthCard({ mode = "login" }) {
                   flowType: "pkce",
                 },
               });
-              if (error) alert(error.message);
+              if (error) {
+                toast({
+                  title: "Error",
+                  description: error.message,
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                });
+              }
             }}
-            style={buttonBaseStyle}
+            variant="outline"
+            borderColor="#F5C7CF"
+            color="#2B2B2B"
+            borderRadius="12px"
+            w="100%"
+            justifyContent="flex-start"
+            _hover={{
+              bg: "#fffcf2",
+              borderColor: "#bc0930",
+              color: "#bc0930",
+            }}
             disabled={isLoggedIn || isSubmitting}
+            leftIcon={
+              <Image
+                src="/images/github.png"
+                alt="GitHub"
+                width={20}
+                height={20}
+              />
+            }
           >
-            <Image
-              src="/images/github.png"
-              alt="GitHub"
-              width={20}
-              height={20}
-            />
-            <span>Continue with GitHub</span>
-          </button>
-          <button
+            Continue with GitHub
+          </Button>
+
+          <Button
             onClick={async () => {
               if (!supabase) {
-                alert("Auth is not configured. Please try again later.");
+                toast({
+                  title: "Error",
+                  description:
+                    "Auth is not configured. Please try again later.",
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                });
                 return;
               }
 
@@ -641,23 +608,51 @@ export default function AuthCard({ mode = "login" }) {
                   queryParams: { prompt: "select_account" },
                 },
               });
-              if (error) alert(error.message);
+              if (error) {
+                toast({
+                  title: "Error",
+                  description: error.message,
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                });
+              }
             }}
-            style={buttonBaseStyle}
+            variant="outline"
+            borderColor="#F5C7CF"
+            color="#2B2B2B"
+            borderRadius="12px"
+            w="100%"
+            justifyContent="flex-start"
+            _hover={{
+              bg: "#fffcf2",
+              borderColor: "#bc0930",
+              color: "#bc0930",
+            }}
             disabled={isLoggedIn || isSubmitting}
+            leftIcon={
+              <Image
+                src="/images/google.png"
+                alt="Google"
+                width={20}
+                height={20}
+              />
+            }
           >
-            <Image
-              src="/images/google.png"
-              alt="Google"
-              width={20}
-              height={20}
-            />
-            <span>Continue with Google</span>
-          </button>
-          <button
+            Continue with Google
+          </Button>
+
+          <Button
             onClick={async () => {
               if (!supabase) {
-                alert("Auth is not configured. Please try again later.");
+                toast({
+                  title: "Error",
+                  description:
+                    "Auth is not configured. Please try again later.",
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                });
                 return;
               }
 
@@ -673,102 +668,127 @@ export default function AuthCard({ mode = "login" }) {
                   queryParams: { prompt: "select_account" },
                 },
               });
-              if (error) alert(error.message);
+              if (error) {
+                toast({
+                  title: "Error",
+                  description: error.message,
+                  status: "error",
+                  duration: 3000,
+                  isClosable: true,
+                });
+              }
             }}
-            style={buttonBaseStyle}
+            variant="outline"
+            borderColor="#F5C7CF"
+            color="#2B2B2B"
+            borderRadius="12px"
+            w="100%"
+            justifyContent="flex-start"
+            _hover={{
+              bg: "#fffcf2",
+              borderColor: "#bc0930",
+              color: "#bc0930",
+            }}
             disabled={isLoggedIn || isSubmitting}
+            leftIcon={
+              <Image
+                src="/images/microsoft-logo.png"
+                alt="Microsoft"
+                width={24}
+                height={24}
+              />
+            }
           >
-            <Image
-              src="/images/microsoft-logo.png"
-              alt="Microsoft"
-              width={24}
-              height={24}
-            />
-            <span>Continue with Microsoft</span>
-          </button>
-        </div>
+            Continue with Microsoft
+          </Button>
+        </VStack>
 
-        <div
-          style={{
-            marginTop: 12,
-            fontSize: 12,
-            color: "#6b7280",
-            textAlign: "center",
-          }}
+        <Box
+          mt={6}
+          p={3}
+          bg="#fffcf2"
+          borderRadius="12px"
+          border="1px solid"
+          borderColor="#F5C7CF"
+          textAlign="center"
         >
-          Admin access is granted to specific emails. If your email is
-          configured as an admin, sign in normally and then open{" "}
-          <strong>/admin</strong>.
-        </div>
+          <Text fontSize="xs" color="#5B6B73" lineHeight="1.4">
+            Admin access is granted to specific emails. If your email is
+            configured as an admin, sign in normally and then open{" "}
+            <Text as="span" fontWeight="600" color="#bc0930">
+              /admin
+            </Text>
+            .
+          </Text>
+        </Box>
 
-        <div
-          style={{
-            marginTop: 16,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <HStack justify="space-between" align="center" mt={6}>
           {!isSignup ? (
-            <p style={{ margin: 0, fontSize: 14 }}>
+            <Text fontSize="sm" color="#5B6B73">
               Don't have an account?{" "}
-              <button
+              <Button
                 onClick={() => setActiveMode("signup")}
                 disabled={isLoggedIn}
-                style={{
-                  color: "#3b5bfd",
-                  fontWeight: 600,
-                  background: "none",
-                  border: "none",
-                  cursor: isLoggedIn ? "not-allowed" : "pointer",
+                variant="link"
+                color="#bc0930"
+                fontWeight="600"
+                fontSize="sm"
+                p={0}
+                h="auto"
+                _disabled={{
+                  opacity: 0.5,
+                  cursor: "not-allowed",
                 }}
               >
                 Sign up
-              </button>
-            </p>
+              </Button>
+            </Text>
           ) : (
-            <p style={{ margin: 0, fontSize: 14 }}>
+            <Text fontSize="sm" color="#5B6B73">
               Already have an account?{" "}
-              <button
+              <Button
                 onClick={() => setActiveMode("login")}
                 disabled={isLoggedIn}
-                style={{
-                  color: "#3b5bfd",
-                  fontWeight: 600,
-                  background: "none",
-                  border: "none",
-                  cursor: isLoggedIn ? "not-allowed" : "pointer",
+                variant="link"
+                color="#bc0930"
+                fontWeight="600"
+                fontSize="sm"
+                p={0}
+                h="auto"
+                _disabled={{
+                  opacity: 0.5,
+                  cursor: "not-allowed",
                 }}
               >
                 Log in now
-              </button>
-            </p>
+              </Button>
+            </Text>
           )}
 
           {isLoggedIn && (
-            <button
+            <Button
               onClick={async () => {
                 const { supabase } = await import("../lib/supabase");
                 await supabase.auth.signOut();
                 window.location.href = "/login";
               }}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                background: "#f3f4f6",
-                border: "1px solid #e5e7eb",
-                padding: "6px 10px",
-                borderRadius: 6,
-                cursor: "pointer",
+              variant="outline"
+              size="sm"
+              borderColor="#F5C7CF"
+              color="#2B2B2B"
+              borderRadius="8px"
+              leftIcon={<LogOut size={16} />}
+              _hover={{
+                bg: "#fffcf2",
+                borderColor: "#bc0930",
+                color: "#bc0930",
               }}
-              aria-label="Sign out"
             >
-              <LogOut size={16} /> Sign Out
-            </button>
+              Sign Out
+            </Button>
           )}
-        </div>
-      </div>
-    </div>
+        </HStack>
+      </Box>
+    </Box>
   );
 }

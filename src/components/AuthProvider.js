@@ -8,6 +8,7 @@ const AuthContext = createContext({
   user: null,
   isLoading: true,
   isAdmin: false,
+  refreshAdminStatus: () => {},
 });
 
 export function AuthProvider({ children }) {
@@ -48,15 +49,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Load role flags from DB (fallback to email list when unavailable)
-  useEffect(() => {
-    let active = true;
-    (async () => {
+  const loadAdminStatus = useMemo(() => {
+    return async () => {
       try {
         if (!supabase || !user?.id) {
-          if (active) {
-            setDbIsAdmin(false);
-            setDbSuspended(false);
-          }
+          setDbIsAdmin(false);
+          setDbSuspended(false);
           return;
         }
         const { data, error } = await supabase
@@ -65,27 +63,67 @@ export function AuthProvider({ children }) {
           .eq("id", user.id)
           .maybeSingle();
         if (error) throw error;
-        if (active) {
-          setDbIsAdmin(!!data?.is_admin);
-          setDbSuspended(!!data?.suspended);
-        }
+        setDbIsAdmin(!!data?.is_admin);
+        setDbSuspended(!!data?.suspended);
       } catch {
-        if (active) {
-          setDbIsAdmin(false);
-          setDbSuspended(false);
-        }
+        setDbIsAdmin(false);
+        setDbSuspended(false);
       }
-    })();
-    return () => {
-      active = false;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    let active = true;
+    loadAdminStatus().then(() => {
+      if (!active) {
+        setDbIsAdmin(false);
+        setDbSuspended(false);
+      }
+    });
+
+    // Set up realtime subscription to listen for changes to the user's record
+    let subscription = null;
+    if (supabase && user?.id) {
+      subscription = supabase
+        .channel(`user-${user.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "users",
+            filter: `id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log("User record changed:", payload);
+            // Reload admin status when the user record changes
+            if (active) {
+              loadAdminStatus();
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      active = false;
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [loadAdminStatus, user?.id]);
 
   const value = useMemo(() => {
     const emailIsAdmin = isAdminEmail(user?.email);
     const isAdmin = !!(dbIsAdmin || emailIsAdmin);
-    return { user, isLoading, isAdmin, suspended: dbSuspended };
-  }, [user, isLoading, dbIsAdmin, dbSuspended]);
+    return {
+      user,
+      isLoading,
+      isAdmin,
+      suspended: dbSuspended,
+      refreshAdminStatus: loadAdminStatus,
+    };
+  }, [user, isLoading, dbIsAdmin, dbSuspended, loadAdminStatus]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

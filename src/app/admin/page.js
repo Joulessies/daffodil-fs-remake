@@ -40,6 +40,7 @@ import {
   TrendingUp,
   Clock,
   CheckCircle,
+  MessageSquare,
 } from "lucide-react";
 
 const StatCard = ({
@@ -516,6 +517,16 @@ export default function AdminPage() {
               colorScheme="red"
             >
               Inventory
+            </Button>
+          </Link>
+          <Link href="/admin/reviews">
+            <Button
+              w="full"
+              leftIcon={<MessageSquare size={18} />}
+              variant="outline"
+              colorScheme="red"
+            >
+              Reviews
             </Button>
           </Link>
           <Link href="/shop">

@@ -1,14 +1,16 @@
 "use client";
 
-import { Box, Text, useDisclosure } from "@chakra-ui/react";
+import { Box, Text, useDisclosure, IconButton } from "@chakra-ui/react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { A11y } from "swiper/modules";
+import { Navigation, A11y } from "swiper/modules";
 import "swiper/css";
+import "swiper/css/navigation";
 import { PRODUCTS } from "@/lib/products";
 import ProductCardMinimal from "./ProductCardMinimal";
 import ProductDetailsModal from "./ProductDetailsModal";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function FloralSwiper({
   sections = [],
@@ -221,6 +223,8 @@ export default function FloralSwiper({
   });
 
   const [hintVisible, setHintVisible] = useState(false);
+  const [swiper, setSwiper] = useState(null);
+
   useEffect(() => {
     if (!showSwipeHint) return;
     setHintVisible(true);
@@ -229,45 +233,117 @@ export default function FloralSwiper({
   }, [showSwipeHint]);
 
   return (
-    <Box position="relative">
-      {/* Right fade overlay (mobile) */}
-      <Box
+    <Box position="relative" role="group">
+      {/* Navigation Buttons - Desktop */}
+      <IconButton
+        aria-label="Previous slide"
+        icon={<ChevronLeft size={24} />}
         position="absolute"
-        right={0}
-        top={0}
-        bottom={0}
-        w="56px"
-        pointerEvents="none"
-        display={{ base: "block", md: "none" }}
-        bgGradient="linear(to-l, rgba(255,255,255,0.95), rgba(255,255,255,0))"
-        zIndex={1}
+        left={-4}
+        top="50%"
+        transform="translateY(-50%)"
+        zIndex={10}
+        onClick={() => swiper?.slidePrev()}
+        bg="white"
+        color="#bc0930"
+        border="2px solid"
+        borderColor="#F5C7CF"
+        borderRadius="full"
+        boxShadow="lg"
+        opacity={0}
+        _groupHover={{ opacity: 1 }}
+        _hover={{
+          bg: "#bc0930",
+          color: "white",
+          transform: "translateY(-50%) scale(1.1)",
+        }}
+        transition="all 0.3s"
+        display={{ base: "none", md: "flex" }}
+        size="lg"
       />
 
-      {/* Swipe hint (mobile) */}
-      {hintVisible && (
-        <Box
-          position="absolute"
-          right={3}
-          bottom={2}
-          zIndex={2}
-          bg="rgba(0,0,0,0.55)"
-          color="#fff"
-          px={3}
-          py={1}
-          borderRadius="full"
-          fontSize="xs"
-          pointerEvents="none"
-          display={{ base: "inline-block", md: "none" }}
-        >
-          <Text fontSize="xs">Swipe for more →</Text>
-        </Box>
-      )}
+      <IconButton
+        aria-label="Next slide"
+        icon={<ChevronRight size={24} />}
+        position="absolute"
+        right={-4}
+        top="50%"
+        transform="translateY(-50%)"
+        zIndex={10}
+        onClick={() => swiper?.slideNext()}
+        bg="white"
+        color="#bc0930"
+        border="2px solid"
+        borderColor="#F5C7CF"
+        borderRadius="full"
+        boxShadow="lg"
+        opacity={0}
+        _groupHover={{ opacity: 1 }}
+        _hover={{
+          bg: "#bc0930",
+          color: "white",
+          transform: "translateY(-50%) scale(1.1)",
+        }}
+        transition="all 0.3s"
+        display={{ base: "none", md: "flex" }}
+        size="lg"
+      />
+
+      {/* Navigation Buttons - Mobile */}
+      <IconButton
+        aria-label="Previous slide"
+        icon={<ChevronLeft size={20} />}
+        position="absolute"
+        left={2}
+        top="50%"
+        transform="translateY(-50%)"
+        zIndex={10}
+        onClick={() => swiper?.slidePrev()}
+        bg="white"
+        color="#bc0930"
+        border="2px solid"
+        borderColor="#F5C7CF"
+        borderRadius="full"
+        boxShadow="md"
+        _hover={{
+          bg: "#bc0930",
+          color: "white",
+        }}
+        transition="all 0.3s"
+        display={{ base: "flex", md: "none" }}
+        size="sm"
+      />
+
+      <IconButton
+        aria-label="Next slide"
+        icon={<ChevronRight size={20} />}
+        position="absolute"
+        right={2}
+        top="50%"
+        transform="translateY(-50%)"
+        zIndex={10}
+        onClick={() => swiper?.slideNext()}
+        bg="white"
+        color="#bc0930"
+        border="2px solid"
+        borderColor="#F5C7CF"
+        borderRadius="full"
+        boxShadow="md"
+        _hover={{
+          bg: "#bc0930",
+          color: "white",
+        }}
+        transition="all 0.3s"
+        display={{ base: "flex", md: "none" }}
+        size="sm"
+      />
 
       <Swiper
-        modules={[A11y]}
+        modules={[Navigation, A11y]}
         spaceBetween={16}
         slidesPerView={1}
         grabCursor
+        onSwiper={setSwiper}
         breakpoints={{
           640: { slidesPerView: 1 },
           768: { slidesPerView: 2 },

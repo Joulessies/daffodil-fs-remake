@@ -23,8 +23,24 @@ import {
   ModalBody,
   ModalFooter,
   Avatar,
+  Text,
+  VStack,
+  FormControl,
+  FormLabel,
+  Badge,
+  Divider,
+  useToast,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
-import { LayoutGrid, Search, ShoppingBag, Heart } from "lucide-react";
+import {
+  LayoutGrid,
+  Search,
+  ShoppingBag,
+  Heart,
+  Home,
+  Grid2x2,
+} from "lucide-react";
 import CartButton from "./CartButton";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthProvider";
@@ -32,6 +48,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 export default function NavigationBar() {
   const { user, isAdmin } = useAuth();
+  const toast = useToast();
   const displayName = useMemo(() => {
     const name =
       user?.user_metadata?.full_name || user?.user_metadata?.name || "";
@@ -46,7 +63,8 @@ export default function NavigationBar() {
   } = useDisclosure();
   const [query, setQuery] = useState("");
   const [editMode, setEditMode] = useState(false);
-  const [profileName, setProfileName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [profileUsername, setProfileUsername] = useState("");
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -58,6 +76,30 @@ export default function NavigationBar() {
   // Avoid SSR/client mismatch by rendering only after mount
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // Link styles with hover effects
+  const linkStyle = {
+    textDecoration: "none",
+    color: "#5B6B73",
+    fontSize: 14,
+    fontFamily: "var(--font-rothek)",
+    fontWeight: 500,
+    position: "relative",
+    transition: "color 0.2s ease",
+    display: "inline-block",
+  };
+
+  const buttonStyle = {
+    background: "none",
+    border: "none",
+    color: "#5B6B73",
+    fontSize: 14,
+    fontFamily: "var(--font-rothek)",
+    fontWeight: 500,
+    cursor: "pointer",
+    position: "relative",
+    transition: "color 0.2s ease",
+  };
 
   const handleLogout = async () => {
     try {
@@ -87,7 +129,10 @@ export default function NavigationBar() {
   useEffect(() => {
     if (isProfileOpen && user) {
       const meta = user.user_metadata || {};
-      setProfileName(meta.full_name || meta.name || "");
+      const fullName = meta.full_name || meta.name || "";
+      const nameParts = fullName.split(" ");
+      setFirstName(meta.first_name || nameParts[0] || "");
+      setLastName(meta.last_name || nameParts.slice(1).join(" ") || "");
       setProfileUsername(meta.username || "");
       setEditMode(false);
       setProfileError("");
@@ -113,10 +158,22 @@ export default function NavigationBar() {
         data: { avatar_url: publicUrl },
       });
       if (updErr) throw updErr;
+      toast({
+        title: "Avatar updated",
+        status: "success",
+        duration: 2000,
+      });
     } catch (err) {
       setProfileError(
         err instanceof Error ? err.message : "Failed to upload avatar"
       );
+      toast({
+        title: "Upload failed",
+        description:
+          err instanceof Error ? err.message : "Failed to upload avatar",
+        status: "error",
+        duration: 3000,
+      });
     } finally {
       setAvatarUploading(false);
     }
@@ -124,22 +181,46 @@ export default function NavigationBar() {
 
   const handleSaveProfile = async () => {
     setProfileError("");
-    if (!profileName.trim()) {
-      setProfileError("Name is required");
+    if (!firstName.trim()) {
+      setProfileError("First name is required");
+      toast({
+        title: "First name required",
+        description: "Please enter your first name",
+        status: "warning",
+        duration: 2000,
+      });
       return;
     }
     try {
       setSavingProfile(true);
       const { supabase } = await import("../lib/supabase");
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
       const { error } = await supabase.auth.updateUser({
-        data: { full_name: profileName, username: profileUsername },
+        data: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          full_name: fullName,
+          username: profileUsername,
+        },
       });
       if (error) throw error;
       setEditMode(false);
+      toast({
+        title: "Profile updated",
+        status: "success",
+        duration: 2000,
+      });
     } catch (err) {
       setProfileError(
         err instanceof Error ? err.message : "Failed to save profile"
       );
+      toast({
+        title: "Update failed",
+        description:
+          err instanceof Error ? err.message : "Failed to save profile",
+        status: "error",
+        duration: 3000,
+      });
     } finally {
       setSavingProfile(false);
     }
@@ -149,10 +230,22 @@ export default function NavigationBar() {
     setProfileError("");
     if (password1.length < 6) {
       setProfileError("Password must be at least 6 characters");
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters",
+        status: "warning",
+        duration: 2000,
+      });
       return;
     }
     if (password1 !== password2) {
       setProfileError("Passwords do not match");
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure both passwords are identical",
+        status: "warning",
+        duration: 2000,
+      });
       return;
     }
     try {
@@ -162,10 +255,23 @@ export default function NavigationBar() {
       if (error) throw error;
       setPassword1("");
       setPassword2("");
+      toast({
+        title: "Password updated",
+        description: "Your password has been changed successfully",
+        status: "success",
+        duration: 3000,
+      });
     } catch (err) {
       setProfileError(
         err instanceof Error ? err.message : "Failed to change password"
       );
+      toast({
+        title: "Update failed",
+        description:
+          err instanceof Error ? err.message : "Failed to change password",
+        status: "error",
+        duration: 3000,
+      });
     } finally {
       setPasswordSaving(false);
     }
@@ -180,365 +286,317 @@ export default function NavigationBar() {
   };
   if (!mounted) return null;
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "8px 24px",
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
-        background: "#fffcf2",
-        borderBottom: "1px solid #e8e2d6",
-      }}
-    >
+    <>
+      <style jsx global>{`
+        .nav-link {
+          position: relative;
+          display: inline-block;
+          transition: color 0.3s ease;
+        }
+        .nav-link::after {
+          content: "";
+          position: absolute;
+          width: 0;
+          height: 2px;
+          bottom: -4px;
+          left: 50%;
+          background-color: #bc0930;
+          transition: width 0.3s ease, left 0.3s ease;
+          transform: translateX(-50%);
+        }
+        .nav-link:hover {
+          color: #bc0930 !important;
+        }
+        .nav-link:hover::after {
+          width: 100%;
+        }
+        .nav-button {
+          position: relative;
+          display: inline-block;
+          transition: color 0.3s ease;
+        }
+        .nav-button::after {
+          content: "";
+          position: absolute;
+          width: 0;
+          height: 2px;
+          bottom: -4px;
+          left: 50%;
+          background-color: #bc0930;
+          transition: width 0.3s ease, left 0.3s ease;
+          transform: translateX(-50%);
+        }
+        .nav-button:hover {
+          color: #bc0930 !important;
+        }
+        .nav-button:hover::after {
+          width: 100%;
+        }
+      `}</style>
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+          flexDirection: "column",
+          justifyContent: "center",
           alignItems: "center",
-          width: "100%",
-          maxWidth: 1240,
-          fontWeight: "500",
+          padding: "8px 24px",
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+          background: "#fffcf2",
+          borderBottom: "1px solid #e8e2d6",
         }}
       >
-        <CBox style={{ width: "100px" }}>
-          <CBox display={{ base: "block", md: "none" }}>
-            <IconButton
-              aria-label="Open menu"
-              icon={<LayoutGrid size={22} />}
-              variant="ghost"
-              onClick={onOpen}
-            />
-          </CBox>
-        </CBox>
-
         <div
           style={{
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "space-between",
             alignItems: "center",
+            width: "100%",
+            maxWidth: 1240,
+            fontWeight: "500",
           }}
         >
-          <Image
-            src="/images/logo.svg"
-            alt="Daffodil"
-            width={210}
-            height={60}
-            priority
-          />
+          <CBox style={{ width: "100px" }}>
+            <CBox display={{ base: "block", md: "none" }}>
+              <IconButton
+                aria-label="Open menu"
+                icon={<LayoutGrid size={22} />}
+                variant="ghost"
+                onClick={onOpen}
+              />
+            </CBox>
+            <CBox display={{ base: "none", md: "block" }}>
+              <Link
+                prefetch={false}
+                href="/shop"
+                style={{ textDecoration: "none" }}
+              >
+                <IconButton
+                  aria-label="Shop"
+                  icon={<Grid2x2 size={20} />}
+                  variant="ghost"
+                  color="#5B6B73"
+                  _hover={{
+                    bg: "#fff8f3",
+                    color: "#bc0930",
+                  }}
+                />
+              </Link>
+            </CBox>
+          </CBox>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Image
+              src="/images/logo.svg"
+              alt="Daffodil"
+              width={210}
+              height={60}
+              priority
+            />
+          </div>
+
+          <CBox
+            display={{ base: "none", md: "flex" }}
+            style={{
+              width: "100px",
+              justifyContent: "flex-end",
+              gap: 10,
+              color: "#2B2B2B",
+            }}
+          >
+            <Link
+              prefetch={false}
+              href="/search"
+              style={{ textDecoration: "none" }}
+            >
+              <IconButton
+                aria-label="Search"
+                icon={<Search size={20} />}
+                variant="ghost"
+                color="#5B6B73"
+                _hover={{
+                  bg: "#fff8f3",
+                  color: "#bc0930",
+                }}
+              />
+            </Link>
+            <Link
+              prefetch={false}
+              href="/wishlist"
+              style={{ textDecoration: "none" }}
+            >
+              <IconButton
+                aria-label="Favorites"
+                icon={<Heart size={20} />}
+                variant="ghost"
+                color="#5B6B73"
+                _hover={{
+                  bg: "#fff8f3",
+                  color: "#bc0930",
+                }}
+              />
+            </Link>
+            <CartButton />
+          </CBox>
         </div>
 
         <CBox
           display={{ base: "none", md: "flex" }}
           style={{
-            width: "100px",
-            justifyContent: "flex-end",
-            gap: 10,
-            color: "#2B2B2B",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "6px 0",
+            gap: 48,
+            width: "100%",
+            maxWidth: 920,
+            color: "#5B6B73",
+            letterSpacing: 0.2,
           }}
         >
-          <Link
-            prefetch={false}
-            href="/search"
-            style={{ textDecoration: "none" }}
-          >
-            <IconButton
-              aria-label="Search"
-              icon={<Search size={20} />}
-              variant="ghost"
-            />
+          <Link href="/" className="nav-link" style={linkStyle}>
+            Home
           </Link>
           <Link
             prefetch={false}
-            href="/wishlist"
-            style={{ textDecoration: "none" }}
+            href="/shop"
+            className="nav-link"
+            style={linkStyle}
           >
-            <IconButton
-              aria-label="Favorites"
-              icon={<Heart size={20} />}
-              variant="ghost"
-            />
+            Shop
           </Link>
-          <CartButton />
-        </CBox>
-      </div>
-
-      <CBox
-        display={{ base: "none", md: "flex" }}
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "6px 0",
-          gap: 48,
-          width: "100%",
-          maxWidth: 920,
-          color: "#5B6B73",
-          letterSpacing: 0.2,
-        }}
-      >
-        <Link
-          href="/"
-          style={{
-            textDecoration: "none",
-            color: "#5B6B73",
-            fontSize: 14,
-            fontFamily: "var(--font-rothek)",
-            fontWeight: 500,
-          }}
-        >
-          Home
-        </Link>
-        <Link
-          prefetch={false}
-          href="/shop"
-          style={{
-            textDecoration: "none",
-            color: "#5B6B73",
-            fontSize: 14,
-            fontFamily: "var(--font-rothek)",
-            fontWeight: 500,
-          }}
-        >
-          Shop
-        </Link>
-        <Link
-          prefetch={false}
-          href="/about"
-          style={{
-            textDecoration: "none",
-            color: "#5B6B73",
-            fontSize: 14,
-            fontFamily: "var(--font-rothek)",
-            fontWeight: 500,
-          }}
-        >
-          About
-        </Link>
-        <Link
-          prefetch={false}
-          href="/customize"
-          style={{
-            textDecoration: "none",
-            color: "#5B6B73",
-            fontSize: 14,
-            fontFamily: "var(--font-rothek)",
-            fontWeight: 500,
-          }}
-        >
-          Customize
-        </Link>
-        {user && (
-          <button
-            onClick={onOpenProfile}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#5B6B73",
-              fontSize: 14,
-              fontFamily: "var(--font-rothek)",
-              fontWeight: 500,
-              cursor: "pointer",
-            }}
-            aria-label="Open profile"
-          >
-            {displayName ? `Hi, ${displayName}` : "Profile"}
-          </button>
-        )}
-
-        {isAdmin && (
           <Link
             prefetch={false}
-            href="/admin"
-            style={{
-              textDecoration: "none",
-              color: "#5B6B73",
-              fontSize: 14,
-              fontFamily: "var(--font-rothek)",
-              fontWeight: 500,
-            }}
+            href="/about"
+            className="nav-link"
+            style={linkStyle}
           >
-            Admin
+            About
           </Link>
-        )}
-        {user ? (
-          <>
+          <Link
+            prefetch={false}
+            href="/customize"
+            className="nav-link"
+            style={linkStyle}
+          >
+            Customize
+          </Link>
+          {user && (
             <button
-              onClick={handleLogout}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#5B6B73",
-                fontSize: 14,
-                fontFamily: "var(--font-rothek)",
-                fontWeight: 500,
-                cursor: "pointer",
-              }}
+              onClick={onOpenProfile}
+              className="nav-button"
+              style={buttonStyle}
+              aria-label="Open profile"
             >
-              Logout
+              {displayName ? `Hi, ${displayName}` : "Profile"}
             </button>
-          </>
-        ) : (
-          <>
-            <Link
-              href="/login"
-              style={{
-                textDecoration: "none",
-                color: "#5B6B73",
-                fontSize: 14,
-                fontFamily: "var(--font-rothek)",
-                fontWeight: 500,
-              }}
-            >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              style={{
-                textDecoration: "none",
-                color: "#5B6B73",
-                fontSize: 14,
-                fontFamily: "var(--font-rothek)",
-                fontWeight: 500,
-              }}
-            >
-              Signup
-            </Link>
-          </>
-        )}
-      </CBox>
+          )}
 
-      {/* Mobile Drawer */}
-      <AnimatePresence>
-        {isOpen && (
-          <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="xs">
-            <DrawerOverlay />
-            <DrawerContent>
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -20, opacity: 0 }}
-                transition={{ duration: 0.2 }}
+          {isAdmin && (
+            <Link
+              prefetch={false}
+              href="/admin"
+              className="nav-link"
+              style={linkStyle}
+            >
+              Admin
+            </Link>
+          )}
+          {user ? (
+            <>
+              <button
+                onClick={handleLogout}
+                className="nav-button"
+                style={buttonStyle}
               >
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <DrawerHeader>Menu</DrawerHeader>
-                </motion.div>
-                <DrawerBody>
-                  <motion.div
-                    initial="hidden"
-                    animate="show"
-                    variants={{
-                      hidden: { opacity: 0, y: 10 },
-                      show: {
-                        opacity: 1,
-                        y: 0,
-                        transition: { staggerChildren: 0.05 },
-                      },
-                    }}
-                  >
-                    <CStack spacing={4}>
-                      <HStack>
-                        <form
-                          onSubmit={handleMobileSearch}
-                          style={{ width: "100%" }}
-                        >
-                          <HStack>
-                            <Input
-                              placeholder="Search flowers..."
-                              value={query}
-                              onChange={(e) => setQuery(e.target.value)}
-                              autoComplete="off"
-                            />
-                            <IconButton
-                              aria-label="Search"
-                              icon={<Search size={18} />}
-                              type="submit"
-                            />
-                          </HStack>
-                        </form>
-                        <Link
-                          prefetch={false}
-                          href="/wishlist"
-                          onClick={onClose}
-                        >
-                          <IconButton
-                            aria-label="Favorites"
-                            icon={<Heart size={18} />}
-                          />
-                        </Link>
-                        <CartButton />
-                      </HStack>
-                      <Link
-                        href="/"
-                        onClick={onClose}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <CButton
-                          variant="ghost"
-                          width="100%"
-                          justifyContent="flex-start"
-                        >
-                          Home
-                        </CButton>
-                      </Link>
-                      <Link
-                        href="/shop"
-                        onClick={onClose}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <CButton
-                          variant="ghost"
-                          width="100%"
-                          justifyContent="flex-start"
-                        >
-                          Shop
-                        </CButton>
-                      </Link>
-                      <Link
-                        href="/about"
-                        onClick={onClose}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <CButton
-                          variant="ghost"
-                          width="100%"
-                          justifyContent="flex-start"
-                        >
-                          About
-                        </CButton>
-                      </Link>
-                      <Link
-                        href="/customize"
-                        onClick={onClose}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <CButton
-                          variant="ghost"
-                          width="100%"
-                          justifyContent="flex-start"
-                        >
-                          Customize
-                        </CButton>
-                      </Link>
-                      {user && (
-                        <CButton
-                          onClick={() => {
-                            onClose();
-                            onOpenProfile();
-                          }}
-                          variant="ghost"
-                          width="100%"
-                          justifyContent="flex-start"
-                        >
-                          Profile
-                        </CButton>
-                      )}
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="nav-link" style={linkStyle}>
+                Login
+              </Link>
+              <Link href="/signup" className="nav-link" style={linkStyle}>
+                Signup
+              </Link>
+            </>
+          )}
+        </CBox>
 
-                      {isAdmin && (
+        {/* Mobile Drawer */}
+        <AnimatePresence>
+          {isOpen && (
+            <Drawer
+              isOpen={isOpen}
+              placement="left"
+              onClose={onClose}
+              size="xs"
+            >
+              <DrawerOverlay />
+              <DrawerContent>
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -20, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <DrawerHeader>Menu</DrawerHeader>
+                  </motion.div>
+                  <DrawerBody>
+                    <motion.div
+                      initial="hidden"
+                      animate="show"
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        show: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { staggerChildren: 0.05 },
+                        },
+                      }}
+                    >
+                      <CStack spacing={4}>
+                        <HStack>
+                          <form
+                            onSubmit={handleMobileSearch}
+                            style={{ width: "100%" }}
+                          >
+                            <HStack>
+                              <Input
+                                placeholder="Search flowers..."
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                autoComplete="off"
+                              />
+                              <IconButton
+                                aria-label="Search"
+                                icon={<Search size={18} />}
+                                type="submit"
+                              />
+                            </HStack>
+                          </form>
+                          <Link
+                            prefetch={false}
+                            href="/wishlist"
+                            onClick={onClose}
+                          >
+                            <IconButton
+                              aria-label="Favorites"
+                              icon={<Heart size={18} />}
+                            />
+                          </Link>
+                          <CartButton />
+                        </HStack>
                         <Link
-                          href="/admin"
+                          href="/"
                           onClick={onClose}
                           style={{ textDecoration: "none" }}
                         >
@@ -547,274 +605,482 @@ export default function NavigationBar() {
                             width="100%"
                             justifyContent="flex-start"
                           >
-                            Admin
+                            Home
                           </CButton>
                         </Link>
-                      )}
-                      {user ? (
-                        <CButton
-                          onClick={() => {
-                            onClose();
-                            handleLogout();
-                          }}
-                          variant="outline"
+                        <Link
+                          href="/shop"
+                          onClick={onClose}
+                          style={{ textDecoration: "none" }}
                         >
-                          Logout
-                        </CButton>
-                      ) : (
-                        <>
-                          <Link
-                            href="/login"
-                            onClick={onClose}
-                            style={{ textDecoration: "none" }}
+                          <CButton
+                            variant="ghost"
+                            width="100%"
+                            justifyContent="flex-start"
                           >
-                            <CButton variant="outline" width="100%">
-                              Login
-                            </CButton>
-                          </Link>
+                            Shop
+                          </CButton>
+                        </Link>
+                        <Link
+                          href="/about"
+                          onClick={onClose}
+                          style={{ textDecoration: "none" }}
+                        >
+                          <CButton
+                            variant="ghost"
+                            width="100%"
+                            justifyContent="flex-start"
+                          >
+                            About
+                          </CButton>
+                        </Link>
+                        <Link
+                          href="/customize"
+                          onClick={onClose}
+                          style={{ textDecoration: "none" }}
+                        >
+                          <CButton
+                            variant="ghost"
+                            width="100%"
+                            justifyContent="flex-start"
+                          >
+                            Customize
+                          </CButton>
+                        </Link>
+                        {user && (
+                          <CButton
+                            onClick={() => {
+                              onClose();
+                              onOpenProfile();
+                            }}
+                            variant="ghost"
+                            width="100%"
+                            justifyContent="flex-start"
+                          >
+                            Profile
+                          </CButton>
+                        )}
+
+                        {isAdmin && (
                           <Link
-                            href="/signup"
+                            href="/admin"
                             onClick={onClose}
                             style={{ textDecoration: "none" }}
                           >
                             <CButton
-                              variant="solid"
-                              colorScheme="red"
+                              variant="ghost"
                               width="100%"
+                              justifyContent="flex-start"
                             >
-                              Signup
+                              Admin
                             </CButton>
                           </Link>
-                        </>
-                      )}
-                    </CStack>
-                  </motion.div>
-                </DrawerBody>
-              </motion.div>
-            </DrawerContent>
-          </Drawer>
-        )}
-      </AnimatePresence>
-      {user && (
-        <Modal isOpen={isProfileOpen} onClose={onCloseProfile} isCentered>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Profile</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              {!!profileError && (
-                <div
-                  role="alert"
-                  style={{
-                    marginBottom: 10,
-                    padding: "10px 12px",
-                    borderRadius: 8,
-                    background: "#fef2f2",
-                    border: "1px solid #fecaca",
-                    color: "#991b1b",
-                  }}
+                        )}
+                        {user ? (
+                          <CButton
+                            onClick={() => {
+                              onClose();
+                              handleLogout();
+                            }}
+                            variant="outline"
+                          >
+                            Logout
+                          </CButton>
+                        ) : (
+                          <>
+                            <Link
+                              href="/login"
+                              onClick={onClose}
+                              style={{ textDecoration: "none" }}
+                            >
+                              <CButton variant="outline" width="100%">
+                                Login
+                              </CButton>
+                            </Link>
+                            <Link
+                              href="/signup"
+                              onClick={onClose}
+                              style={{ textDecoration: "none" }}
+                            >
+                              <CButton
+                                variant="solid"
+                                colorScheme="red"
+                                width="100%"
+                              >
+                                Signup
+                              </CButton>
+                            </Link>
+                          </>
+                        )}
+                      </CStack>
+                    </motion.div>
+                  </DrawerBody>
+                </motion.div>
+              </DrawerContent>
+            </Drawer>
+          )}
+        </AnimatePresence>
+        {user && (
+          <Modal
+            isOpen={isProfileOpen}
+            onClose={onCloseProfile}
+            isCentered
+            size="md"
+            scrollBehavior="inside"
+          >
+            <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
+            <ModalContent
+              border="1px solid"
+              borderColor="#F5C7CF"
+              borderRadius="16px"
+              bg="white"
+              boxShadow="xl"
+              maxH="85vh"
+            >
+              <ModalHeader
+                bg="#fffcf2"
+                borderTopRadius="16px"
+                borderBottom="1px solid"
+                borderColor="#F5C7CF"
+              >
+                <Text
+                  fontSize="xl"
+                  fontWeight="700"
+                  color="#bc0930"
+                  style={{ fontFamily: "var(--font-rothek)" }}
                 >
-                  {profileError}
-                </div>
-              )}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <Avatar name={displayName || user?.email || "User"} size="md" />
-                <div>
-                  <div style={{ fontWeight: 600 }}>{displayName || "User"}</div>
-                  <div style={{ fontSize: 13, color: "#6b7280" }}>
-                    {user?.email}
-                  </div>
-                  {isAdmin && (
-                    <div
-                      style={{ fontSize: 12, color: "#b45309", marginTop: 4 }}
-                    >
-                      Admin
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div style={{ marginTop: 16 }}>
-                <label
-                  htmlFor="avatar"
-                  style={{
-                    fontSize: 14,
-                    color: "#374151",
-                    display: "block",
-                    marginBottom: 6,
-                  }}
-                >
-                  Profile picture
-                </label>
-                <input
-                  id="avatar"
-                  type="file"
-                  accept="image/*"
-                  disabled={avatarUploading}
-                  onChange={(e) => handleAvatarUpload(e.target.files?.[0])}
-                />
-                {avatarUploading && (
-                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
-                    Uploading...
-                  </div>
+                  Profile Settings
+                </Text>
+              </ModalHeader>
+              <ModalCloseButton color="#bc0930" _hover={{ bg: "#fff8f3" }} />
+              <ModalBody py={4}>
+                {!!profileError && (
+                  <Alert status="error" mb={3} borderRadius="md">
+                    <AlertIcon />
+                    {profileError}
+                  </Alert>
                 )}
-              </div>
-              <div style={{ marginTop: 16 }}>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: 14,
-                    color: "#374151",
-                    marginBottom: 6,
-                  }}
-                >
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={profileName}
-                  onChange={(e) => setProfileName(e.target.value)}
-                  disabled={!editMode || savingProfile}
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    border: "1px solid #d1d5db",
-                    borderRadius: 8,
-                    outline: "none",
-                  }}
-                />
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: 14,
-                    color: "#374151",
-                    marginBottom: 6,
-                  }}
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={user?.email || ""}
-                  disabled
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 8,
-                    background: "#f9fafb",
-                  }}
-                />
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: 14,
-                    color: "#374151",
-                    marginBottom: 6,
-                  }}
-                >
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={profileUsername}
-                  onChange={(e) => setProfileUsername(e.target.value)}
-                  disabled={!editMode || savingProfile}
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    border: "1px solid #d1d5db",
-                    borderRadius: 8,
-                    outline: "none",
-                  }}
-                />
-              </div>
-              <hr style={{ margin: "16px 0", borderColor: "#eee" }} />
-              <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                Change password
-              </div>
-              <div style={{ display: "grid", gap: 10 }}>
-                <input
-                  type="password"
-                  placeholder="New password"
-                  value={password1}
-                  onChange={(e) => setPassword1(e.target.value)}
-                  disabled={passwordSaving}
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    border: "1px solid #d1d5db",
-                    borderRadius: 8,
-                  }}
-                />
-                <input
-                  type="password"
-                  placeholder="Confirm new password"
-                  value={password2}
-                  onChange={(e) => setPassword2(e.target.value)}
-                  disabled={passwordSaving}
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    border: "1px solid #d1d5db",
-                    borderRadius: 8,
-                  }}
-                />
-                <CButton
-                  onClick={handleChangePassword}
-                  isDisabled={passwordSaving}
-                  colorScheme="blue"
-                >
-                  {passwordSaving ? "Updating..." : "Update password"}
-                </CButton>
-              </div>
-            </ModalBody>
-            <ModalFooter style={{ display: "flex", gap: 8 }}>
-              {!editMode ? (
-                <>
-                  <CButton variant="ghost" onClick={onCloseProfile}>
-                    Close
-                  </CButton>
-                  <CButton onClick={() => setEditMode(true)}>
-                    Edit profile
-                  </CButton>
-                </>
-              ) : (
-                <>
+                <VStack spacing={4} align="stretch">
+                  {/* User Info Card */}
+                  <CBox
+                    p={3}
+                    bg="#fffcf2"
+                    borderRadius="12px"
+                    border="1px solid"
+                    borderColor="#F5C7CF"
+                  >
+                    <HStack spacing={3}>
+                      <Avatar
+                        name={displayName || user?.email || "User"}
+                        size="md"
+                        bg="#bc0930"
+                        color="white"
+                      />
+                      <VStack align="start" spacing={0.5}>
+                        <Text fontWeight="600" fontSize="md" color="#2B2B2B">
+                          {displayName || "User"}
+                        </Text>
+                        <Text fontSize="xs" color="#5B6B73">
+                          {user?.email}
+                        </Text>
+                        {isAdmin && (
+                          <Badge
+                            colorScheme="red"
+                            bg="#bc0930"
+                            color="white"
+                            fontSize="xs"
+                            px={2}
+                            py={0.5}
+                            borderRadius="full"
+                          >
+                            Admin
+                          </Badge>
+                        )}
+                      </VStack>
+                    </HStack>
+                  </CBox>
+
+                  {/* Profile Form */}
+                  <FormControl>
+                    <FormLabel color="#5B6B73" fontSize="sm" fontWeight="600">
+                      Profile Picture
+                    </FormLabel>
+                    <Input
+                      id="avatar"
+                      type="file"
+                      accept="image/*"
+                      disabled={avatarUploading}
+                      onChange={(e) => handleAvatarUpload(e.target.files?.[0])}
+                      borderColor="#F5C7CF"
+                      _hover={{ borderColor: "#bc0930" }}
+                      _focus={{
+                        borderColor: "#bc0930",
+                        boxShadow: "0 0 0 1px #bc0930",
+                      }}
+                    />
+                    {avatarUploading && (
+                      <Text fontSize="xs" color="#5B6B73" mt={1}>
+                        Uploading...
+                      </Text>
+                    )}
+                  </FormControl>
+
+                  <HStack spacing={3} align="start">
+                    <FormControl>
+                      <FormLabel color="#5B6B73" fontSize="sm" fontWeight="600">
+                        First Name
+                      </FormLabel>
+                      <Input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        disabled={!editMode || savingProfile}
+                        placeholder="Enter first name"
+                        borderColor="#F5C7CF"
+                        _hover={{ borderColor: "#bc0930" }}
+                        _focus={{
+                          borderColor: "#bc0930",
+                          boxShadow: "0 0 0 1px #bc0930",
+                        }}
+                        _disabled={{
+                          bg: "#f9fafb",
+                          cursor: "not-allowed",
+                        }}
+                      />
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel color="#5B6B73" fontSize="sm" fontWeight="600">
+                        Last Name
+                      </FormLabel>
+                      <Input
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        disabled={!editMode || savingProfile}
+                        placeholder="Enter last name"
+                        borderColor="#F5C7CF"
+                        _hover={{ borderColor: "#bc0930" }}
+                        _focus={{
+                          borderColor: "#bc0930",
+                          boxShadow: "0 0 0 1px #bc0930",
+                        }}
+                        _disabled={{
+                          bg: "#f9fafb",
+                          cursor: "not-allowed",
+                        }}
+                      />
+                    </FormControl>
+                  </HStack>
+
+                  <FormControl>
+                    <FormLabel color="#5B6B73" fontSize="sm" fontWeight="600">
+                      Email
+                    </FormLabel>
+                    <Input
+                      type="email"
+                      value={user?.email || ""}
+                      disabled
+                      bg="#f9fafb"
+                      borderColor="#e5e7eb"
+                      cursor="not-allowed"
+                    />
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel color="#5B6B73" fontSize="sm" fontWeight="600">
+                      Username
+                    </FormLabel>
+                    <Input
+                      type="text"
+                      value={profileUsername}
+                      onChange={(e) => setProfileUsername(e.target.value)}
+                      disabled={!editMode || savingProfile}
+                      placeholder="Enter username (optional)"
+                      borderColor="#F5C7CF"
+                      _hover={{ borderColor: "#bc0930" }}
+                      _focus={{
+                        borderColor: "#bc0930",
+                        boxShadow: "0 0 0 1px #bc0930",
+                      }}
+                      _disabled={{
+                        bg: "#f9fafb",
+                        cursor: "not-allowed",
+                      }}
+                    />
+                  </FormControl>
+
+                  <Divider borderColor="#F5C7CF" />
+
+                  {/* Password Section */}
+                  <CBox>
+                    <Text
+                      fontSize="sm"
+                      fontWeight="600"
+                      mb={3}
+                      color="#bc0930"
+                      style={{ fontFamily: "var(--font-rothek)" }}
+                    >
+                      Change Password
+                    </Text>
+                    <VStack spacing={2} align="stretch">
+                      <FormControl>
+                        <FormLabel
+                          color="#5B6B73"
+                          fontSize="sm"
+                          fontWeight="600"
+                        >
+                          New Password
+                        </FormLabel>
+                        <Input
+                          type="password"
+                          placeholder="Enter new password (min. 6 characters)"
+                          value={password1}
+                          onChange={(e) => setPassword1(e.target.value)}
+                          disabled={passwordSaving}
+                          borderColor="#F5C7CF"
+                          _hover={{ borderColor: "#bc0930" }}
+                          _focus={{
+                            borderColor: "#bc0930",
+                            boxShadow: "0 0 0 1px #bc0930",
+                          }}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel
+                          color="#5B6B73"
+                          fontSize="sm"
+                          fontWeight="600"
+                        >
+                          Confirm New Password
+                        </FormLabel>
+                        <Input
+                          type="password"
+                          placeholder="Confirm new password"
+                          value={password2}
+                          onChange={(e) => setPassword2(e.target.value)}
+                          disabled={passwordSaving}
+                          borderColor="#F5C7CF"
+                          _hover={{ borderColor: "#bc0930" }}
+                          _focus={{
+                            borderColor: "#bc0930",
+                            boxShadow: "0 0 0 1px #bc0930",
+                          }}
+                        />
+                      </FormControl>
+                      <CButton
+                        onClick={handleChangePassword}
+                        isLoading={passwordSaving}
+                        bg="#3182ce"
+                        color="white"
+                        _hover={{
+                          bg: "#2c5aa0",
+                          transform: "translateY(-1px)",
+                          boxShadow: "md",
+                        }}
+                        borderRadius="md"
+                        fontWeight="600"
+                        transition="all 0.2s"
+                      >
+                        Update Password
+                      </CButton>
+                    </VStack>
+                  </CBox>
+                </VStack>
+              </ModalBody>
+              <ModalFooter
+                bg="#fffcf2"
+                borderTop="1px solid"
+                borderColor="#F5C7CF"
+                borderBottomRadius="16px"
+              >
+                <HStack spacing={3} w="100%" justify="flex-end">
+                  {!editMode ? (
+                    <>
+                      <CButton
+                        variant="ghost"
+                        onClick={onCloseProfile}
+                        color="#5B6B73"
+                        _hover={{ bg: "#fff8f3" }}
+                      >
+                        Close
+                      </CButton>
+                      <CButton
+                        onClick={() => setEditMode(true)}
+                        bg="#bc0930"
+                        color="white"
+                        _hover={{
+                          bg: "#a10828",
+                          transform: "translateY(-1px)",
+                          boxShadow: "md",
+                        }}
+                        borderRadius="md"
+                        fontWeight="600"
+                        transition="all 0.2s"
+                      >
+                        Edit Profile
+                      </CButton>
+                    </>
+                  ) : (
+                    <>
+                      <CButton
+                        variant="ghost"
+                        onClick={() => {
+                          setEditMode(false);
+                          setProfileError("");
+                          const meta = user?.user_metadata || {};
+                          const fullName = meta.full_name || meta.name || "";
+                          const nameParts = fullName.split(" ");
+                          setFirstName(meta.first_name || nameParts[0] || "");
+                          setLastName(
+                            meta.last_name || nameParts.slice(1).join(" ") || ""
+                          );
+                          setProfileUsername(meta.username || "");
+                        }}
+                        color="#5B6B73"
+                        _hover={{ bg: "#fff8f3" }}
+                      >
+                        Cancel
+                      </CButton>
+                      <CButton
+                        onClick={handleSaveProfile}
+                        isLoading={savingProfile}
+                        bg="#38A169"
+                        color="white"
+                        _hover={{
+                          bg: "#2F855A",
+                          transform: "translateY(-1px)",
+                          boxShadow: "md",
+                        }}
+                        borderRadius="md"
+                        fontWeight="600"
+                        transition="all 0.2s"
+                      >
+                        Save Changes
+                      </CButton>
+                    </>
+                  )}
                   <CButton
-                    variant="ghost"
-                    onClick={() => {
-                      setEditMode(false);
-                      setProfileError("");
-                      setProfileName(
-                        user?.user_metadata?.full_name ||
-                          user?.user_metadata?.name ||
-                          ""
-                      );
-                      setProfileUsername(user?.user_metadata?.username || "");
+                    onClick={handleLogout}
+                    bg="#E53E3E"
+                    color="white"
+                    _hover={{
+                      bg: "#C53030",
+                      transform: "translateY(-1px)",
+                      boxShadow: "md",
                     }}
+                    borderRadius="md"
+                    fontWeight="600"
+                    transition="all 0.2s"
                   >
-                    Cancel
+                    Sign Out
                   </CButton>
-                  <CButton
-                    colorScheme="green"
-                    onClick={handleSaveProfile}
-                    isDisabled={savingProfile}
-                  >
-                    {savingProfile ? "Saving..." : "Save changes"}
-                  </CButton>
-                </>
-              )}
-              <CButton colorScheme="red" onClick={handleLogout}>
-                Sign Out
-              </CButton>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      )}
-    </div>
+                </HStack>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+        )}
+      </div>
+    </>
   );
 }
