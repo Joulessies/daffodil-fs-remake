@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import NavigationBar from "@/components/navigationbar";
+import { motion } from "framer-motion";
 import "./about.scss";
 
 // Animated Counter Component
@@ -54,9 +55,30 @@ const AnimatedCounter = ({ end, duration = 2000, suffix = "" }) => {
 
 export default function AboutPage() {
   const [isVisible, setIsVisible] = useState(false);
+  const [cmsContent, setCmsContent] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setIsVisible(true);
+  }, []);
+
+  useEffect(() => {
+    // Load CMS content
+    const loadCmsContent = async () => {
+      try {
+        const res = await fetch("/api/cms/pages/about");
+        if (res.ok) {
+          const data = await res.json();
+          setCmsContent(data);
+        }
+      } catch (error) {
+        console.error("Failed to load CMS content:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCmsContent();
   }, []);
 
   return (
@@ -95,37 +117,88 @@ export default function AboutPage() {
       <section id="our-story" className="story-section">
         <div className="container">
           <div className="story-content">
-            <div className="story-image">
+            <motion.div
+              className="story-image"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
               <div className="image-frame">
                 <img
-                  src="/images/shoppage.jpg"
-                  alt="Our Story"
+                  src={
+                    loading
+                      ? "/images/shoppage.jpg"
+                      : cmsContent && cmsContent.image_url
+                      ? cmsContent.image_url
+                      : "/images/shoppage.jpg"
+                  }
+                  alt={
+                    loading ? "Loading..." : cmsContent?.title || "Our Story"
+                  }
                   className="story-photo"
                 />
               </div>
               <div className="accent-circle"></div>
-            </div>
-            <div className="story-text">
-              <h2 className="section-title">Our Story</h2>
-              <p className="lead-text">
-                Daffodil was born from a simple belief: flowers have the power
-                to transform moments into memories.
-              </p>
-              <p>
-                This project began as a school assignment for our Web Systems
-                course, where we were challenged to create a comprehensive
-                e-commerce platform. What started as an academic exercise has
-                evolved into a fully-featured floral marketplace, showcasing
-                modern web development techniques and technologies.
-              </p>
-              <p>
-                Our team has remade and enhanced this system with better
-                architecture, improved APIs, and a more intuitive user
-                experience. This project demonstrates our commitment to learning
-                cutting-edge web development while creating something beautiful
-                and functional.
-              </p>
-            </div>
+            </motion.div>
+            <motion.div
+              className="story-text"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              {loading ? (
+                <>
+                  <h2 className="section-title">Our Story</h2>
+                  <p className="lead-text">
+                    Daffodil was born from a simple belief: flowers have the
+                    power to transform moments into memories.
+                  </p>
+                  <p>
+                    This project began as a school assignment for our Web
+                    Systems course, where we were challenged to create a
+                    comprehensive e-commerce platform. What started as an
+                    academic exercise has evolved into a fully-featured floral
+                    marketplace, showcasing modern web development techniques
+                    and technologies.
+                  </p>
+                  <p>
+                    Our team has remade and enhanced this system with better
+                    architecture, improved APIs, and a more intuitive user
+                    experience. This project demonstrates our commitment to
+                    learning cutting-edge web development while creating
+                    something beautiful and functional.
+                  </p>
+                </>
+              ) : cmsContent ? (
+                <div
+                  className="cms-content"
+                  dangerouslySetInnerHTML={{ __html: cmsContent.content }}
+                />
+              ) : (
+                <>
+                  <h2 className="section-title">Our Story</h2>
+                  <p className="lead-text">
+                    Daffodil was born from a simple belief: flowers have the
+                    power to transform moments into memories.
+                  </p>
+                  <p>
+                    This project began as a school assignment for our Web
+                    Systems course, where we were challenged to create a
+                    comprehensive e-commerce platform. What started as an
+                    academic exercise has evolved into a fully-featured floral
+                    marketplace, showcasing modern web development techniques
+                    and technologies.
+                  </p>
+                  <p>
+                    Our team has remade and enhanced this system with better
+                    architecture, improved APIs, and a more intuitive user
+                    experience. This project demonstrates our commitment to
+                    learning cutting-edge web development while creating
+                    something beautiful and functional.
+                  </p>
+                </>
+              )}
+            </motion.div>
           </div>
         </div>
       </section>
@@ -135,36 +208,52 @@ export default function AboutPage() {
         <div className="container">
           <div className="philosophy-content">
             <h2 className="philosophy-title">
-              More Than Flowers — We Create Emotions
+              {cmsContent && cmsContent.philosophy_data
+                ? cmsContent.philosophy_data.title
+                : "More Than Flowers — We Create Emotions"}
             </h2>
             <div className="philosophy-grid">
-              <div className="philosophy-card">
-                <div className="card-icon">🎨</div>
-                <h3>Artistry</h3>
-                <p>
-                  Each arrangement is a unique masterpiece, designed with an
-                  artist's eye and a craftsman's precision. We blend colors,
-                  textures, and forms to create visual poetry.
-                </p>
-              </div>
-              <div className="philosophy-card">
-                <div className="card-icon">💚</div>
-                <h3>Sustainability</h3>
-                <p>
-                  We partner with local growers and use eco-friendly practices.
-                  Every stem is sourced responsibly, ensuring beauty that
-                  doesn't cost the earth.
-                </p>
-              </div>
-              <div className="philosophy-card">
-                <div className="card-icon">✨</div>
-                <h3>Excellence</h3>
-                <p>
-                  From water temperature to stem cutting angles, we obsess over
-                  details others overlook. This dedication ensures your flowers
-                  stay fresh longer.
-                </p>
-              </div>
+              {cmsContent &&
+              cmsContent.philosophy_data &&
+              cmsContent.philosophy_data.cards ? (
+                cmsContent.philosophy_data.cards.map((card, index) => (
+                  <div key={index} className="philosophy-card">
+                    <div className="card-icon">{card.icon}</div>
+                    <h3>{card.title}</h3>
+                    <p>{card.description}</p>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="philosophy-card">
+                    <div className="card-icon">🎨</div>
+                    <h3>Artistry</h3>
+                    <p>
+                      Each arrangement is a unique masterpiece, designed with an
+                      artist's eye and a craftsman's precision. We blend colors,
+                      textures, and forms to create visual poetry.
+                    </p>
+                  </div>
+                  <div className="philosophy-card">
+                    <div className="card-icon">💚</div>
+                    <h3>Sustainability</h3>
+                    <p>
+                      We partner with local growers and use eco-friendly
+                      practices. Every stem is sourced responsibly, ensuring
+                      beauty that doesn't cost the earth.
+                    </p>
+                  </div>
+                  <div className="philosophy-card">
+                    <div className="card-icon">✨</div>
+                    <h3>Excellence</h3>
+                    <p>
+                      From water temperature to stem cutting angles, we obsess
+                      over details others overlook. This dedication ensures your
+                      flowers stay fresh longer.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -205,87 +294,116 @@ export default function AboutPage() {
       {/* Team Section */}
       <section className="team-section">
         <div className="container">
-          <h2 className="section-title">Meet Our Passionate Team</h2>
+          <h2 className="section-title">
+            {cmsContent && cmsContent.team_data
+              ? cmsContent.team_data.title
+              : "Meet Our Passionate Team"}
+          </h2>
           <p className="section-subtitle">
-            The creative minds and caring hearts behind every Daffodil
-            arrangement
+            {cmsContent && cmsContent.team_data
+              ? cmsContent.team_data.subtitle
+              : "The creative minds and caring hearts behind every Daffodil arrangement"}
           </p>
           <div className="team-grid">
-            <div className="team-member">
-              <div className="member-image">
-                <img
-                  src="/images/about-us-pictures-members/agres.png"
-                  alt="Shawn Agres"
-                  className="member-photo"
-                />
-              </div>
-              <h3>Shawn Agres</h3>
-              <p className="member-role">Admin Frontend Developer</p>
-              <p className="member-bio">
-                Shawn develops and maintains our administrative systems,
-                ensuring smooth backend operations.
-              </p>
-            </div>
-            <div className="team-member">
-              <div className="member-image">
-                <img
-                  src="/images/about-us-pictures-members/kim.png"
-                  alt="Kimberly Bombita"
-                  className="member-photo"
-                />
-              </div>
-              <h3>Kimberly Bombita</h3>
-              <p className="member-role">Home Page Developer & Assets</p>
-              <p className="member-bio">
-                Kimberly crafts our home page experience and manages digital
-                assets, bringing our floral vision to life online.
-              </p>
-            </div>
-            <div className="team-member">
-              <div className="member-image">
-                <img
-                  src="/images/about-us-pictures-members/julius.png"
-                  alt="Julius San Jose"
-                  className="member-photo"
-                />
-              </div>
-              <h3>Julius San Jose</h3>
-              <p className="member-role">Owner & Website Operations</p>
-              <p className="member-bio">
-                Julius is the owner of Daffodil and operates the entire website,
-                overseeing our digital presence.
-              </p>
-            </div>
-            <div className="team-member">
-              <div className="member-image">
-                <img
-                  src="/images/about-us-pictures-members/catapang.png"
-                  alt="Sean Rikcel Catapang"
-                  className="member-photo"
-                />
-              </div>
-              <h3>Sean Rikcel Catapang</h3>
-              <p className="member-role">About & Contact Page Developer</p>
-              <p className="member-bio">
-                Sean Rikcel built the About and Contact pages and helps manage
-                project assets and visual consistency across the site.
-              </p>
-            </div>
-            <div className="team-member">
-              <div className="member-image">
-                <img
-                  src="/images/about-us-pictures-members/sumayod.png"
-                  alt="Lee Andre Sumayod"
-                  className="member-photo"
-                />
-              </div>
-              <h3>Lee Andre Sumayod</h3>
-              <p className="member-role">Home Page Developer & Assets</p>
-              <p className="member-bio">
-                Lee Andre develops our home page functionality and manages
-                visual assets, creating an engaging user experience.
-              </p>
-            </div>
+            {cmsContent &&
+            cmsContent.team_data &&
+            cmsContent.team_data.members ? (
+              cmsContent.team_data.members.map((member, index) => (
+                <div key={index} className="team-member">
+                  <div className="member-image">
+                    {member.image_url ? (
+                      <img
+                        src={member.image_url}
+                        alt={member.name}
+                        className="member-photo"
+                      />
+                    ) : null}
+                  </div>
+                  <h3>{member.name}</h3>
+                  <p className="member-role">{member.role}</p>
+                  <p className="member-bio">{member.bio}</p>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="team-member">
+                  <div className="member-image">
+                    <img
+                      src="/images/about-us-pictures-members/agres.png"
+                      alt="Shawn Agres"
+                      className="member-photo"
+                    />
+                  </div>
+                  <h3>Shawn Agres</h3>
+                  <p className="member-role">Admin Frontend Developer</p>
+                  <p className="member-bio">
+                    Shawn develops and maintains our administrative systems,
+                    ensuring smooth backend operations.
+                  </p>
+                </div>
+                <div className="team-member">
+                  <div className="member-image">
+                    <img
+                      src="/images/about-us-pictures-members/kim.png"
+                      alt="Kimberly Bombita"
+                      className="member-photo"
+                    />
+                  </div>
+                  <h3>Kimberly Bombita</h3>
+                  <p className="member-role">Home Page Developer & Assets</p>
+                  <p className="member-bio">
+                    Kimberly crafts our home page experience and manages digital
+                    assets, bringing our floral vision to life online.
+                  </p>
+                </div>
+                <div className="team-member">
+                  <div className="member-image">
+                    <img
+                      src="/images/about-us-pictures-members/julius.png"
+                      alt="Julius San Jose"
+                      className="member-photo"
+                    />
+                  </div>
+                  <h3>Julius San Jose</h3>
+                  <p className="member-role">Owner & Website Operations</p>
+                  <p className="member-bio">
+                    Julius is the owner of Daffodil and operates the entire
+                    website, overseeing our digital presence.
+                  </p>
+                </div>
+                <div className="team-member">
+                  <div className="member-image">
+                    <img
+                      src="/images/about-us-pictures-members/catapang.png"
+                      alt="Sean Rikcel Catapang"
+                      className="member-photo"
+                    />
+                  </div>
+                  <h3>Sean Rikcel Catapang</h3>
+                  <p className="member-role">Home Page Developer & Assets</p>
+                  <p className="member-bio">
+                    Sean Rikcel focuses on home page development and asset
+                    management, ensuring our website showcases our offerings
+                    beautifully.
+                  </p>
+                </div>
+                <div className="team-member">
+                  <div className="member-image">
+                    <img
+                      src="/images/about-us-pictures-members/sumayod.png"
+                      alt="Lee Andre Sumayod"
+                      className="member-photo"
+                    />
+                  </div>
+                  <h3>Lee Andre Sumayod</h3>
+                  <p className="member-role">Home Page Developer & Assets</p>
+                  <p className="member-bio">
+                    Lee Andre develops our home page functionality and manages
+                    visual assets, creating an engaging user experience.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -293,44 +411,67 @@ export default function AboutPage() {
       {/* Testimonials Section */}
       <section className="testimonials-section">
         <div className="container">
-          <h2 className="section-title">What Our Customers Say</h2>
+          <h2 className="section-title">
+            {cmsContent && cmsContent.testimonials_data
+              ? cmsContent.testimonials_data.title
+              : "What Our Customers Say"}
+          </h2>
           <div className="testimonials-grid">
-            <div className="testimonial-card">
-              <div className="quote-mark">"</div>
-              <p className="testimonial-text">
-                Daffodil transformed our wedding into a fairytale. Every
-                arrangement was beyond our dreams. They truly understood our
-                vision and brought it to life!
-              </p>
-              <div className="testimonial-author">
-                <strong>Sarah & Michael</strong>
-                <span>Wedding Clients</span>
-              </div>
-            </div>
-            <div className="testimonial-card">
-              <div className="quote-mark">"</div>
-              <p className="testimonial-text">
-                I've been ordering from Daffodil for 3 years. The quality and
-                creativity never cease to amaze me. They're my go-to for every
-                special occasion.
-              </p>
-              <div className="testimonial-author">
-                <strong>Jennifer Liu</strong>
-                <span>Regular Customer</span>
-              </div>
-            </div>
-            <div className="testimonial-card">
-              <div className="quote-mark">"</div>
-              <p className="testimonial-text">
-                The corporate arrangements for our office are always stunning.
-                Daffodil understands our brand and delivers consistency with
-                creativity.
-              </p>
-              <div className="testimonial-author">
-                <strong>Robert Thompson</strong>
-                <span>Corporate Client</span>
-              </div>
-            </div>
+            {cmsContent &&
+            cmsContent.testimonials_data &&
+            cmsContent.testimonials_data.testimonials ? (
+              cmsContent.testimonials_data.testimonials.map(
+                (testimonial, index) => (
+                  <div key={index} className="testimonial-card">
+                    <div className="quote-mark">"</div>
+                    <p className="testimonial-text">{testimonial.text}</p>
+                    <div className="testimonial-author">
+                      <strong>{testimonial.name}</strong>
+                      <span>{testimonial.client_type}</span>
+                    </div>
+                  </div>
+                )
+              )
+            ) : (
+              <>
+                <div className="testimonial-card">
+                  <div className="quote-mark">"</div>
+                  <p className="testimonial-text">
+                    Daffodil transformed our wedding into a fairytale. Every
+                    arrangement was beyond our dreams. They truly understood our
+                    vision and brought it to life!
+                  </p>
+                  <div className="testimonial-author">
+                    <strong>Sarah & Michael</strong>
+                    <span>Wedding Clients</span>
+                  </div>
+                </div>
+                <div className="testimonial-card">
+                  <div className="quote-mark">"</div>
+                  <p className="testimonial-text">
+                    I've been ordering from Daffodil for 3 years. The quality
+                    and creativity never cease to amaze me. They're my go-to for
+                    every special occasion.
+                  </p>
+                  <div className="testimonial-author">
+                    <strong>Jennifer Liu</strong>
+                    <span>Regular Customer</span>
+                  </div>
+                </div>
+                <div className="testimonial-card">
+                  <div className="quote-mark">"</div>
+                  <p className="testimonial-text">
+                    The corporate arrangements for our office are always
+                    stunning. Daffodil understands our brand and delivers
+                    consistency with creativity.
+                  </p>
+                  <div className="testimonial-author">
+                    <strong>Robert Thompson</strong>
+                    <span>Corporate Client</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -339,30 +480,56 @@ export default function AboutPage() {
       <section className="values-section">
         <div className="container">
           <div className="values-content">
-            <h2 className="section-title">Our Core Values</h2>
+            <h2 className="section-title">
+              {cmsContent && cmsContent.values_data
+                ? cmsContent.values_data.title
+                : "Our Core Values"}
+            </h2>
             <div className="values-showcase">
-              <div className="value-item">
-                <div className="value-icon">
-                  <img src="/images/home/home3.svg" alt="Love" />
-                </div>
-                <h3>Love</h3>
-                <p>In every petal we place</p>
-              </div>
-              <div className="value-item">
-                <div className="value-icon">✨</div>
-                <h3>Beauty</h3>
-                <p>In every design we create</p>
-              </div>
-              <div className="value-item">
-                <div className="value-icon">🌿</div>
-                <h3>Freshness</h3>
-                <p>In every bloom we deliver</p>
-              </div>
-              <div className="value-item">
-                <div className="value-icon">🎨</div>
-                <h3>Creativity</h3>
-                <p>In every arrangement we craft</p>
-              </div>
+              {cmsContent &&
+              cmsContent.values_data &&
+              cmsContent.values_data.values ? (
+                cmsContent.values_data.values.map((value, index) => (
+                  <div key={index} className="value-item">
+                    <div className="value-icon">
+                      {value.icon ? (
+                        value.icon.startsWith("/images/") ? (
+                          <img src={value.icon} alt={value.title} />
+                        ) : (
+                          value.icon
+                        )
+                      ) : null}
+                    </div>
+                    <h3>{value.title}</h3>
+                    <p>{value.description}</p>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="value-item">
+                    <div className="value-icon">
+                      <img src="/images/home/home3.svg" alt="Love" />
+                    </div>
+                    <h3>Love</h3>
+                    <p>In every petal we place</p>
+                  </div>
+                  <div className="value-item">
+                    <div className="value-icon">✨</div>
+                    <h3>Beauty</h3>
+                    <p>In every design we create</p>
+                  </div>
+                  <div className="value-item">
+                    <div className="value-icon">🌿</div>
+                    <h3>Freshness</h3>
+                    <p>In every bloom we deliver</p>
+                  </div>
+                  <div className="value-item">
+                    <div className="value-icon">🎨</div>
+                    <h3>Creativity</h3>
+                    <p>In every arrangement we craft</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

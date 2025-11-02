@@ -26,7 +26,7 @@ import {
   Avatar,
   Divider,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Flex } from "@chakra-ui/react";
 import {
   Search,
@@ -39,18 +39,22 @@ import {
   Copy,
   ChevronLeft,
   ChevronRight,
+  Trash2,
 } from "lucide-react";
 import AdminBackButton from "@/components/AdminBackButton";
 import styles from "./users.module.scss";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function AdminUsersPage() {
   const toast = useToast();
+  const { user: currentUser } = useAuth();
   const [items, setItems] = useState([]);
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [loadingPromote, setLoadingPromote] = useState({});
   const [loadingSuspend, setLoadingSuspend] = useState({});
+  const [loadingDelete, setLoadingDelete] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const load = async () => {
@@ -145,6 +149,58 @@ export default function AdminUsersPage() {
       });
     } finally {
       setLoadingPromote((p) => ({ ...p, [id]: false }));
+    }
+  };
+
+  const deleteUser = async (id, userEmail, isAdmin) => {
+    // Prevent self-deletion
+    if (currentUser?.id === id) {
+      toast({
+        title: "Cannot delete your own account",
+        description: "You cannot delete yourself. Ask another admin to do it.",
+        status: "warning",
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (
+      !window.confirm(
+        `Delete user "${userEmail}" permanently? This action cannot be undone.`
+      )
+    )
+      return;
+
+    try {
+      setLoadingDelete((p) => ({ ...p, [id]: true }));
+      const res = await fetch(`/api/admin/users/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to delete user");
+      }
+
+      toast({
+        title: "User deleted",
+        description: `User "${userEmail}" has been permanently deleted`,
+        status: "success",
+        duration: 3000,
+      });
+
+      await load();
+    } catch (e) {
+      console.error("Delete error:", e);
+      toast({
+        title: "Delete failed",
+        description: e.message || "An error occurred",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoadingDelete((p) => ({ ...p, [id]: false }));
     }
   };
 
@@ -461,6 +517,36 @@ export default function AdminUsersPage() {
                         >
                           Remove
                         </Button>
+                        {u.is_admin && (
+                          <Tooltip
+                            label={
+                              currentUser?.id === u.id
+                                ? "Cannot delete your own account"
+                                : "Delete permanently"
+                            }
+                            hasArrow
+                          >
+                            <IconButton
+                              size="sm"
+                              variant="outline"
+                              colorScheme="red"
+                              icon={<Trash2 size={16} />}
+                              isLoading={!!loadingDelete[u.id]}
+                              isDisabled={currentUser?.id === u.id}
+                              onClick={() =>
+                                deleteUser(u.id, u.email, u.is_admin)
+                              }
+                              borderRadius="md"
+                              _hover={{
+                                transform: "translateY(-1px)",
+                                boxShadow: "md",
+                                bg: "red.50",
+                              }}
+                              transition="all 0.2s"
+                              aria-label="Delete user"
+                            />
+                          </Tooltip>
+                        )}
                       </HStack>
                     </Td>
                   </Tr>
@@ -538,18 +624,13 @@ export default function AdminUsersPage() {
                       index > 0 && page - array[index - 1] > 1;
 
                     return (
-                      <>
+                      <React.Fragment key={`page-${page}`}>
                         {showEllipsisBefore && (
-                          <Text
-                            key={`ellipsis-${page}`}
-                            px={2}
-                            color="gray.400"
-                          >
+                          <Text px={2} color="gray.400">
                             ...
                           </Text>
                         )}
                         <Button
-                          key={page}
                           size="sm"
                           variant={currentPage === page ? "solid" : "ghost"}
                           bg={currentPage === page ? "#bc0930" : "transparent"}
@@ -564,7 +645,7 @@ export default function AdminUsersPage() {
                         >
                           {page}
                         </Button>
-                      </>
+                      </React.Fragment>
                     );
                   })}
               </HStack>

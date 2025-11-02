@@ -41,6 +41,7 @@ import {
   Clock,
   CheckCircle,
   MessageSquare,
+  FileText,
 } from "lucide-react";
 
 const StatCard = ({
@@ -50,61 +51,75 @@ const StatCard = ({
   color,
   helpText,
   trend,
-}) => (
-  <Box
-    as={motion.div}
-    whileHover={{ y: -4, boxShadow: "xl" }}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.3 }}
-    bg="white"
-    p={6}
-    borderRadius="16px"
-    border="1px solid"
-    borderColor="#F5C7CF"
-    position="relative"
-    overflow="hidden"
-  >
+  href,
+}) => {
+  const content = (
     <Box
-      position="absolute"
-      top="-20px"
-      right="-20px"
-      opacity={0.1}
-      transform="rotate(-15deg)"
+      as={motion.div}
+      whileHover={{ y: -4, boxShadow: "xl" }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      bg="white"
+      p={6}
+      borderRadius="16px"
+      border="1px solid"
+      borderColor="#F5C7CF"
+      position="relative"
+      overflow="hidden"
+      cursor={href ? "pointer" : "default"}
     >
-      <IconComponent size={120} color={color} />
-    </Box>
-    <HStack justify="space-between" mb={2}>
-      <Box p={3} borderRadius="12px" bg={`${color}15`} color={color}>
-        <IconComponent size={24} />
-      </Box>
-      {trend && (
-        <Badge colorScheme={trend > 0 ? "green" : "red"} fontSize="xs">
-          {trend > 0 ? "+" : ""}
-          {trend}%
-        </Badge>
-      )}
-    </HStack>
-    <Stat>
-      <StatLabel color="#5B6B73" fontSize="sm" fontWeight="500">
-        {title}
-      </StatLabel>
-      <StatNumber
-        fontSize="3xl"
-        fontWeight="bold"
-        color="#bc0930"
-        style={{ fontFamily: "var(--font-rothek)" }}
+      <Box
+        position="absolute"
+        top="-20px"
+        right="-20px"
+        opacity={0.1}
+        transform="rotate(-15deg)"
       >
-        {value}
-      </StatNumber>
-      {helpText && (
-        <StatHelpText color="#8A9AA3" fontSize="xs">
-          {helpText}
-        </StatHelpText>
-      )}
-    </Stat>
-  </Box>
-);
+        <IconComponent size={120} color={color} />
+      </Box>
+      <HStack justify="space-between" mb={2}>
+        <Box p={3} borderRadius="12px" bg={`${color}15`} color={color}>
+          <IconComponent size={24} />
+        </Box>
+        {trend && (
+          <Badge colorScheme={trend > 0 ? "green" : "red"} fontSize="xs">
+            {trend > 0 ? "+" : ""}
+            {trend}%
+          </Badge>
+        )}
+      </HStack>
+      <Stat>
+        <StatLabel color="#5B6B73" fontSize="sm" fontWeight="500">
+          {title}
+        </StatLabel>
+        <StatNumber
+          fontSize="3xl"
+          fontWeight="bold"
+          color="#bc0930"
+          style={{ fontFamily: "var(--font-rothek)" }}
+        >
+          {value}
+        </StatNumber>
+        {helpText && (
+          <StatHelpText color="#8A9AA3" fontSize="xs">
+            {helpText}
+          </StatHelpText>
+        )}
+      </Stat>
+    </Box>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} style={{ textDecoration: "none" }}>
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
+};
 
 export default function AdminPage() {
   const { user, isAdmin, isLoading } = useAuth();
@@ -251,6 +266,7 @@ export default function AdminPage() {
           icon={ShoppingBag}
           color="#bc0930"
           helpText="All time"
+          href="/admin/analytics/sales"
         />
         <StatCard
           title="Total Revenue"
@@ -258,6 +274,7 @@ export default function AdminPage() {
           icon={DollarSign}
           color="#0f8f4d"
           helpText="All time"
+          href="/admin/analytics/sales"
         />
         <StatCard
           title="Products"
@@ -265,6 +282,7 @@ export default function AdminPage() {
           icon={Package}
           color="#3b82f6"
           helpText="In catalog"
+          href="/admin/analytics/products"
         />
         <StatCard
           title="Customers"
@@ -272,6 +290,7 @@ export default function AdminPage() {
           icon={Users}
           color="#8b5cf6"
           helpText="Registered"
+          href="/admin/analytics/customers"
         />
         <StatCard
           title="Low Stock"
@@ -279,6 +298,7 @@ export default function AdminPage() {
           icon={AlertTriangle}
           color="#f59e0b"
           helpText="≤ 5 items"
+          href="/admin/inventory"
         />
         <StatCard
           title="Pending"
@@ -286,6 +306,7 @@ export default function AdminPage() {
           icon={Clock}
           color="#ef4444"
           helpText="Orders"
+          href="/admin/orders"
         />
       </SimpleGrid>
 
@@ -527,6 +548,16 @@ export default function AdminPage() {
               colorScheme="red"
             >
               Reviews
+            </Button>
+          </Link>
+          <Link href="/admin/cms">
+            <Button
+              w="full"
+              leftIcon={<FileText size={18} />}
+              variant="outline"
+              colorScheme="red"
+            >
+              CMS
             </Button>
           </Link>
           <Link href="/shop">

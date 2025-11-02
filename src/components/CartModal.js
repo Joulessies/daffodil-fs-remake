@@ -289,15 +289,23 @@ export default function CartModal() {
                               }}
                               aria-label="Decrease quantity"
                             />
-                            <Text
-                              fontSize="sm"
-                              fontWeight="600"
+                            <Box
                               minW="32px"
-                              textAlign="center"
-                              color="#2B2B2B"
+                              h="32px"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
                             >
-                              {item.quantity || 1}
-                            </Text>
+                              <Text
+                                fontSize="sm"
+                                fontWeight="600"
+                                color="#2B2B2B"
+                                lineHeight="1"
+                                fontFamily="var(--font-rothek)"
+                              >
+                                {item.quantity || 1}
+                              </Text>
+                            </Box>
                             <IconButton
                               size="sm"
                               icon={<Plus size={14} />}

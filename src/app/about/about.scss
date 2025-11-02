@@ -357,6 +357,53 @@ $accent-yellow: #ffd93d;
   }
 }
 
+// CMS Content styling
+.cms-content {
+  h2 {
+    font-size: 3rem;
+    font-weight: 300;
+    color: $primary-color;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+
+    @media (max-width: 768px) {
+      font-size: 2.5rem;
+    }
+  }
+
+  h3 {
+    font-size: 2rem;
+    font-weight: 400;
+    color: $primary-color;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: $text-light;
+    margin-bottom: 1.5rem;
+  }
+
+  ul {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+
+    li {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: $text-light;
+      margin-bottom: 0.5rem;
+
+      strong {
+        font-weight: 600;
+        color: $text-dark;
+      }
+    }
+  }
+}
+
 // Enhanced Philosophy Section
 .philosophy-section {
   @include section-padding;
@@ -703,10 +750,11 @@ $accent-yellow: #ffd93d;
     display: inline-block;
 
     &.btn-primary {
-      background: $white;
-      color: $primary-color;
+      background: $primary-color;
+      color: $white;
 
       &:hover {
+        background: darken($primary-color, 10%);
         transform: translateY(-2px);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
       }
@@ -720,6 +768,8 @@ $accent-yellow: #ffd93d;
       &:hover {
         background: $primary-color;
         color: $white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
       }
     }
   }

@@ -38,57 +38,62 @@ export default function HomePage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 1, ease: "easeOut" }}
       >
-        <motion.div
-          className="circle big"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-        ></motion.div>
-        <motion.div
-          className="circle medium"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-        ></motion.div>
-        <motion.div
-          className="circle small"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-        ></motion.div>
-
         <div className="hero-content">
-          <motion.h1
-            className="hero-title"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-          >
-            <span className="red-part">BOU</span>
-            <span className="white-part">QUETS</span>
-          </motion.h1>
-          <motion.h1
-            className="hero-title2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-          >
-            <span className="red-part">FROM THE</span>
-            <span className="red-part"> FLORIST</span>
-          </motion.h1>
           <motion.img
             src="/images/home/home1.svg"
             alt="Romantic Bouquet"
             className="hero-image"
             initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
             animate={{ scale: 1, opacity: 1, rotate: 0 }}
-            transition={{ duration: 1.2, delay: 0.7, ease: "easeOut" }}
+            transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
           />
+
+          <div className="hero-text-overlay">
+            <motion.h1
+              className="hero-title"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+            >
+              <span className="red-part">BOUQUETS</span>
+            </motion.h1>
+            <motion.h2
+              className="hero-subtitle"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.7, ease: "easeOut" }}
+            >
+              FROM THE FLORIST
+            </motion.h2>
+            <motion.p
+              className="hero-description"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.9, ease: "easeOut" }}
+            >
+              Handcrafted floral arrangements that bring beauty and joy to every
+              moment
+            </motion.p>
+            <motion.div
+              className="hero-cta"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 1.1, ease: "easeOut" }}
+            >
+              <Link href="/shop" className="btn btn-primary btn-lg">
+                Shop Now
+              </Link>
+              <Link href="/customize" className="btn btn-outline btn-lg">
+                Customize
+              </Link>
+            </motion.div>
+          </div>
+
           <motion.h3
             className="vertical"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 1.3, ease: "easeOut" }}
           >
             <Link href="/shop">SELECT BOUQUET</Link>
           </motion.h3>
@@ -282,13 +287,15 @@ export default function HomePage() {
           <Link
             href="/shop"
             className={`category ${activeCategory === 0 ? "active" : ""}`}
+            onClick={() => setActiveCategory(0)}
           >
             <motion.span
               animate={{
-                color: activeCategory === 0 ? "#b30b2f" : "#e8e8e8",
-                opacity: activeCategory === 0 ? 1 : 0.7,
+                scale: activeCategory === 0 ? 1.05 : 1,
+                color: activeCategory === 0 ? "#bc0930" : "#2d3748",
+                opacity: activeCategory === 0 ? 1 : 0.8,
               }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               ALL BOUQUETS
             </motion.span>
@@ -297,13 +304,15 @@ export default function HomePage() {
           <Link
             href="/shop"
             className={`category ${activeCategory === 1 ? "active" : ""}`}
+            onClick={() => setActiveCategory(1)}
           >
             <motion.span
               animate={{
-                color: activeCategory === 1 ? "#b30b2f" : "#e8e8e8",
-                opacity: activeCategory === 1 ? 1 : 0.7,
+                scale: activeCategory === 1 ? 1.05 : 1,
+                color: activeCategory === 1 ? "#bc0930" : "#2d3748",
+                opacity: activeCategory === 1 ? 1 : 0.8,
               }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               COMPOSITIONS
             </motion.span>
@@ -312,13 +321,15 @@ export default function HomePage() {
           <Link
             href="/shop"
             className={`category ${activeCategory === 2 ? "active" : ""}`}
+            onClick={() => setActiveCategory(2)}
           >
             <motion.span
               animate={{
-                color: activeCategory === 2 ? "#b30b2f" : "#e8e8e8",
-                opacity: activeCategory === 2 ? 1 : 0.7,
+                scale: activeCategory === 2 ? 1.05 : 1,
+                color: activeCategory === 2 ? "#bc0930" : "#2d3748",
+                opacity: activeCategory === 2 ? 1 : 0.8,
               }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               ARRANGEMENTS
             </motion.span>
@@ -327,13 +338,15 @@ export default function HomePage() {
           <Link
             href="/shop"
             className={`category ${activeCategory === 3 ? "active" : ""}`}
+            onClick={() => setActiveCategory(3)}
           >
             <motion.span
               animate={{
-                color: activeCategory === 3 ? "#b30b2f" : "#e8e8e8",
-                opacity: activeCategory === 3 ? 1 : 0.7,
+                scale: activeCategory === 3 ? 1.05 : 1,
+                color: activeCategory === 3 ? "#bc0930" : "#2d3748",
+                opacity: activeCategory === 3 ? 1 : 0.8,
               }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               FLOWERS
             </motion.span>
@@ -511,75 +524,6 @@ export default function HomePage() {
           ))}
         </div>
       </motion.section>
-
-      {/* Footer */}
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-logo">
-            <img
-              src="/images/logo.svg"
-              alt="Daffodil"
-              className="footer-logo-img"
-            />
-            <span className="footer-brand">Daffodil</span>
-          </div>
-
-          <div className="footer-links">
-            <div className="footer-section">
-              <h4>Shop</h4>
-              <ul>
-                <li>
-                  <Link href="/shop">All Products</Link>
-                </li>
-                <li>
-                  <Link href="/shop?category=bouquets">Bouquets</Link>
-                </li>
-                <li>
-                  <Link href="/shop?category=wedding">Wedding Flowers</Link>
-                </li>
-                <li>
-                  <Link href="/shop?category=gifts">Gift Collections</Link>
-                </li>
-              </ul>
-            </div>
-
-            <div className="footer-section">
-              <h4>Company</h4>
-              <ul>
-                <li>
-                  <Link href="/about">About Us</Link>
-                </li>
-                <li>
-                  <Link href="/contact">Contact</Link>
-                </li>
-                <li>
-                  <Link href="/customize">Custom Orders</Link>
-                </li>
-              </ul>
-            </div>
-
-            <div className="footer-section">
-              <h4>Account</h4>
-              <ul>
-                <li>
-                  <Link href="/profile">My Profile</Link>
-                </li>
-                <li>
-                  <Link href="/profile/orders">Order History</Link>
-                </li>
-                <li>
-                  <Link href="/wishlist">Wishlist</Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="footer-bottom">
-          <p>&copy; 2024 Daffodil. All rights reserved.</p>
-          <p>Crafting floral poetry since 2024</p>
-        </div>
-      </footer>
     </div>
   );
 }

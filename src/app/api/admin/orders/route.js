@@ -44,6 +44,7 @@ export async function POST(req) {
       notes,
       status = "pending",
       order_number,
+      items = [],
     } = body;
 
     // Validate required fields
@@ -69,7 +70,7 @@ export async function POST(req) {
       total: Number(total),
       status,
       notes: notes || null,
-      items: [],
+      items: items,
       payment_status: "pending",
       payment_method: "manual",
     };
@@ -97,6 +98,68 @@ export async function POST(req) {
       throw error;
     }
 
+    // Handle stock reduction if items are provided and status is paid/confirmed
+    let stockError = null;
+    if (
+      items &&
+      items.length > 0 &&
+      (status === "paid" || status === "confirmed")
+    ) {
+      try {
+        // Reduce stock for each item
+        for (const item of items) {
+          const qty = Math.max(1, Number(item.quantity) || 1);
+          let productId = item.id;
+
+          // Try to find product by ID first, then by title
+          if (!productId && item.title) {
+            const { data: prodByTitle } = await admin
+              .from("products")
+              .select("id, stock")
+              .eq("title", item.title)
+              .maybeSingle();
+            if (prodByTitle) productId = prodByTitle.id;
+          }
+
+          if (productId) {
+            // Try to use the stock movement function first
+            let moved = false;
+            try {
+              const { error: rpcErr } = await admin.rpc(
+                "create_stock_movement_safe",
+                {
+                  p_product_id: productId,
+                  p_qty_delta: -qty,
+                  p_reason: "sale",
+                  p_note: `admin_order:${orderNum}`,
+                  p_actor_email: customer_email,
+                }
+              );
+              if (!rpcErr) moved = true;
+            } catch {}
+
+            // Fallback: direct decrement
+            if (!moved) {
+              const { data: prod } = await admin
+                .from("products")
+                .select("stock")
+                .eq("id", productId)
+                .maybeSingle();
+              const current = Number(prod?.stock) || 0;
+              const newStock = Math.max(0, current - qty);
+              await admin
+                .from("products")
+                .update({ stock: newStock })
+                .eq("id", productId);
+            }
+          }
+        }
+      } catch (err) {
+        stockError = err.message;
+        console.error("Stock reduction error:", err);
+      }
+    }
+
     // Write audit log
     await writeAudit({
       action: "create_order",
@@ -105,10 +168,17 @@ export async function POST(req) {
       data: { order_number: orderNum, total },
     });
 
-    return new Response(JSON.stringify({ order: data }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        order: data,
+        stockReduced: !stockError,
+        stockError: stockError || null,
+      }),
+      {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (err) {
     console.error("Order creation error:", err);
     return new Response(

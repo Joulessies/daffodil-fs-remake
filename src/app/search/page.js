@@ -5,8 +5,6 @@ import NavigationBar from "@/components/navigationbar";
 import {
   Box,
   Button,
-  Checkbox,
-  CheckboxGroup,
   Divider,
   Grid,
   GridItem,
@@ -26,7 +24,6 @@ export default function SearchPage() {
   const [category, setCategory] = useState("all");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(10000);
-  const [colors, setColors] = useState([]);
   const [sort, setSort] = useState("relevance");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(9);
@@ -38,8 +35,8 @@ export default function SearchPage() {
   }, []);
 
   const results = useMemo(
-    () => searchProducts({ q, category, minPrice, maxPrice, colors, sort }),
-    [q, category, minPrice, maxPrice, colors, sort]
+    () => searchProducts({ q, category, minPrice, maxPrice, sort }),
+    [q, category, minPrice, maxPrice, sort]
   );
 
   const totalPages = Math.max(1, Math.ceil(results.length / pageSize));
@@ -51,7 +48,7 @@ export default function SearchPage() {
   // Reset to first page when filters change
   useEffect(() => {
     setPage(1);
-  }, [q, category, minPrice, maxPrice, colors, sort, pageSize]);
+  }, [q, category, minPrice, maxPrice, sort, pageSize]);
 
   return (
     <>
@@ -120,29 +117,6 @@ export default function SearchPage() {
               </div>
               <div>
                 <Text fontWeight={600} mb={2}>
-                  Colors
-                </Text>
-                <CheckboxGroup value={colors} onChange={setColors}>
-                  <Stack direction="row" wrap="wrap" spacing={3}>
-                    {[
-                      "red",
-                      "pink",
-                      "white",
-                      "yellow",
-                      "purple",
-                      "green",
-                      "brown",
-                      "blush",
-                    ].map((c) => (
-                      <Checkbox key={c} value={c}>
-                        {c}
-                      </Checkbox>
-                    ))}
-                  </Stack>
-                </CheckboxGroup>
-              </div>
-              <div>
-                <Text fontWeight={600} mb={2}>
                   Sort by
                 </Text>
                 <Select value={sort} onChange={(e) => setSort(e.target.value)}>
@@ -175,7 +149,6 @@ export default function SearchPage() {
                   setCategory("all");
                   setMinPrice(0);
                   setMaxPrice(10000);
-                  setColors([]);
                   setSort("relevance");
                   setPage(1);
                   setPageSize(9);

@@ -17,6 +17,29 @@ export async function POST(request) {
       );
     }
 
+    // Initialize Supabase admin client if envs are present
+    let admin = null;
+    let draft = null;
+    if (
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.SUPABASE_SERVICE_ROLE
+    ) {
+      admin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE
+      );
+      
+      // Load draft order FIRST to get initial data
+      try {
+        const { data: draftRow } = await admin
+          .from("orders")
+          .select("*")
+          .eq("order_number", session_id)
+          .maybeSingle();
+        draft = draftRow || null;
+      } catch {}
+    }
+
     // Use account default API version for maximum compatibility
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -37,6 +60,10 @@ export async function POST(request) {
       price: (li.price?.unit_amount || 0) / 100,
     }));
 
+    // Use customer email from session if available, otherwise fallback to draft
+    const customerEmail =
+      session.customer_details?.email || session.customer_email || draft?.customer_email || null;
+
     const orderPayload = {
       order_number: session.id,
       total: (session.amount_total || 0) / 100,
@@ -46,31 +73,14 @@ export async function POST(request) {
           : session.status || "Pending",
       tracking_url: null,
       items,
+      customer_email: customerEmail,
     };
     if (user_id) orderPayload.user_id = user_id;
 
     // Persist to Supabase (and decrement stock) if envs present
     let saved = null;
     let dbError = null;
-    if (
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.SUPABASE_SERVICE_ROLE
-    ) {
-      const admin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE
-      );
-
-      // Try to load the draft order created at checkout to get product ids
-      let draft = null;
-      try {
-        const { data: draftRow } = await admin
-          .from("orders")
-          .select("id, items, status")
-          .eq("order_number", session.id)
-          .maybeSingle();
-        draft = draftRow || null;
-      } catch {}
+    if (admin) {
 
       // Use draft items (with product ids) when available; else fall back to Stripe names
       const itemsForStock =
@@ -137,6 +147,7 @@ export async function POST(request) {
               status: orderPayload.status,
               total: orderPayload.total,
               items: draft.items && draft.items.length ? draft.items : items,
+              customer_email: orderPayload.customer_email,
             })
             .eq("order_number", session.id)
             .select("*")
@@ -177,17 +188,13 @@ export async function POST(request) {
         total: (session.amount_total || 0) / 100,
       },
       customer: {
-        name: session.customer_details ? session.customer_details.name : null,
-        email: session.customer_details ? session.customer_details.email : null,
-        shipping: session.shipping_details
-          ? session.shipping_details.address
-          : null,
+        name: session.customer_details?.name || draft?.customer_name || null,
+        email: customerEmail || null,
+        shipping: session.shipping_details?.address || draft?.shipping_address || null,
         billing:
-          session.customer_details && session.customer_details.address
-            ? session.customer_details.address
-            : session.shipping_details
-            ? session.shipping_details.address
-            : null,
+          session.customer_details?.address ||
+          session.shipping_details?.address ||
+          null,
       },
       payment: { method: "card", status: session.payment_status || "paid" },
       trackingUrl: null,

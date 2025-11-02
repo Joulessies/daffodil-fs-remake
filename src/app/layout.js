@@ -4,6 +4,8 @@ import { CacheProvider } from "@chakra-ui/next-js";
 import { Providers } from "./providers";
 import { AuthProvider } from "@/components/AuthProvider";
 import CartModal from "@/components/CartModal";
+import Footer from "@/components/Footer";
+import ConditionalFooter from "@/components/ConditionalFooter";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -48,8 +50,8 @@ export default function RootLayout({ children }) {
           <AuthProvider>
             <Providers>
               {children}
-              {/* Portal for cart modal */}
               <CartModal />
+              <ConditionalFooter />
             </Providers>
           </AuthProvider>
         </CacheProvider>

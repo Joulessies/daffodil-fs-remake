@@ -40,6 +40,7 @@ import {
   Heart,
   Home,
   Grid2x2,
+  Package,
 } from "lucide-react";
 import CartButton from "./CartButton";
 import { useEffect, useMemo, useState } from "react";
@@ -80,7 +81,7 @@ export default function NavigationBar() {
   // Link styles with hover effects
   const linkStyle = {
     textDecoration: "none",
-    color: "#5B6B73",
+    color: "#2d3748",
     fontSize: 14,
     fontFamily: "var(--font-rothek)",
     fontWeight: 500,
@@ -92,7 +93,7 @@ export default function NavigationBar() {
   const buttonStyle = {
     background: "none",
     border: "none",
-    color: "#5B6B73",
+    color: "#2d3748",
     fontSize: 14,
     fontFamily: "var(--font-rothek)",
     fontWeight: 500,
@@ -339,12 +340,13 @@ export default function NavigationBar() {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          padding: "8px 24px",
+          padding: "12px 16px",
           position: "sticky",
           top: 0,
           zIndex: 50,
           background: "#fffcf2",
           borderBottom: "1px solid #e8e2d6",
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
         }}
       >
         <div
@@ -357,13 +359,22 @@ export default function NavigationBar() {
             fontWeight: "500",
           }}
         >
-          <CBox style={{ width: "100px" }}>
+          {/* Mobile Menu Button */}
+          <CBox
+            style={{ width: "60px", display: "flex", alignItems: "center" }}
+          >
             <CBox display={{ base: "block", md: "none" }}>
               <IconButton
                 aria-label="Open menu"
-                icon={<LayoutGrid size={22} />}
+                icon={<LayoutGrid size={24} />}
                 variant="ghost"
                 onClick={onOpen}
+                size="lg"
+                color="#2d3748"
+                _hover={{
+                  bg: "#fff8f3",
+                  color: "#bc0930",
+                }}
               />
             </CBox>
             <CBox display={{ base: "none", md: "block" }}>
@@ -376,7 +387,7 @@ export default function NavigationBar() {
                   aria-label="Shop"
                   icon={<Grid2x2 size={20} />}
                   variant="ghost"
-                  color="#5B6B73"
+                  color="#2d3748"
                   _hover={{
                     bg: "#fff8f3",
                     color: "#bc0930",
@@ -386,64 +397,115 @@ export default function NavigationBar() {
             </CBox>
           </CBox>
 
+          {/* Logo */}
           <div
             style={{
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
+              flex: 1,
             }}
           >
-            <Image
-              src="/images/logo.svg"
-              alt="Daffodil"
-              width={210}
-              height={60}
-              priority
-            />
+            <Link href="/" style={{ textDecoration: "none" }}>
+              <Image
+                src="/images/logo.svg"
+                alt="Daffodil"
+                width={180}
+                height={50}
+                priority
+                style={{
+                  maxWidth: "100%",
+                  height: "auto",
+                }}
+              />
+            </Link>
           </div>
 
+          {/* Right Side Actions */}
           <CBox
-            display={{ base: "none", md: "flex" }}
+            display="flex"
             style={{
-              width: "100px",
+              width: "60px",
               justifyContent: "flex-end",
-              gap: 10,
+              gap: "8px",
               color: "#2B2B2B",
             }}
           >
-            <Link
-              prefetch={false}
-              href="/search"
-              style={{ textDecoration: "none" }}
-            >
-              <IconButton
-                aria-label="Search"
-                icon={<Search size={20} />}
-                variant="ghost"
-                color="#5B6B73"
-                _hover={{
-                  bg: "#fff8f3",
-                  color: "#bc0930",
-                }}
-              />
-            </Link>
-            <Link
-              prefetch={false}
-              href="/wishlist"
-              style={{ textDecoration: "none" }}
-            >
-              <IconButton
-                aria-label="Favorites"
-                icon={<Heart size={20} />}
-                variant="ghost"
-                color="#5B6B73"
-                _hover={{
-                  bg: "#fff8f3",
-                  color: "#bc0930",
-                }}
-              />
-            </Link>
-            <CartButton />
+            {/* Mobile Actions */}
+            <CBox display={{ base: "flex", md: "none" }} gap="4px">
+              <Link
+                prefetch={false}
+                href="/search"
+                style={{ textDecoration: "none" }}
+              >
+                <IconButton
+                  aria-label="Search"
+                  icon={<Search size={20} />}
+                  variant="ghost"
+                  color="#2d3748"
+                  size="sm"
+                  _hover={{
+                    bg: "#fff8f3",
+                    color: "#bc0930",
+                  }}
+                />
+              </Link>
+              <Link
+                prefetch={false}
+                href="/wishlist"
+                style={{ textDecoration: "none" }}
+              >
+                <IconButton
+                  aria-label="Favorites"
+                  icon={<Heart size={20} />}
+                  variant="ghost"
+                  color="#2d3748"
+                  size="sm"
+                  _hover={{
+                    bg: "#fff8f3",
+                    color: "#bc0930",
+                  }}
+                />
+              </Link>
+              <CartButton />
+            </CBox>
+
+            {/* Desktop Actions */}
+            <CBox display={{ base: "none", md: "flex" }} gap="10px">
+              <Link
+                prefetch={false}
+                href="/search"
+                style={{ textDecoration: "none" }}
+              >
+                <IconButton
+                  aria-label="Search"
+                  icon={<Search size={20} />}
+                  variant="ghost"
+                  color="#2d3748"
+                  _hover={{
+                    bg: "#fff8f3",
+                    color: "#bc0930",
+                  }}
+                />
+              </Link>
+              <Link
+                prefetch={false}
+                href="/wishlist"
+                style={{ textDecoration: "none" }}
+              >
+                <IconButton
+                  aria-label="Favorites"
+                  icon={<Heart size={20} />}
+                  variant="ghost"
+                  color="#2d3748"
+                  _hover={{
+                    bg: "#fff8f3",
+                    color: "#bc0930",
+                  }}
+                />
+              </Link>
+              <CartButton />
+            </CBox>
           </CBox>
         </div>
 
@@ -800,6 +862,62 @@ export default function NavigationBar() {
                     </HStack>
                   </CBox>
 
+                  {/* Quick Actions */}
+                  <CBox>
+                    <Text
+                      fontSize="sm"
+                      fontWeight="600"
+                      mb={3}
+                      color="#bc0930"
+                      style={{ fontFamily: "var(--font-rothek)" }}
+                    >
+                      Quick Actions
+                    </Text>
+                    <HStack spacing={3}>
+                      <Link href="/profile/orders" style={{ flex: 1 }}>
+                        <CButton
+                          leftIcon={<Package size={16} />}
+                          bg="#bc0930"
+                          color="white"
+                          _hover={{
+                            bg: "#a10828",
+                            transform: "translateY(-1px)",
+                            boxShadow: "md",
+                          }}
+                          borderRadius="md"
+                          fontWeight="600"
+                          transition="all 0.2s"
+                          w="full"
+                          size="sm"
+                        >
+                          My Orders
+                        </CButton>
+                      </Link>
+                      <Link href="/wishlist" style={{ flex: 1 }}>
+                        <CButton
+                          leftIcon={<Heart size={16} />}
+                          variant="outline"
+                          borderColor="#bc0930"
+                          color="#bc0930"
+                          _hover={{
+                            bg: "#fff8f3",
+                            transform: "translateY(-1px)",
+                            boxShadow: "md",
+                          }}
+                          borderRadius="md"
+                          fontWeight="600"
+                          transition="all 0.2s"
+                          w="full"
+                          size="sm"
+                        >
+                          Wishlist
+                        </CButton>
+                      </Link>
+                    </HStack>
+                  </CBox>
+
+                  <Divider borderColor="#F5C7CF" />
+
                   {/* Profile Form */}
                   <FormControl>
                     <FormLabel color="#5B6B73" fontSize="sm" fontWeight="600">
@@ -926,7 +1044,7 @@ export default function NavigationBar() {
                     <VStack spacing={2} align="stretch">
                       <FormControl>
                         <FormLabel
-                          color="#5B6B73"
+                          color="#2d3748"
                           fontSize="sm"
                           fontWeight="600"
                         >
@@ -948,7 +1066,7 @@ export default function NavigationBar() {
                       </FormControl>
                       <FormControl>
                         <FormLabel
-                          color="#5B6B73"
+                          color="#2d3748"
                           fontSize="sm"
                           fontWeight="600"
                         >
@@ -1000,7 +1118,7 @@ export default function NavigationBar() {
                       <CButton
                         variant="ghost"
                         onClick={onCloseProfile}
-                        color="#5B6B73"
+                        color="#2d3748"
                         _hover={{ bg: "#fff8f3" }}
                       >
                         Close
@@ -1037,7 +1155,7 @@ export default function NavigationBar() {
                           );
                           setProfileUsername(meta.username || "");
                         }}
-                        color="#5B6B73"
+                        color="#2d3748"
                         _hover={{ bg: "#fff8f3" }}
                       >
                         Cancel

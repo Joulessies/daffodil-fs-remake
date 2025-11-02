@@ -24,6 +24,30 @@ export async function POST(request) {
       );
     }
 
+    // Initialize Supabase admin client if envs are present
+    let admin = null;
+    let draft = null;
+    if (
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.SUPABASE_SERVICE_ROLE
+    ) {
+      admin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE
+      );
+
+      // Load draft order FIRST to get initial data
+      try {
+        const pmRef = reference || null;
+        const { data: draftRow } = await admin
+          .from("orders")
+          .select("*")
+          .in("order_number", [pmRef, session_id].filter(Boolean))
+          .maybeSingle();
+        draft = draftRow || null;
+      } catch {}
+    }
+
     let session = null;
     let pmRef = reference || null;
     let items = [];
@@ -55,6 +79,11 @@ export async function POST(request) {
       }
     }
 
+    // Use draft items if no PayMongo items available
+    if (!items.length && draft?.items) {
+      items = draft.items;
+    }
+
     // Compute totals based on cart assumptions (12% tax + 150 shipping when subtotal>0)
     const subtotal = items.reduce(
       (sum, it) => sum + (Number(it.price) || 0) * (it.quantity || 1),
@@ -79,29 +108,14 @@ export async function POST(request) {
       }
     } catch {}
 
+    // Use customer email from session if available, otherwise fallback to draft
+    const customerEmail =
+      session?.attributes?.billing?.email || draft?.customer_email || null;
+
     // Persist to Supabase (and decrement stock) if envs present
     let saved = null;
     let dbError = null;
-    if (
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.SUPABASE_SERVICE_ROLE
-    ) {
-      const admin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE
-      );
-
-      // Load draft order by reference (preferred) or session_id
-      let draft = null;
-      try {
-        const { data: draftRow } = await admin
-          .from("orders")
-          .select("id, items, status")
-          .in("order_number", [pmRef, session_id].filter(Boolean))
-          .maybeSingle();
-        draft = draftRow || null;
-      } catch {}
-
+    if (admin) {
       const itemsForStock =
         Array.isArray(draft?.items) && draft.items.length ? draft.items : items;
 
@@ -158,11 +172,13 @@ export async function POST(request) {
       }
 
       // Upsert order: update existing draft or insert new
+
       const orderPayload = {
         order_number: pmRef || session_id,
         total: total,
         status: status,
         items: itemsForStock,
+        customer_email: customerEmail,
       };
       if (user_id) orderPayload.user_id = user_id;
 
@@ -174,6 +190,7 @@ export async function POST(request) {
               status: orderPayload.status,
               total: orderPayload.total,
               items: orderPayload.items,
+              customer_email: orderPayload.customer_email,
             })
             .eq("order_number", draft.order_number || orderPayload.order_number)
             .select("*")
@@ -208,9 +225,9 @@ export async function POST(request) {
         total,
       },
       customer: {
-        name: null,
-        email: session?.attributes?.billing?.email || null,
-        shipping: null,
+        name: draft?.customer_name || null,
+        email: customerEmail || null,
+        shipping: draft?.shipping_address || null,
         billing: null,
       },
       payment: { method: "paymongo", status },

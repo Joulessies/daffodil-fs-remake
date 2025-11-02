@@ -26,6 +26,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/CartContext";
+import { useAuth } from "@/components/AuthProvider";
 import NavigationBar from "@/components/navigationbar";
 import dynamic from "next/dynamic";
 import {
@@ -44,6 +45,7 @@ const PayPalButton = dynamic(() => import("@/components/PayPalButton"), {
 export default function CheckoutPage() {
   const toast = useToast();
   const cart = useCart();
+  const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -62,6 +64,18 @@ export default function CheckoutPage() {
   const [promo, setPromo] = useState("");
   const [saveInfo, setSaveInfo] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Auto-populate email and name from logged-in user
+  useEffect(() => {
+    if (user?.email) {
+      setEmail(user.email);
+    }
+    if (user?.user_metadata?.full_name) {
+      setName(user.user_metadata.full_name);
+    } else if (user?.user_metadata?.name) {
+      setName(user.user_metadata.name);
+    }
+  }, [user]);
 
   useEffect(() => setMounted(true), []);
 
@@ -107,6 +121,35 @@ export default function CheckoutPage() {
       }
 
       setIsProcessing(true);
+
+      // Validate stock before proceeding
+      try {
+        const stockValidation = await fetch("/api/stock/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: cart.items }),
+        });
+
+        const stockResult = await stockValidation.json();
+
+        if (!stockResult.valid) {
+          setIsProcessing(false);
+          const outOfStockItems = stockResult.results.filter((r) => !r.valid);
+          toast({
+            title: "Items out of stock",
+            description: `Some items are no longer available: ${outOfStockItems
+              .map((item) => item.title)
+              .join(", ")}`,
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+          return;
+        }
+      } catch (err) {
+        console.error("Stock validation error:", err);
+        // Continue with checkout if stock validation fails
+      }
 
       // Show loading toast
       toast({

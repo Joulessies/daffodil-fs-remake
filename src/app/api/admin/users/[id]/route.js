@@ -117,3 +117,92 @@ export async function PATCH(request, { params }) {
     });
   }
 }
+
+export async function DELETE(request, { params }) {
+  try {
+    console.log("[DELETE /api/admin/users/:id] Request:", {
+      userId: params.id,
+    });
+
+    const admin = getAdminClient();
+    if (!admin) {
+      console.error("[DELETE /api/admin/users/:id] Missing admin client");
+      return new Response(JSON.stringify({ error: "Missing admin key" }), {
+        status: 500,
+      });
+    }
+
+    // Get user info before deletion
+    let userEmail = null;
+    try {
+      const { data: user } = await admin
+        .from("users")
+        .select("email, is_admin")
+        .eq("id", params.id)
+        .maybeSingle();
+
+      if (user) {
+        userEmail = user.email;
+
+        // Prevent deleting the last admin
+        if (user.is_admin) {
+          const { data: admins } = await admin
+            .from("users")
+            .select("id")
+            .eq("is_admin", true);
+
+          if (admins && admins.length <= 1) {
+            return new Response(
+              JSON.stringify({
+                error: "Cannot delete the last admin account",
+              }),
+              { status: 400 }
+            );
+          }
+        }
+      }
+    } catch (e) {
+      console.error("[DELETE /api/admin/users/:id] Error fetching user:", e);
+    }
+
+    // Delete from users table
+    const { error } = await admin.from("users").delete().eq("id", params.id);
+
+    if (error) {
+      console.error("[DELETE /api/admin/users/:id] Supabase error:", error);
+      throw error;
+    }
+
+    // Optionally delete from auth (be careful with this in production)
+    try {
+      if (admin.auth?.admin?.deleteUser) {
+        await admin.auth.admin.deleteUser(params.id);
+        console.log(
+          "[DELETE /api/admin/users/:id] Auth user deleted successfully"
+        );
+      }
+    } catch (err) {
+      console.error(
+        "[DELETE /api/admin/users/:id] Error deleting auth user:",
+        err
+      );
+      // Don't fail if auth deletion fails - we already deleted from users table
+    }
+
+    await writeAudit({
+      action: "delete",
+      entity: "user",
+      entityId: params.id,
+      data: { email: userEmail },
+    });
+
+    console.log("[DELETE /api/admin/users/:id] Success!");
+
+    return new Response(JSON.stringify({ success: true }), { status: 200 });
+  } catch (err) {
+    console.error("[DELETE /api/admin/users/:id] Error:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+    });
+  }
+}

@@ -1,160 +1,284 @@
-// Hero Section
+// Hero Section - Mobile-First Design
 .hero {
   position: relative;
   text-align: center;
-  padding: 80px 40px;
+  padding: 2rem 1rem;
   min-height: 100vh;
   overflow: hidden;
-}
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--background-color);
 
-.circle {
-  position: absolute;
-  border-radius: 50%;
-  background: #b30b2f;
-  z-index: 1;
-}
-.circle.big {
-  width: 150px;
-  height: 150px;
-  top: 50px;
-  left: 40px;
-}
-.circle.medium {
-  width: 70px;
-  height: 70px;
-  bottom: 140px;
-  right: 400px;
-}
-.circle.small {
-  width: 30px;
-  height: 30px;
-  top: 20%;
-  right: 300px;
+  @media (min-width: 768px) {
+    padding: 4rem 2rem;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 5rem 2.5rem;
+  }
 }
 
 .hero-content {
   position: relative;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+  z-index: 2;
+  gap: 2rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    gap: 4rem;
+    align-items: center;
+  }
 }
 
 .hero-image {
-  max-width: 800px;
+  width: 100%;
+  max-width: clamp(250px, 50vw, 500px);
+  height: auto;
   border-radius: 50%;
   position: relative;
   z-index: 1;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: 768px) {
+    max-width: clamp(400px, 40vw, 600px);
+    order: 2;
+  }
 }
 
-.hero-title,
-.hero-title2 {
-  position: absolute;
-  font-family: "Santa Catarina", cursive;
-  font-weight: 400;
-  z-index: 2;
+.hero-text-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 3;
+  position: relative;
+
+  @media (min-width: 768px) {
+    order: 1;
+    align-items: flex-start;
+    text-align: left;
+    flex: 1;
+  }
 }
 
 .hero-title {
-  font-size: 120px;
-  top: 50%;
-  left: 10%;
-  transform: translate(-45%, -100%);
+  font-family: "Santa Catarina", cursive;
+  font-weight: 400;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  margin: 0 0 1rem 0;
+  line-height: 0.9;
+
+  @media (min-width: 768px) {
+    font-size: clamp(3.5rem, 8vw, 6rem);
+    margin-bottom: 1.5rem;
+  }
 }
 
-.hero-title2 {
-  font-size: 100px;
-  top: 50%;
-  left: 10%;
-  transform: translate(-60%, -2%);
+.hero-subtitle {
+  font-family: "Santa Catarina", cursive;
+  font-weight: 400;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  margin: 0 0 1.5rem 0;
+  line-height: 1.1;
+
+  @media (min-width: 768px) {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: 2rem;
+  }
+}
+
+.hero-description {
+  font-family: var(--font-rothek);
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  color: var(--text-secondary);
+  margin: 0 0 2rem 0;
+  max-width: 500px;
+  line-height: 1.6;
+
+  @media (min-width: 768px) {
+    margin-bottom: 2.5rem;
+  }
+}
+
+.hero-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    gap: 1.5rem;
+    max-width: none;
+  }
+
+  .btn {
+    flex: 1;
+    text-align: center;
+  }
 }
 
 .red-part {
-  color: #b30b2f;
-}
-.white-part {
-  color: #fff;
+  color: var(--color-primary);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .vertical {
   position: absolute;
   top: 50%;
-  right: -50%;
-  font: 400 20px "Rothek", sans-serif;
+  right: 1rem;
+  font: 400 clamp(12px, 2vw, 16px) "Rothek", sans-serif;
   writing-mode: vertical-rl;
   transform: translateY(-50%) rotate(180deg);
   z-index: 2;
+  display: none; // Hidden on mobile for cleaner design
+
+  @media (min-width: 1024px) {
+    display: block;
+  }
 
   a {
-    color: inherit;
+    color: var(--color-primary);
     text-decoration: none;
+    transition: color 0.3s ease;
+    font-weight: 600;
+    letter-spacing: 0.1em;
 
     &:hover {
-      color: #b30b2f;
+      color: var(--color-primary-dark);
     }
   }
 }
 
-// Caption
+// Caption - Mobile Responsive
 .hero-caption {
-  margin-top: 24px;
+  margin-top: 1.5rem;
   font-family: "Rothek", sans-serif;
+  text-align: center;
+  max-width: 600px;
+
+  @media (min-width: 768px) {
+    margin-top: 2rem;
+  }
 
   h2 {
-    font: 400 30px "Santa Catarina", sans-serif;
-    margin-bottom: 8px;
+    font: 400 clamp(1.5rem, 4vw, 2rem) "Santa Catarina", sans-serif;
+    margin-bottom: 0.5rem;
+    color: var(--color-primary);
   }
 
   p {
-    font-size: 14px;
-    color: #5b6b73;
+    font-size: clamp(0.875rem, 2vw, 1rem);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
   }
 }
 
-// Sell Section
+// Sell Section - Mobile First
 .sell {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  padding: 80px 5%;
-  min-height: 100vh;
+  gap: 2rem;
+  padding: 3rem 1rem;
+  min-height: auto;
+  background-color: var(--background-color);
+
+  @media (min-width: 768px) {
+    gap: 3rem;
+    padding: 4rem 2rem;
+    min-height: 100vh;
+  }
+
+  @media (min-width: 1024px) {
+    gap: 4rem;
+    padding: 5rem 3rem;
+  }
 }
 
 .sell-top {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+  }
 }
 
 .sell-h2 {
-  font: 400 100px "Santa Catarina", sans-serif;
+  font: 400 clamp(2.5rem, 8vw, 4rem) "Santa Catarina", sans-serif;
+  color: var(--color-primary);
+  text-align: center;
+
+  @media (min-width: 768px) {
+    text-align: left;
+  }
 }
 
 .sell-text {
-  max-width: 400px;
-  text-align: right;
-  font: 25px "Rothek", sans-serif;
-  color: #5b6b73;
+  max-width: 100%;
+  text-align: center;
+  font: clamp(1rem, 3vw, 1.25rem) "Rothek", sans-serif;
+  color: var(--text-secondary);
   cursor: pointer;
+  transition: color 0.3s ease;
+
+  @media (min-width: 768px) {
+    max-width: 400px;
+    text-align: right;
+  }
 
   &:hover {
-    color: #b30b2f;
+    color: var(--color-primary);
   }
 }
 
 .images {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  justify-items: center;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
 }
 
 .pics {
-  width: 300px;
-  height: 300px;
+  width: clamp(200px, 40vw, 300px);
+  height: clamp(200px, 40vw, 300px);
   object-fit: cover;
   border-radius: 50%;
   border: 3px solid #e8b4cb;
   padding: 10px;
   background: white;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
 }
 
 // Enhanced styling for all draggable products in WE SELL section
@@ -259,76 +383,97 @@
   }
 }
 
-// Categories
+// Categories - Mobile First Design
 .categories {
-  display: grid;
-  grid-template-columns: auto auto auto auto;
-  grid-template-rows: auto auto;
-  grid-template-areas:
-    "all sep1 comp ."
-    "arr sep2 flowers .";
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 30px 80px;
-  margin-top: 60px;
+  gap: 1.5rem;
+  margin-top: 3rem;
+  padding: 2rem 1rem;
   font-family: "Santa Catarina", cursive, sans-serif;
   font-weight: 400;
   line-height: 1.2;
-}
 
-.categories .category:nth-child(1) {
-  grid-area: all;
-  color: #e8e8e8;
-  opacity: 0.7;
-}
-.categories .separator:nth-child(2) {
-  grid-area: sep1;
-}
-.categories .category:nth-child(3) {
-  grid-area: comp;
-  color: #e8e8e8;
-  opacity: 0.7;
-}
-.categories .separator:nth-child(4) {
-  grid-area: sep2;
-}
-.categories .category:nth-child(5) {
-  grid-area: arr;
-  color: #e8e8e8;
-  opacity: 0.7;
-}
-.categories .separator:nth-child(6) {
-  display: none;
-}
-.categories .category:nth-child(7) {
-  grid-area: flowers;
-  color: #e8e8e8;
-  opacity: 0.7;
-}
-.category-line {
-  display: none;
+  @media (min-width: 640px) {
+    gap: 2rem;
+    margin-top: 4rem;
+    padding: 3rem 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    gap: 3rem;
+    margin-top: 5rem;
+    padding: 4rem 2rem;
+  }
 }
 
 .categories .category {
-  transition: color 0.2s;
+  transition: all 0.3s ease;
   text-decoration: none;
-  font-size: 70px;
+  font-size: clamp(2rem, 6vw, 3.5rem);
   text-align: center;
   font-family: "Santa Catarina", cursive, sans-serif;
   font-weight: 400;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  min-height: 60px; /* Better touch target */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+
+  @media (min-width: 640px) {
+    font-size: clamp(2.5rem, 7vw, 4rem);
+    padding: 1.25rem 2.5rem;
+    min-height: 70px;
+  }
+
+  @media (min-width: 1024px) {
+    font-size: clamp(3rem, 8vw, 5rem);
+    padding: 1.5rem 3rem;
+    min-height: 80px;
+  }
 
   &:hover {
-    color: #b30b2f;
-    opacity: 1;
+    background-color: rgba(188, 9, 48, 0.05);
+    transform: translateY(-2px);
+  }
+
+  &.active {
+    background-color: rgba(188, 9, 48, 0.1);
+  }
+
+  /* Let Framer Motion handle color and opacity animations */
+  span {
+    transition: none !important;
   }
 }
 
 .separator {
-  color: #e8e8e8;
+  color: var(--text-muted);
   user-select: none;
-  font-size: 70px;
+  font-size: clamp(2rem, 6vw, 3.5rem);
   opacity: 0.7;
   font-family: "Santa Catarina", cursive, sans-serif;
+  margin: 0 1rem;
+
+  @media (min-width: 640px) {
+    font-size: clamp(2.5rem, 7vw, 4rem);
+    margin: 0 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    font-size: clamp(3rem, 8vw, 5rem);
+    margin: 0 2rem;
+  }
+
+  @media (max-width: 640px) {
+    display: none; /* Hide separators on mobile for cleaner look */
+  }
 }
 
 // Instructions
@@ -396,6 +541,7 @@
 .novelties {
   padding: 80px 5%;
   min-height: 100vh;
+  background-color: var(--background-color);
 }
 
 .novelties-header {
@@ -407,6 +553,7 @@
 
 .n-h2 {
   font: 400 100px "Santa Catarina", sans-serif;
+  color: var(--color-primary);
 }
 
 .catalog-link {
@@ -415,10 +562,10 @@
   gap: 10px;
   font: 18px "Rothek", sans-serif;
   cursor: pointer;
-  color: #5b6b73;
+  color: var(--text-secondary);
 
   &:hover {
-    color: #b30b2f;
+    color: var(--color-primary);
   }
 }
 
@@ -486,11 +633,12 @@
 .last {
   min-height: 100vh;
   padding: 80px 0;
+  background-color: var(--background-color);
 }
 
 .l-h2 {
   font: 400 80px "Santa Catarina", sans-serif;
-  color: #b30b2f;
+  color: var(--color-primary);
   text-align: left;
   margin: 10% 0 0 17%;
 }
@@ -568,119 +716,5 @@
     width: 100%;
     height: 300px;
     margin: 5% 0 0 0;
-  }
-
-  .categories {
-    font-size: 40px;
-    flex-wrap: wrap;
-  }
-}
-
-// Footer
-.footer {
-  background-color: #fffcf2;
-  border-top: 1px solid #e0e0e0;
-  padding: 60px 0 20px;
-  margin-top: 80px;
-}
-
-.footer-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 5%;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 60px;
-}
-
-.footer-logo {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-shrink: 0;
-}
-
-.footer-logo-img {
-  width: 50px;
-  height: 50px;
-  object-fit: contain;
-}
-
-.footer-brand {
-  font: 400 32px "Santa Catarina", sans-serif;
-  color: #b30b2f;
-}
-
-.footer-links {
-  display: flex;
-  gap: 60px;
-  flex-wrap: wrap;
-}
-
-.footer-section {
-  h4 {
-    font: 600 18px "Rothek", sans-serif;
-    color: #333;
-    margin-bottom: 20px;
-  }
-
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-
-    li {
-      margin-bottom: 12px;
-
-      a {
-        font: 400 16px "Rothek", sans-serif;
-        color: #5b6b73;
-        text-decoration: none;
-        transition: color 0.3s ease;
-
-        &:hover {
-          color: #b30b2f;
-        }
-      }
-    }
-  }
-}
-
-.footer-bottom {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 30px 5% 0;
-  border-top: 1px solid #e0e0e0;
-  text-align: center;
-  margin-top: 40px;
-
-  p {
-    font: 400 14px "Rothek", sans-serif;
-    color: #5b6b73;
-    margin: 5px 0;
-
-    &:first-child {
-      font-weight: 500;
-      color: #333;
-    }
-  }
-}
-
-// Footer responsive design
-@media (max-width: 768px) {
-  .footer-content {
-    flex-direction: column;
-    gap: 40px;
-    text-align: center;
-  }
-
-  .footer-links {
-    justify-content: center;
-    gap: 40px;
-  }
-
-  .footer-section {
-    text-align: center;
   }
 }
