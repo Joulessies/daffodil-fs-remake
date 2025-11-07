@@ -322,7 +322,11 @@ export default function AdminOrdersPage() {
               Total Revenue
             </StatLabel>
             <StatNumber color="#0f8f4d" fontSize="2xl">
-              ₱{totalRevenue.toFixed(2)}
+              ₱
+              {Number(totalRevenue).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </StatNumber>
             <StatHelpText>
               <DollarSign

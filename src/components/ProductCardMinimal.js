@@ -237,7 +237,21 @@ export default function ProductCardMinimal({
               variant="ghost"
               onClick={(e) => {
                 e.stopPropagation();
+                const wasSaved = wishlist.contains(itemId);
                 wishlist.toggle({ id: itemId, title, image, price });
+                const nowSaved = !wasSaved;
+                toast({
+                  title: nowSaved
+                    ? "Added to wishlist"
+                    : "Removed from wishlist",
+                  description: nowSaved
+                    ? `${title} saved to your wishlist`
+                    : `${title} removed from your wishlist`,
+                  status: nowSaved ? "success" : "info",
+                  duration: 1500,
+                  isClosable: true,
+                  position: "top",
+                });
               }}
               _hover={{
                 bg: "#fff8f3",

@@ -69,7 +69,21 @@ export default function WishlistPage() {
                   variant="outline"
                   colorScheme="red"
                   size="sm"
-                  onClick={wishlist.clear}
+                  onClick={() => {
+                    const count = wishlist.items.length;
+                    wishlist.clear();
+                    toast({
+                      title: "Wishlist cleared",
+                      description:
+                        count === 1
+                          ? "Removed 1 item from your wishlist."
+                          : `Removed ${count} items from your wishlist.`,
+                      status: "info",
+                      duration: 2000,
+                      isClosable: true,
+                      position: "top",
+                    });
+                  }}
                   leftIcon={<Trash2 size={16} />}
                   _hover={{
                     bg: "red.50",

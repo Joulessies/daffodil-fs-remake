@@ -270,7 +270,10 @@ export default function AdminPage() {
         />
         <StatCard
           title="Total Revenue"
-          value={`₱${stats.totalRevenue.toFixed(2)}`}
+          value={`₱${Number(stats.totalRevenue).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
           icon={DollarSign}
           color="#0f8f4d"
           helpText="All time"

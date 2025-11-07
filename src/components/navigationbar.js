@@ -43,12 +43,14 @@ import {
   Package,
 } from "lucide-react";
 import CartButton from "./CartButton";
+import { useWishlist } from "./WishlistContext";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function NavigationBar() {
   const { user, isAdmin } = useAuth();
+  const wishlist = useWishlist();
   const toast = useToast();
   const displayName = useMemo(() => {
     const name =
@@ -455,17 +457,43 @@ export default function NavigationBar() {
                 href="/wishlist"
                 style={{ textDecoration: "none" }}
               >
-                <IconButton
-                  aria-label="Favorites"
-                  icon={<Heart size={20} />}
-                  variant="ghost"
-                  color="#2d3748"
-                  size="sm"
-                  _hover={{
-                    bg: "#fff8f3",
-                    color: "#bc0930",
-                  }}
-                />
+                <div style={{ position: "relative" }}>
+                  <IconButton
+                    aria-label="Favorites"
+                    icon={<Heart size={20} />}
+                    variant="ghost"
+                    color="#2d3748"
+                    size="sm"
+                    _hover={{
+                      bg: "#fff8f3",
+                      color: "#bc0930",
+                    }}
+                  />
+                  {wishlist?.items?.length > 0 && (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: -2,
+                        right: -2,
+                        background: "#bc0930",
+                        color: "white",
+                        borderRadius: "9999px",
+                        minWidth: 16,
+                        height: 16,
+                        padding: "0 4px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        lineHeight: 1,
+                        boxShadow: "0 0 0 2px #fffcf2",
+                      }}
+                    >
+                      {Math.min(99, wishlist.items.length)}
+                    </span>
+                  )}
+                </div>
               </Link>
               <CartButton />
             </CBox>
@@ -493,16 +521,42 @@ export default function NavigationBar() {
                 href="/wishlist"
                 style={{ textDecoration: "none" }}
               >
-                <IconButton
-                  aria-label="Favorites"
-                  icon={<Heart size={20} />}
-                  variant="ghost"
-                  color="#2d3748"
-                  _hover={{
-                    bg: "#fff8f3",
-                    color: "#bc0930",
-                  }}
-                />
+                <div style={{ position: "relative" }}>
+                  <IconButton
+                    aria-label="Favorites"
+                    icon={<Heart size={20} />}
+                    variant="ghost"
+                    color="#2d3748"
+                    _hover={{
+                      bg: "#fff8f3",
+                      color: "#bc0930",
+                    }}
+                  />
+                  {wishlist?.items?.length > 0 && (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: -4,
+                        right: -4,
+                        background: "#bc0930",
+                        color: "white",
+                        borderRadius: "9999px",
+                        minWidth: 18,
+                        height: 18,
+                        padding: "0 5px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        lineHeight: 1,
+                        boxShadow: "0 0 0 2px #fffcf2",
+                      }}
+                    >
+                      {Math.min(99, wishlist.items.length)}
+                    </span>
+                  )}
+                </div>
               </Link>
               <CartButton />
             </CBox>

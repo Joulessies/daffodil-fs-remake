@@ -261,7 +261,11 @@ export default function SalesAnalyticsPage() {
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
-              ₱{totalRevenue.toFixed(2)}
+              ₱
+              {Number(totalRevenue).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </StatNumber>
             <StatHelpText color="#8A9AA3" fontSize="xs">
               {timeRange === "all"

@@ -14,7 +14,10 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Daffodil Flower Shop",
+  title: {
+    default: "Daffodil Flower Shop",
+    template: "%s - Daffodil Flower Shop",
+  },
   description: "Beautiful flowers for every occasion",
   icons: {
     icon: "/images/favicon.ico",
