@@ -184,16 +184,16 @@ export default function ProductDetailsModal({ isOpen, onClose, product }) {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        size="6xl"
+        size={{ base: "full", md: "6xl" }}
         scrollBehavior="inside"
         motionPreset="slideInBottom"
       >
         <ModalOverlay bg="blackAlpha.700" backdropFilter="blur(8px)" />
         <ModalContent
-          maxH="90vh"
+          maxH={{ base: "100vh", md: "90vh" }}
           bg="#FFF8F3"
-          borderRadius="20px"
-          border="2px solid #F5C7CF"
+          borderRadius={{ base: "0", md: "20px" }}
+          border={{ base: "none", md: "2px solid #F5C7CF" }}
           boxShadow="2xl"
         >
           <ModalHeader
@@ -356,9 +356,9 @@ export default function ProductDetailsModal({ isOpen, onClose, product }) {
                       min={1}
                       max={product.stock || 99}
                       maxW="120px"
-                      size="sm"
+                      size="md"
                     >
-                      <NumberInputField />
+                      <NumberInputField minH="44px" />
                       <NumberInputStepper>
                         <NumberIncrementStepper />
                         <NumberDecrementStepper />
@@ -367,13 +367,15 @@ export default function ProductDetailsModal({ isOpen, onClose, product }) {
                   </Box>
 
                   {/* Action Buttons */}
-                  <HStack spacing={3} pt={2}>
+                  <HStack spacing={3} pt={2} flexDirection={{ base: "column", sm: "row" }} w="100%">
                     <Button
                       leftIcon={<ShoppingCart size={16} />}
                       colorScheme="red"
                       bg="#bc0930"
-                      size="md"
+                      size="lg"
                       flex={1}
+                      w={{ base: "100%", sm: "auto" }}
+                      minH="48px"
                       _hover={{
                         transform: "translateY(-2px)",
                         boxShadow: "lg",
@@ -392,7 +394,9 @@ export default function ProductDetailsModal({ isOpen, onClose, product }) {
                       }
                       colorScheme={isInWishlist ? "red" : "gray"}
                       variant={isInWishlist ? "solid" : "outline"}
-                      size="md"
+                      size="lg"
+                      minW="48px"
+                      minH="48px"
                       onClick={handleToggleWishlist}
                       aria-label="Add to wishlist"
                       _hover={{

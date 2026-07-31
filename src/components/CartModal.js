@@ -57,17 +57,17 @@ export default function CartModal() {
       isOpen={isOpen}
       onClose={cart.close}
       isCentered
-      size="xl"
+      size={{ base: "full", md: "xl" }}
       scrollBehavior="inside"
     >
       <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
       <ModalContent
-        borderRadius="16px"
+        borderRadius={{ base: "0", md: "16px" }}
         boxShadow="2xl"
         bg="white"
-        border="2px solid"
+        border={{ base: "none", md: "2px solid" }}
         borderColor="#F5C7CF"
-        maxH="90vh"
+        maxH={{ base: "100vh", md: "90vh" }}
       >
         <ModalHeader
           bg="#fffcf2"
@@ -211,13 +211,14 @@ export default function CartModal() {
                     }}
                     transition="all 0.2s"
                   >
-                    <HStack align="start" spacing={4}>
+                    <HStack align="start" spacing={4} flexWrap={{ base: "wrap", sm: "nowrap" }}>
                       <Box
                         position="relative"
                         borderRadius="12px"
                         overflow="hidden"
                         border="2px solid"
                         borderColor="#F5C7CF"
+                        flexShrink={0}
                       >
                         <ChakraImage
                           src={imageSrc}
@@ -269,7 +270,7 @@ export default function CartModal() {
                             </Badge>
                           )}
                         </HStack>
-                        <HStack spacing={2} mt={3}>
+                        <HStack spacing={2} mt={3} justify="space-between" flexWrap="wrap">
                           <HStack spacing={1}>
                             <IconButton
                               size="sm"
@@ -283,6 +284,8 @@ export default function CartModal() {
                               variant="outline"
                               borderColor="#F5C7CF"
                               color="#bc0930"
+                              minW="36px"
+                              minH="36px"
                               _hover={{
                                 bg: "#fff8f3",
                                 borderColor: "#bc0930",
@@ -318,6 +321,8 @@ export default function CartModal() {
                               variant="outline"
                               borderColor="#F5C7CF"
                               color="#bc0930"
+                              minW="36px"
+                              minH="36px"
                               _hover={{
                                 bg: "#fff8f3",
                                 borderColor: "#bc0930",
@@ -325,29 +330,33 @@ export default function CartModal() {
                               aria-label="Increase quantity"
                             />
                           </HStack>
-                          <Tooltip label="Remove from cart" hasArrow>
-                            <IconButton
-                              size="sm"
-                              icon={<Trash2 size={14} />}
-                              onClick={() => cart.removeItem(item.id)}
-                              variant="ghost"
-                              colorScheme="red"
-                              _hover={{
-                                bg: "#fee",
-                              }}
-                              aria-label="Remove item"
-                            />
-                          </Tooltip>
+                          <HStack spacing={2}>
+                            <VStack align="end" spacing={0}>
+                              <Text fontWeight={700} fontSize="md" color="#bc0930">
+                                {formatPeso(lineTotal)}
+                              </Text>
+                              <Text fontSize="xs" color="#5B6B73">
+                                {formatPeso(item.price)} each
+                              </Text>
+                            </VStack>
+                            <Tooltip label="Remove from cart" hasArrow>
+                              <IconButton
+                                size="sm"
+                                icon={<Trash2 size={14} />}
+                                onClick={() => cart.removeItem(item.id)}
+                                variant="ghost"
+                                colorScheme="red"
+                                minW="36px"
+                                minH="36px"
+                                _hover={{
+                                  bg: "#fee",
+                                }}
+                                aria-label="Remove item"
+                              />
+                            </Tooltip>
+                          </HStack>
                         </HStack>
                       </Box>
-                      <VStack align="end" spacing={1}>
-                        <Text fontWeight={700} fontSize="lg" color="#bc0930">
-                          {formatPeso(lineTotal)}
-                        </Text>
-                        <Text fontSize="xs" color="#5B6B73">
-                          {formatPeso(item.price)} each
-                        </Text>
-                      </VStack>
                     </HStack>
                   </Box>
                 );
@@ -391,9 +400,10 @@ export default function CartModal() {
               </Box>
             )}
           </VStack>
-          <HStack spacing={3} w="100%">
+          <HStack spacing={3} w="100%" flexDirection={{ base: "column-reverse", sm: "row" }}>
             <Button
               flex={1}
+              w={{ base: "100%", sm: "auto" }}
               variant="outline"
               borderRadius="full"
               borderWidth="2px"
@@ -403,16 +413,18 @@ export default function CartModal() {
               onClick={cart.clearCart}
               isDisabled={cart.items.length === 0}
               fontWeight="600"
+              minH="48px"
             >
               Clear Cart
             </Button>
-            <Link href="/checkout" style={{ flex: 1 }}>
+            <Link href="/checkout" style={{ flex: 1, width: "100%" }}>
               <Button
                 w="100%"
                 borderRadius="full"
                 bg="#bc0930"
                 color="white"
                 size="lg"
+                minH="48px"
                 _hover={{
                   bg: "#a10828",
                   transform: "translateY(-2px)",

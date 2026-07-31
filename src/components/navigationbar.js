@@ -41,6 +41,13 @@ import {
   Home,
   Grid2x2,
   Package,
+  Info,
+  Palette,
+  User,
+  Shield,
+  LogOut,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 import CartButton from "./CartButton";
 import { useWishlist } from "./WishlistContext";
@@ -363,7 +370,7 @@ export default function NavigationBar() {
         >
           {/* Mobile Menu Button */}
           <CBox
-            style={{ width: "60px", display: "flex", alignItems: "center" }}
+            style={{ width: "48px", display: "flex", alignItems: "center" }}
           >
             <CBox display={{ base: "block", md: "none" }}>
               <IconButton
@@ -372,6 +379,8 @@ export default function NavigationBar() {
                 variant="ghost"
                 onClick={onOpen}
                 size="lg"
+                minW="44px"
+                minH="44px"
                 color="#2d3748"
                 _hover={{
                   bg: "#fff8f3",
@@ -427,14 +436,13 @@ export default function NavigationBar() {
           <CBox
             display="flex"
             style={{
-              width: "60px",
               justifyContent: "flex-end",
-              gap: "8px",
+              gap: "4px",
               color: "#2B2B2B",
             }}
           >
             {/* Mobile Actions */}
-            <CBox display={{ base: "flex", md: "none" }} gap="4px">
+            <CBox display={{ base: "flex", md: "none" }} gap="2px" alignItems="center">
               <Link
                 prefetch={false}
                 href="/search"
@@ -445,7 +453,8 @@ export default function NavigationBar() {
                   icon={<Search size={20} />}
                   variant="ghost"
                   color="#2d3748"
-                  size="sm"
+                  minW="44px"
+                  minH="44px"
                   _hover={{
                     bg: "#fff8f3",
                     color: "#bc0930",
@@ -463,7 +472,8 @@ export default function NavigationBar() {
                     icon={<Heart size={20} />}
                     variant="ghost"
                     color="#2d3748"
-                    size="sm"
+                    minW="44px"
+                    minH="44px"
                     _hover={{
                       bg: "#fff8f3",
                       color: "#bc0930",
@@ -473,14 +483,14 @@ export default function NavigationBar() {
                     <span
                       style={{
                         position: "absolute",
-                        top: -2,
-                        right: -2,
+                        top: 2,
+                        right: 2,
                         background: "#bc0930",
                         color: "white",
                         borderRadius: "9999px",
-                        minWidth: 16,
-                        height: 16,
-                        padding: "0 4px",
+                        minWidth: 18,
+                        height: 18,
+                        padding: "0 5px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -656,17 +666,51 @@ export default function NavigationBar() {
               size="xs"
             >
               <DrawerOverlay />
-              <DrawerContent>
+              <DrawerContent bg="#fffcf2">
                 <motion.div
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: -20, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <DrawerHeader>Menu</DrawerHeader>
-                  </motion.div>
-                  <DrawerBody>
+                  <DrawerHeader
+                    borderBottom="1px solid #e8e2d6"
+                    pb={4}
+                  >
+                    {user ? (
+                      <HStack spacing={3}>
+                        <Avatar
+                          name={displayName || user?.email || "User"}
+                          size="sm"
+                          bg="#bc0930"
+                          color="white"
+                        />
+                        <VStack align="start" spacing={0}>
+                          <Text
+                            fontSize="md"
+                            fontWeight="600"
+                            color="#2B2B2B"
+                            style={{ fontFamily: "var(--font-rothek)" }}
+                          >
+                            Hi, {displayName || "there"}
+                          </Text>
+                          <Text fontSize="xs" color="#5B6B73">
+                            {user?.email}
+                          </Text>
+                        </VStack>
+                      </HStack>
+                    ) : (
+                      <Text
+                        fontSize="lg"
+                        fontWeight="700"
+                        color="#bc0930"
+                        style={{ fontFamily: "var(--font-rothek)" }}
+                      >
+                        Menu
+                      </Text>
+                    )}
+                  </DrawerHeader>
+                  <DrawerBody pt={4}>
                     <motion.div
                       initial="hidden"
                       animate="show"
@@ -679,38 +723,43 @@ export default function NavigationBar() {
                         },
                       }}
                     >
-                      <CStack spacing={4}>
-                        <HStack>
-                          <form
-                            onSubmit={handleMobileSearch}
-                            style={{ width: "100%" }}
-                          >
-                            <HStack>
-                              <Input
-                                placeholder="Search flowers..."
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                                autoComplete="off"
-                              />
-                              <IconButton
-                                aria-label="Search"
-                                icon={<Search size={18} />}
-                                type="submit"
-                              />
-                            </HStack>
-                          </form>
-                          <Link
-                            prefetch={false}
-                            href="/wishlist"
-                            onClick={onClose}
-                          >
-                            <IconButton
-                              aria-label="Favorites"
-                              icon={<Heart size={18} />}
+                      <CStack spacing={1}>
+                        {/* Search */}
+                        <form
+                          onSubmit={handleMobileSearch}
+                          style={{ width: "100%", marginBottom: "12px" }}
+                        >
+                          <HStack>
+                            <Input
+                              placeholder="Search flowers..."
+                              value={query}
+                              onChange={(e) => setQuery(e.target.value)}
+                              autoComplete="off"
+                              size="lg"
+                              borderColor="#e8e2d6"
+                              borderRadius="12px"
+                              _focus={{
+                                borderColor: "#bc0930",
+                                boxShadow: "0 0 0 1px #bc0930",
+                              }}
                             />
-                          </Link>
-                          <CartButton />
-                        </HStack>
+                            <IconButton
+                              aria-label="Search"
+                              icon={<Search size={18} />}
+                              type="submit"
+                              minW="44px"
+                              minH="44px"
+                              borderRadius="12px"
+                              bg="#bc0930"
+                              color="white"
+                              _hover={{ bg: "#a10828" }}
+                            />
+                          </HStack>
+                        </form>
+
+                        <Divider borderColor="#e8e2d6" mb={2} />
+
+                        {/* Navigation Links */}
                         <Link
                           href="/"
                           onClick={onClose}
@@ -720,6 +769,13 @@ export default function NavigationBar() {
                             variant="ghost"
                             width="100%"
                             justifyContent="flex-start"
+                            leftIcon={<Home size={18} />}
+                            minH="48px"
+                            fontSize="md"
+                            fontWeight="500"
+                            color="#2d3748"
+                            borderRadius="12px"
+                            _hover={{ bg: "#fff8f3", color: "#bc0930" }}
                           >
                             Home
                           </CButton>
@@ -733,6 +789,13 @@ export default function NavigationBar() {
                             variant="ghost"
                             width="100%"
                             justifyContent="flex-start"
+                            leftIcon={<Grid2x2 size={18} />}
+                            minH="48px"
+                            fontSize="md"
+                            fontWeight="500"
+                            color="#2d3748"
+                            borderRadius="12px"
+                            _hover={{ bg: "#fff8f3", color: "#bc0930" }}
                           >
                             Shop
                           </CButton>
@@ -746,6 +809,13 @@ export default function NavigationBar() {
                             variant="ghost"
                             width="100%"
                             justifyContent="flex-start"
+                            leftIcon={<Info size={18} />}
+                            minH="48px"
+                            fontSize="md"
+                            fontWeight="500"
+                            color="#2d3748"
+                            borderRadius="12px"
+                            _hover={{ bg: "#fff8f3", color: "#bc0930" }}
                           >
                             About
                           </CButton>
@@ -759,10 +829,53 @@ export default function NavigationBar() {
                             variant="ghost"
                             width="100%"
                             justifyContent="flex-start"
+                            leftIcon={<Palette size={18} />}
+                            minH="48px"
+                            fontSize="md"
+                            fontWeight="500"
+                            color="#2d3748"
+                            borderRadius="12px"
+                            _hover={{ bg: "#fff8f3", color: "#bc0930" }}
                           >
                             Customize
                           </CButton>
                         </Link>
+
+                        {/* Quick Links */}
+                        <Divider borderColor="#e8e2d6" my={2} />
+                        <Link
+                          href="/wishlist"
+                          onClick={onClose}
+                          style={{ textDecoration: "none" }}
+                        >
+                          <CButton
+                            variant="ghost"
+                            width="100%"
+                            justifyContent="flex-start"
+                            leftIcon={<Heart size={18} />}
+                            minH="48px"
+                            fontSize="md"
+                            fontWeight="500"
+                            color="#2d3748"
+                            borderRadius="12px"
+                            _hover={{ bg: "#fff8f3", color: "#bc0930" }}
+                          >
+                            Wishlist
+                            {wishlist?.items?.length > 0 && (
+                              <Badge
+                                ml={2}
+                                bg="#bc0930"
+                                color="white"
+                                borderRadius="full"
+                                fontSize="xs"
+                                px={2}
+                              >
+                                {wishlist.items.length}
+                              </Badge>
+                            )}
+                          </CButton>
+                        </Link>
+
                         {user && (
                           <CButton
                             onClick={() => {
@@ -772,6 +885,13 @@ export default function NavigationBar() {
                             variant="ghost"
                             width="100%"
                             justifyContent="flex-start"
+                            leftIcon={<User size={18} />}
+                            minH="48px"
+                            fontSize="md"
+                            fontWeight="500"
+                            color="#2d3748"
+                            borderRadius="12px"
+                            _hover={{ bg: "#fff8f3", color: "#bc0930" }}
                           >
                             Profile
                           </CButton>
@@ -787,11 +907,21 @@ export default function NavigationBar() {
                               variant="ghost"
                               width="100%"
                               justifyContent="flex-start"
+                              leftIcon={<Shield size={18} />}
+                              minH="48px"
+                              fontSize="md"
+                              fontWeight="500"
+                              color="#2d3748"
+                              borderRadius="12px"
+                              _hover={{ bg: "#fff8f3", color: "#bc0930" }}
                             >
                               Admin
                             </CButton>
                           </Link>
                         )}
+
+                        {/* Auth Actions */}
+                        <Divider borderColor="#e8e2d6" my={2} />
                         {user ? (
                           <CButton
                             onClick={() => {
@@ -799,17 +929,33 @@ export default function NavigationBar() {
                               handleLogout();
                             }}
                             variant="outline"
+                            width="100%"
+                            leftIcon={<LogOut size={18} />}
+                            minH="48px"
+                            borderRadius="12px"
+                            borderColor="#bc0930"
+                            color="#bc0930"
+                            _hover={{ bg: "#bc0930", color: "white" }}
                           >
                             Logout
                           </CButton>
                         ) : (
-                          <>
+                          <CStack spacing={3}>
                             <Link
                               href="/login"
                               onClick={onClose}
                               style={{ textDecoration: "none" }}
                             >
-                              <CButton variant="outline" width="100%">
+                              <CButton
+                                variant="outline"
+                                width="100%"
+                                leftIcon={<LogIn size={18} />}
+                                minH="48px"
+                                borderRadius="12px"
+                                borderColor="#bc0930"
+                                color="#bc0930"
+                                _hover={{ bg: "#fff8f3" }}
+                              >
                                 Login
                               </CButton>
                             </Link>
@@ -820,13 +966,18 @@ export default function NavigationBar() {
                             >
                               <CButton
                                 variant="solid"
-                                colorScheme="red"
                                 width="100%"
+                                leftIcon={<UserPlus size={18} />}
+                                minH="48px"
+                                borderRadius="12px"
+                                bg="#bc0930"
+                                color="white"
+                                _hover={{ bg: "#a10828" }}
                               >
-                                Signup
+                                Sign Up
                               </CButton>
                             </Link>
-                          </>
+                          </CStack>
                         )}
                       </CStack>
                     </motion.div>

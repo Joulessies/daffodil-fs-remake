@@ -129,6 +129,10 @@
     text-align: center;
   }
 
+  .footer-logo {
+    margin-bottom: 0.5rem;
+  }
+
   .footer-brand {
     .brand-line-2 {
       margin-left: 0;
@@ -142,6 +146,15 @@
 
   .footer-section {
     text-align: center;
+
+    ul li {
+      margin-bottom: 16px; /* Larger tap targets */
+    }
+
+    ul li a {
+      display: inline-block;
+      padding: 4px 0; /* Extra padding for touch */
+    }
   }
 
   .footer-bottom {
@@ -159,9 +172,27 @@
   .footer-links {
     flex-direction: column;
     gap: 30px;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0 1.5rem;
+  }
+
+  .footer-section {
+    text-align: left;
+    width: 100%;
+
+    h4 {
+      margin-bottom: 14px;
+    }
+
+    ul li {
+      margin-bottom: 14px;
+    }
   }
 
   .footer-brand {
+    text-align: center;
+
     .brand-line-1 {
       font-size: 14px;
     }
@@ -170,4 +201,9 @@
       font-size: 28px;
     }
   }
+
+  .footer-logo {
+    align-self: center;
+  }
 }
+

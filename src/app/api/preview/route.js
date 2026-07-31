@@ -144,35 +144,39 @@ export async function POST(request) {
     }
 
     const requestImage = async (whichModel, dims) => {
-      const url = `https://api-inference.huggingface.co/models/${encodeURIComponent(
-        whichModel
-      )}`;
-      const isTurbo =
-        /(^|\/)(sdx?l?-?turbo|sd-?turbo|flux.*schnell)/i.test(whichModel) ||
-        /sd-?turbo/i.test(whichModel);
-      const effectiveSteps = isTurbo
-        ? Math.min(4, dims.steps || 4)
-        : dims.steps;
-      const effectiveGuidance = isTurbo ? 0 : dims.guidance;
-      return fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${hfKey}`,
-          "Content-Type": "application/json",
-          Accept: "image/png,application/json;q=0.9,*/*;q=0.8",
-        },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            width: dims.width,
-            height: dims.height,
-            num_inference_steps: effectiveSteps,
-            guidance_scale: effectiveGuidance,
-            negative_prompt: NEGATIVE_PROMPT,
+      try {
+        const url = `https://api-inference.huggingface.co/models/${encodeURIComponent(
+          whichModel
+        )}`;
+        const isTurbo =
+          /(^|\/)(sdx?l?-?turbo|sd-?turbo|flux.*schnell)/i.test(whichModel) ||
+          /sd-?turbo/i.test(whichModel);
+        const effectiveSteps = isTurbo
+          ? Math.min(4, dims.steps || 4)
+          : dims.steps;
+        const effectiveGuidance = isTurbo ? 0 : dims.guidance;
+        return await fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${hfKey}`,
+            "Content-Type": "application/json",
+            Accept: "image/png,application/json;q=0.9,*/*;q=0.8",
           },
-          options: { wait_for_model: true, use_cache: false },
-        }),
-      });
+          body: JSON.stringify({
+            inputs: prompt,
+            parameters: {
+              width: dims.width,
+              height: dims.height,
+              num_inference_steps: effectiveSteps,
+              guidance_scale: effectiveGuidance,
+              negative_prompt: NEGATIVE_PROMPT,
+            },
+            options: { wait_for_model: true, use_cache: false },
+          }),
+        });
+      } catch (_) {
+        return null;
+      }
     };
 
     const extraCandidates = (process.env.HF_CANDIDATE_MODELS || "")
@@ -197,12 +201,12 @@ export async function POST(request) {
         steps: STEPS,
         guidance: GUIDANCE,
       });
-      if (r.ok) {
+      if (r && r.ok) {
         resp = r;
         usedModel = m;
         break;
       }
-      if (r.status === 401 || r.status === 403) {
+      if (r && (r.status === 401 || r.status === 403)) {
         const raw = await r.text();
         return new Response(
           JSON.stringify({

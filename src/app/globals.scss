@@ -38,6 +38,7 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -48,6 +49,7 @@ body {
   color: var(--text-primary);
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -316,6 +318,16 @@ button {
 
   .section {
     padding: 2rem 0;
+  }
+
+  /* Remove 300ms tap delay on mobile browsers */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"] {
+    touch-action: manipulation;
   }
 }
 

@@ -365,35 +365,39 @@ export async function POST(request) {
     }
 
     const requestImage = async (whichModel, dims) => {
-      const url = `https://api-inference.huggingface.co/models/${encodeURIComponent(
-        whichModel
-      )}`;
-      const isTurbo =
-        /(^|\/)(sdx?l?-?turbo|sd-?turbo|flux.*schnell)/i.test(whichModel) ||
-        /sd-?turbo/i.test(whichModel);
-      const effectiveSteps = isTurbo
-        ? Math.min(4, dims.steps || 4)
-        : dims.steps;
-      const effectiveGuidance = isTurbo ? 0 : dims.guidance;
-      return fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${hfKey}`,
-          "Content-Type": "application/json",
-          Accept: "image/png,application/json;q=0.9,*/*;q=0.8",
-        },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            width: dims.width,
-            height: dims.height,
-            num_inference_steps: effectiveSteps,
-            guidance_scale: effectiveGuidance,
-            negative_prompt: NEGATIVE_PROMPT,
+      try {
+        const url = `https://api-inference.huggingface.co/models/${encodeURIComponent(
+          whichModel
+        )}`;
+        const isTurbo =
+          /(^|\/)(sdx?l?-?turbo|sd-?turbo|flux.*schnell)/i.test(whichModel) ||
+          /sd-?turbo/i.test(whichModel);
+        const effectiveSteps = isTurbo
+          ? Math.min(4, dims.steps || 4)
+          : dims.steps;
+        const effectiveGuidance = isTurbo ? 0 : dims.guidance;
+        return await fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${hfKey}`,
+            "Content-Type": "application/json",
+            Accept: "image/png,application/json;q=0.9,*/*;q=0.8",
           },
-          options: { wait_for_model: true, use_cache: false },
-        }),
-      });
+          body: JSON.stringify({
+            inputs: prompt,
+            parameters: {
+              width: dims.width,
+              height: dims.height,
+              num_inference_steps: effectiveSteps,
+              guidance_scale: effectiveGuidance,
+              negative_prompt: NEGATIVE_PROMPT,
+            },
+            options: { wait_for_model: true, use_cache: false },
+          }),
+        });
+      } catch (_) {
+        return null;
+      }
     };
 
     const FORCE_ONE =
@@ -424,12 +428,12 @@ export async function POST(request) {
         steps: STEPS,
         guidance: GUIDANCE,
       });
-      if (r.ok) {
+      if (r && r.ok) {
         resp = r;
         usedModel = m;
         break;
       }
-      if (r.status === 401 || r.status === 403) {
+      if (r && (r.status === 401 || r.status === 403)) {
         // record and continue trying the next candidate model
         try {
           lastDetail = await r.text();
@@ -437,30 +441,49 @@ export async function POST(request) {
         lastStatus = r.status;
         continue;
       }
-      lastStatus = r.status;
-      try {
-        lastDetail = await r.text();
-      } catch (_) {
-        lastDetail = null;
+      if (r) {
+        lastStatus = r.status;
+        try {
+          lastDetail = await r.text();
+        } catch (_) {
+          lastDetail = null;
+        }
       }
     }
     if (!resp) {
-      return new Response(
-        JSON.stringify({
-          error:
-            "All Hugging Face models failed to generate. Check token permissions or model availability.",
-          status: lastStatus,
-          details: lastDetail,
-          tried: candidateModels,
-        }),
-        {
-          status: 502,
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-store",
-          },
-        }
-      );
+      // Fallback to Pollinations.ai when HuggingFace is unreachable or fails
+      try {
+        const pollPrompt = encodeURIComponent(prompt);
+        const pollUrl = `https://image.pollinations.ai/prompt/${pollPrompt}?width=${WIDTH}&height=${HEIGHT}&model=flux&nologo=true`;
+        return new Response(
+          JSON.stringify({
+            imageUrl: pollUrl,
+            note: "Generated via Pollinations (HF fallback)",
+          }),
+          {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              "Cache-Control": "no-store",
+            },
+          }
+        );
+      } catch (_) {
+        const placeholder = `/images/home/bouquet-home.svg`;
+        return new Response(
+          JSON.stringify({
+            imageUrl: placeholder,
+            note: "Local placeholder fallback.",
+          }),
+          {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              "Cache-Control": "no-store",
+            },
+          }
+        );
+      }
     }
 
     const contentType = resp.headers.get("content-type") || "";
