@@ -65,7 +65,6 @@ export default function CheckoutPage() {
   const [saveInfo, setSaveInfo] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Auto-populate email and name from logged-in user
   useEffect(() => {
     if (user?.email) {
       setEmail(user.email);
@@ -84,7 +83,6 @@ export default function CheckoutPage() {
     if (isProcessing) return; // Prevent double submission
 
     try {
-      // Validation
       const MINIMUM_ORDER_PHP = 20;
       if (cart.total < MINIMUM_ORDER_PHP) {
         toast({
@@ -148,7 +146,6 @@ export default function CheckoutPage() {
         }
       } catch (err) {
         console.error("Stock validation error:", err);
-        // Continue with checkout if stock validation fails
       }
 
       // Show loading toast
@@ -231,8 +228,9 @@ export default function CheckoutPage() {
     }
   };
 
+  // Prevent double submission and handle PayMongo checkout
   const handlePayMongo = async () => {
-    if (isProcessing) return; // Prevent double submission
+    if (isProcessing) return; 
 
     try {
       // Validation
