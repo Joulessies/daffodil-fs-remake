@@ -1,18 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
 
-const isBrowser = typeof window !== "undefined";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-// Avoid throwing during build/SSR where envs may be unset in some environments.
-// We still fail fast in the browser if the client is actually used without proper envs.
 export const supabase =
-  isBrowser && supabaseUrl && supabaseAnonKey
+  supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey, {
         auth: {
-          persistSession: true,
+          persistSession: typeof window !== "undefined",
           storageKey: "daffodil-auth",
-          autoRefreshToken: true,
+          autoRefreshToken: typeof window !== "undefined",
         },
       })
     : null;
+

@@ -3,6 +3,7 @@ import { getAdminClient, writeAudit } from "@/lib/admin";
 
 export async function PATCH(request, { params }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const admin = getAdminClient();
     if (!admin)
@@ -27,14 +28,14 @@ export async function PATCH(request, { params }) {
     const { data, error } = await admin
       .from("products")
       .update(updates)
-      .eq("id", params.id)
+      .eq("id", id)
       .select("*")
       .single();
     if (error) throw error;
     await writeAudit({
       action: "update",
       entity: "product",
-      entityId: params.id,
+      entityId: id,
       data: updates,
     });
     return new Response(JSON.stringify({ item: data }), {
@@ -50,17 +51,18 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(_request, { params }) {
   try {
+    const { id } = await params;
     const admin = getAdminClient();
     if (!admin)
       return new Response(JSON.stringify({ error: "Missing admin key" }), {
         status: 500,
       });
-    const { error } = await admin.from("products").delete().eq("id", params.id);
+    const { error } = await admin.from("products").delete().eq("id", id);
     if (error) throw error;
     await writeAudit({
       action: "delete",
       entity: "product",
-      entityId: params.id,
+      entityId: id,
     });
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   } catch (err) {

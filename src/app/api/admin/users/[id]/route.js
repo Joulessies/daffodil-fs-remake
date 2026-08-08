@@ -3,9 +3,10 @@ import { getAdminClient, writeAudit } from "@/lib/admin";
 
 export async function PATCH(request, { params }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     console.log("[PATCH /api/admin/users/:id] Request:", {
-      userId: params.id,
+      userId: id,
       body,
     });
 
@@ -26,7 +27,7 @@ export async function PATCH(request, { params }) {
     let { data, error } = await admin
       .from("users")
       .update(updates)
-      .eq("id", params.id)
+      .eq("id", id)
       .select("id, email, is_admin, suspended")
       .limit(1)
       .maybeSingle();
@@ -46,7 +47,7 @@ export async function PATCH(request, { params }) {
       let email = null;
       try {
         if (admin.auth?.admin?.getUserById) {
-          const { data: au } = await admin.auth.admin.getUserById(params.id);
+          const { data: au } = await admin.auth.admin.getUserById(id);
           email = au?.user?.email || null;
           console.log(
             "[PATCH /api/admin/users/:id] Fetched email from auth:",
@@ -61,7 +62,7 @@ export async function PATCH(request, { params }) {
       }
 
       const toInsert = {
-        id: params.id,
+        id,
         email,
         is_admin: updates.is_admin ?? false,
         suspended: updates.suspended ?? false,
@@ -88,9 +89,9 @@ export async function PATCH(request, { params }) {
     try {
       if (body.suspended !== undefined && admin.auth?.admin) {
         if (body.suspended) {
-          await admin.auth.admin.updateUserById(params.id, { banned: true });
+          await admin.auth.admin.updateUserById(id, { banned: true });
         } else {
-          await admin.auth.admin.updateUserById(params.id, { banned: false });
+          await admin.auth.admin.updateUserById(id, { banned: false });
         }
       }
     } catch (err) {
@@ -103,7 +104,7 @@ export async function PATCH(request, { params }) {
     await writeAudit({
       action: "update",
       entity: "user",
-      entityId: params.id,
+      entityId: id,
       data: updates,
     });
 
@@ -120,8 +121,9 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
+    const { id } = await params;
     console.log("[DELETE /api/admin/users/:id] Request:", {
-      userId: params.id,
+      userId: id,
     });
 
     const admin = getAdminClient();
@@ -138,7 +140,7 @@ export async function DELETE(request, { params }) {
       const { data: user } = await admin
         .from("users")
         .select("email, is_admin")
-        .eq("id", params.id)
+        .eq("id", id)
         .maybeSingle();
 
       if (user) {
@@ -166,7 +168,7 @@ export async function DELETE(request, { params }) {
     }
 
     // Delete from users table
-    const { error } = await admin.from("users").delete().eq("id", params.id);
+    const { error } = await admin.from("users").delete().eq("id", id);
 
     if (error) {
       console.error("[DELETE /api/admin/users/:id] Supabase error:", error);
@@ -176,7 +178,7 @@ export async function DELETE(request, { params }) {
     // Optionally delete from auth (be careful with this in production)
     try {
       if (admin.auth?.admin?.deleteUser) {
-        await admin.auth.admin.deleteUser(params.id);
+        await admin.auth.admin.deleteUser(id);
         console.log(
           "[DELETE /api/admin/users/:id] Auth user deleted successfully"
         );
@@ -192,7 +194,7 @@ export async function DELETE(request, { params }) {
     await writeAudit({
       action: "delete",
       entity: "user",
-      entityId: params.id,
+      entityId: id,
       data: { email: userEmail },
     });
 

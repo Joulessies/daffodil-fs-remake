@@ -2,13 +2,12 @@ import { getAdminClient } from "@/lib/supabase-admin";
 
 export async function GET(req, { params }) {
   try {
+    const { id } = await params;
     const admin = getAdminClient();
     if (!admin)
       return new Response(JSON.stringify({ error: "Missing admin key" }), {
         status: 500,
       });
-
-    const { id } = params;
 
     const { data, error } = await admin
       .from("cms_pages")
@@ -32,13 +31,13 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   try {
+    const { id } = await params;
     const admin = getAdminClient();
     if (!admin)
       return new Response(JSON.stringify({ error: "Missing admin key" }), {
         status: 500,
       });
 
-    const { id } = params;
     const body = await req.json();
     const {
       slug,
@@ -117,13 +116,12 @@ export async function PUT(req, { params }) {
 
 export async function DELETE(req, { params }) {
   try {
+    const { id } = await params;
     const admin = getAdminClient();
     if (!admin)
       return new Response(JSON.stringify({ error: "Missing admin key" }), {
         status: 500,
       });
-
-    const { id } = params;
 
     const { error } = await admin.from("cms_pages").delete().eq("id", id);
 

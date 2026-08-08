@@ -3,6 +3,7 @@ import { getAdminClient, writeAudit } from "@/lib/admin";
 
 export async function GET(_req, { params }) {
   try {
+    const { id } = await params;
     const admin = getAdminClient();
     if (!admin)
       return new Response(JSON.stringify({ error: "Missing admin key" }), {
@@ -11,7 +12,7 @@ export async function GET(_req, { params }) {
     const { data, error } = await admin
       .from("orders")
       .select("*, items")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
     if (error) throw error;
     return new Response(JSON.stringify({ order: data }), { status: 200 });
@@ -24,6 +25,7 @@ export async function GET(_req, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const admin = getAdminClient();
     if (!admin)
@@ -40,14 +42,14 @@ export async function PATCH(request, { params }) {
     const { data, error } = await admin
       .from("orders")
       .update(updates)
-      .eq("id", params.id)
+      .eq("id", id)
       .select("*")
       .single();
     if (error) throw error;
     await writeAudit({
       action: "update",
       entity: "order",
-      entityId: params.id,
+      entityId: id,
       data: updates,
     });
     return new Response(JSON.stringify({ order: data }), { status: 200 });

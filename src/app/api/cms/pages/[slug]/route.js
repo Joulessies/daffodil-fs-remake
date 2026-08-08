@@ -3,7 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 export async function GET(req, { params }) {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAnonKey =
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
       return new Response(JSON.stringify({ error: "Supabase not configured" }), {
@@ -13,7 +15,7 @@ export async function GET(req, { params }) {
     }
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    const { slug } = params;
+    const { slug } = await params;
 
     const { data, error } = await supabase
       .from("cms_pages")

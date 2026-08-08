@@ -430,7 +430,7 @@ export default function CartModal() {
                   transform: "translateY(-2px)",
                   boxShadow: "lg",
                 }}
-                isDisabled={cart.items.length === 0 || cart.total < 20}
+                isDisabled={cart.items.length === 0}
                 onClick={cart.close}
                 fontWeight="600"
                 transition="all 0.2s"

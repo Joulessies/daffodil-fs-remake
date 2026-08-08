@@ -233,7 +233,6 @@ export default function CheckoutPage() {
     if (isProcessing) return; 
 
     try {
-      // Validation
       const MINIMUM_ORDER_PHP = 20;
       if (cart.total < MINIMUM_ORDER_PHP) {
         toast({
