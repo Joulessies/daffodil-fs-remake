@@ -67,7 +67,7 @@ export function AuthPromptProvider({ children }) {
                 fontSize="lg"
                 fontWeight="700"
                 color="#bc0930"
-                style={{ fontFamily: "var(--font-rothek)" }}
+                style={{ fontFamily: "var(--font-serif)" }}
               >
                 Sign in required
               </Text>
@@ -88,8 +88,7 @@ export function AuthPromptProvider({ children }) {
                 borderRadius="12px"
               >
                 <Text fontSize="xs" color="#5B6B73">
-                  You can sign in to save items to your wishlist, checkout
-                  faster, and view your orders.
+                  Sign in or create an account to add items to your cart, place orders, save items to your wishlist, and track your deliveries.
                 </Text>
               </Box>
             </VStack>

@@ -147,7 +147,8 @@ export async function POST(request) {
               status: orderPayload.status,
               total: orderPayload.total,
               items: draft.items && draft.items.length ? draft.items : items,
-              customer_email: orderPayload.customer_email,
+              customer_email: (orderPayload.customer_email || draft.customer_email || "").toLowerCase().trim(),
+              user_id: user_id || draft.user_id || null,
             })
             .eq("order_number", session.id)
             .select("*")

@@ -124,18 +124,24 @@ export default function AdminCMSPagesPage() {
   }
 
   return (
-    <Box minH="100vh" bg="#FFF8F3" p={{ base: 4, md: 6 }}>
-      <Flex align="center" justify="space-between" mb={6}>
+    <Box minH="100vh" bg="#FFF8F3" p={{ base: 3, sm: 4, md: 6 }}>
+      <Flex
+        align={{ base: "stretch", sm: "center" }}
+        direction={{ base: "column", sm: "row" }}
+        gap={{ base: 3, sm: 0 }}
+        justify="space-between"
+        mb={6}
+      >
         <Box>
           <Heading
-            size="xl"
+            size={{ base: "lg", md: "xl" }}
             color="#bc0930"
             style={{ fontFamily: "var(--font-rothek)" }}
             mb={1}
           >
             CMS - About Page
           </Heading>
-          <Text color="#5B6B73" fontSize="sm">
+          <Text color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }}>
             Manage the About page content
           </Text>
         </Box>
@@ -144,88 +150,161 @@ export default function AdminCMSPagesPage() {
 
       <Box
         bg="white"
-        borderRadius="16px"
+        borderRadius={{ base: "12px", md: "16px" }}
         border="1px solid #F5C7CF"
-        p={6}
+        p={{ base: 3.5, sm: 4, md: 6 }}
         as={motion.div}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Title</Th>
-              <Th>Slug</Th>
-              <Th>Status</Th>
-              <Th>Last Updated</Th>
-              <Th>Actions</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {pages.length === 0 ? (
-              <Tr>
-                <Td colSpan={5} textAlign="center" py={8}>
-                  <Text color="#5B6B73">No pages found</Text>
-                </Td>
-              </Tr>
-            ) : (
-              pages.map((page) => (
-                <Tr key={page.id} _hover={{ bg: "#FFF8F3" }}>
-                  <Td fontWeight="500" color="#bc0930">
-                    {page.title}
-                  </Td>
-                  <Td color="#5B6B73" fontSize="sm">
-                    /{page.slug}
-                  </Td>
-                  <Td>
+        {pages.length === 0 ? (
+          <Box textAlign="center" py={8}>
+            <Text color="#5B6B73">No pages found</Text>
+          </Box>
+        ) : (
+          <>
+            {/* Mobile Page Cards (< md) */}
+            <Box display={{ base: "block", md: "none" }}>
+              {pages.map((page) => (
+                <Box
+                  key={page.id}
+                  p={3.5}
+                  mb={3}
+                  bg="#fffcf2"
+                  borderRadius="12px"
+                  border="1px solid #f8e1e7"
+                >
+                  <Flex justify="space-between" align="flex-start" mb={2}>
+                    <Box flex="1">
+                      <Text fontWeight="600" fontSize="md" color="#bc0930">
+                        {page.title}
+                      </Text>
+                      <Text color="#5B6B73" fontSize="xs">
+                        /{page.slug}
+                      </Text>
+                    </Box>
                     <Badge
                       colorScheme={getStatusColor(page.status)}
                       fontSize="xs"
                     >
                       {page.status}
                     </Badge>
-                  </Td>
-                  <Td color="#5B6B73" fontSize="sm">
-                    {new Date(page.updated_at).toLocaleDateString()}
-                  </Td>
-                  <Td>
-                    <HStack spacing={2}>
-                      <Tooltip label="View Page">
-                        <Link href={`/${page.slug}`} target="_blank">
-                          <IconButton
-                            icon={<ExternalLink size={16} />}
-                            size="sm"
-                            variant="ghost"
-                            colorScheme="blue"
-                          />
-                        </Link>
-                      </Tooltip>
-                      <Tooltip label="Edit">
-                        <Link href={`/admin/cms/pages/${page.id}`}>
-                          <IconButton
-                            icon={<Edit size={16} />}
-                            size="sm"
-                            variant="ghost"
-                            colorScheme="blue"
-                          />
-                        </Link>
-                      </Tooltip>
-                      <Tooltip label="Delete">
-                        <IconButton
-                          icon={<Trash2 size={16} />}
-                          size="sm"
-                          variant="ghost"
-                          colorScheme="red"
-                          onClick={() => handleDelete(page.id, page.title)}
-                        />
-                      </Tooltip>
-                    </HStack>
-                  </Td>
-                </Tr>
-              ))
-            )}
-          </Tbody>
-        </Table>
+                  </Flex>
+
+                  <Text color="#5B6B73" fontSize="xs" mb={3}>
+                    Updated: {new Date(page.updated_at).toLocaleDateString()}
+                  </Text>
+
+                  <Flex justify="flex-end" gap={2} pt={2} borderTop="1px dashed #f5c7cf">
+                    <Link href={`/${page.slug}`} target="_blank">
+                      <IconButton
+                        icon={<ExternalLink size={15} />}
+                        size="sm"
+                        variant="outline"
+                        borderColor="#F5C7CF"
+                        colorScheme="gray"
+                        aria-label="View page"
+                      />
+                    </Link>
+                    <Link href={`/admin/cms/pages/${page.id}`}>
+                      <IconButton
+                        icon={<Edit size={15} />}
+                        size="sm"
+                        variant="outline"
+                        borderColor="#F5C7CF"
+                        colorScheme="blue"
+                        aria-label="Edit page"
+                      />
+                    </Link>
+                    <IconButton
+                      icon={<Trash2 size={15} />}
+                      size="sm"
+                      variant="outline"
+                      borderColor="#F5C7CF"
+                      colorScheme="red"
+                      onClick={() => handleDelete(page.id, page.title)}
+                      aria-label="Delete page"
+                    />
+                  </Flex>
+                </Box>
+              ))}
+            </Box>
+
+            {/* Desktop Table (>= md) */}
+            <Box overflowX="auto" display={{ base: "none", md: "block" }}>
+              <Table variant="simple" minW="500px">
+                <Thead>
+                  <Tr>
+                    <Th>Title</Th>
+                    <Th>Slug</Th>
+                    <Th>Status</Th>
+                    <Th>Last Updated</Th>
+                    <Th>Actions</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {pages.map((page) => (
+                    <Tr key={page.id} _hover={{ bg: "#FFF8F3" }}>
+                      <Td fontWeight="500" color="#bc0930">
+                        {page.title}
+                      </Td>
+                      <Td color="#5B6B73" fontSize="sm">
+                        /{page.slug}
+                      </Td>
+                      <Td>
+                        <Badge
+                          colorScheme={getStatusColor(page.status)}
+                          fontSize="xs"
+                        >
+                          {page.status}
+                        </Badge>
+                      </Td>
+                      <Td color="#5B6B73" fontSize="sm">
+                        {new Date(page.updated_at).toLocaleDateString()}
+                      </Td>
+                      <Td>
+                        <HStack spacing={2}>
+                          <Tooltip label="View Page">
+                            <Link href={`/${page.slug}`} target="_blank">
+                              <IconButton
+                                icon={<ExternalLink size={16} />}
+                                size="sm"
+                                variant="ghost"
+                                colorScheme="blue"
+                                aria-label="View page"
+                              />
+                            </Link>
+                          </Tooltip>
+                          <Tooltip label="Edit">
+                            <Link href={`/admin/cms/pages/${page.id}`}>
+                              <IconButton
+                                icon={<Edit size={16} />}
+                                size="sm"
+                                variant="ghost"
+                                colorScheme="blue"
+                                aria-label="Edit page"
+                              />
+                            </Link>
+                          </Tooltip>
+                          <Tooltip label="Delete">
+                            <IconButton
+                              icon={<Trash2 size={16} />}
+                              size="sm"
+                              variant="ghost"
+                              colorScheme="red"
+                              onClick={() => handleDelete(page.id, page.title)}
+                              aria-label="Delete page"
+                            />
+                          </Tooltip>
+                        </HStack>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </Box>
+          </>
+        )}
       </Box>
     </Box>
   );

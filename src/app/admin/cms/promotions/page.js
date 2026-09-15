@@ -153,42 +153,50 @@ export default function AdminCMSPromotionsPage() {
   }
 
   return (
-    <Box minH="100vh" bg="#FFF8F3" p={{ base: 4, md: 6 }}>
-      <Flex align="center" justify="space-between" mb={6}>
+    <Box minH="100vh" bg="#FFF8F3" p={{ base: 3, sm: 4, md: 6 }}>
+      <Flex
+        align={{ base: "stretch", sm: "center" }}
+        direction={{ base: "column", sm: "row" }}
+        gap={{ base: 3, sm: 0 }}
+        justify="space-between"
+        mb={6}
+      >
         <Box>
           <Heading
-            size="xl"
+            size={{ base: "lg", md: "xl" }}
             color="#bc0930"
             style={{ fontFamily: "var(--font-rothek)" }}
             mb={1}
           >
             CMS - Promotions & Banners
           </Heading>
-          <Text color="#5B6B73" fontSize="sm">
+          <Text color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }}>
             Manage promotions, banners, and advertisements
           </Text>
         </Box>
-        <HStack spacing={2}>
-          <Link href="/admin/cms/promotions/new">
+        <Flex gap={2} flexWrap="wrap" align="center">
+          <Link href="/admin/cms/promotions/new" style={{ flex: 1 }}>
             <Button
               leftIcon={<Plus size={16} />}
               colorScheme="red"
               bg="#bc0930"
               _hover={{ bg: "#a10828" }}
+              size="sm"
+              w="full"
             >
               New Promotion
             </Button>
           </Link>
           <AdminBackButton />
-        </HStack>
+        </Flex>
       </Flex>
 
       {promotions.length === 0 ? (
         <Box
           bg="white"
-          borderRadius="16px"
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
-          p={12}
+          p={{ base: 8, md: 12 }}
           textAlign="center"
           as={motion.div}
           initial={{ opacity: 0, y: 20 }}
@@ -197,12 +205,12 @@ export default function AdminCMSPromotionsPage() {
           <Text color="#5B6B73">No promotions found</Text>
         </Box>
       ) : (
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+        <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 3, md: 4 }}>
           {promotions.map((promotion) => (
             <Box
               key={promotion.id}
               bg="white"
-              borderRadius="16px"
+              borderRadius={{ base: "12px", md: "16px" }}
               border="1px solid #F5C7CF"
               overflow="hidden"
               as={motion.div}

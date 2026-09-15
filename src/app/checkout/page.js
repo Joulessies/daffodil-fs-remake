@@ -23,9 +23,10 @@ import {
   VStack,
   Badge,
   IconButton,
+  Spinner,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { useCart } from "@/components/CartContext";
+import { useCartStore } from "@/lib/store";
 import { useAuth } from "@/components/AuthProvider";
 import NavigationBar from "@/components/navigationbar";
 import dynamic from "next/dynamic";
@@ -36,6 +37,8 @@ import {
   Truck,
   ShieldCheck,
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 const PayPalButton = dynamic(() => import("@/components/PayPalButton"), {
@@ -44,8 +47,11 @@ const PayPalButton = dynamic(() => import("@/components/PayPalButton"), {
 
 export default function CheckoutPage() {
   const toast = useToast();
-  const cart = useCart();
-  const { user } = useAuth();
+  const cartItems = useCartStore((s) => s.items);
+  const cartTotal = useCartStore((s) => s.getTotal());
+  const clearCart = useCartStore((s) => s.clearCart);
+  const cart = { items: cartItems, total: cartTotal, clearCart };
+  const { user, isLoading: authLoading } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -64,6 +70,7 @@ export default function CheckoutPage() {
   const [promo, setPromo] = useState("");
   const [saveInfo, setSaveInfo] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
 
   useEffect(() => {
     if (user?.email) {
@@ -81,6 +88,17 @@ export default function CheckoutPage() {
   const handleSubmit = async (e) => {
     if (e && typeof e.preventDefault === "function") e.preventDefault();
     if (isProcessing) return; // Prevent double submission
+
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in or register before completing your order.",
+        status: "warning",
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
+    }
 
     try {
       const MINIMUM_ORDER_PHP = 20;
@@ -182,7 +200,8 @@ export default function CheckoutPage() {
             total: cart.total,
             items: cart.items,
             customer_name: name,
-            customer_email: email,
+            customer_email: (email || user?.email || "").toLowerCase().trim(),
+            user_id: user?.id || null,
             shipping_address: shipping,
           });
         }
@@ -231,6 +250,17 @@ export default function CheckoutPage() {
   // Prevent double submission and handle PayMongo checkout
   const handlePayMongo = async () => {
     if (isProcessing) return; 
+
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in or register before completing your order.",
+        status: "warning",
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
+    }
 
     try {
       const MINIMUM_ORDER_PHP = 20;
@@ -300,7 +330,8 @@ export default function CheckoutPage() {
             total: cart.total,
             items: cart.items,
             customer_name: name,
-            customer_email: email,
+            customer_email: (email || user?.email || "").toLowerCase().trim(),
+            user_id: user?.id || null,
             shipping_address: shipping,
           });
         }
@@ -353,7 +384,7 @@ export default function CheckoutPage() {
   return (
     <>
       <NavigationBar />
-      <Box bg="#fffcf2" minH="100vh" py={8}>
+      <Box bg="#fffcf2" minH="100vh" pt={8} pb={{ base: "88px", md: 8 }}>
         <Box maxW="1200px" mx="auto" px={{ base: 4, md: 6 }}>
           {/* Header */}
           <HStack spacing={4} mb={8}>
@@ -385,7 +416,7 @@ export default function CheckoutPage() {
                 as="h1"
                 fontSize="3xl"
                 color="#bc0930"
-                style={{ fontFamily: "var(--font-rothek)" }}
+                style={{ fontFamily: "var(--font-serif)" }}
               >
                 Checkout
               </Heading>
@@ -411,8 +442,190 @@ export default function CheckoutPage() {
               </HStack>
             </HStack>
           </VStack>
-          <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={8}>
+
+          {authLoading ? (
+            <Box
+              border="1px solid #F5C7CF"
+              borderRadius="16px"
+              bg="white"
+              p={12}
+              textAlign="center"
+              boxShadow="sm"
+            >
+              <Spinner size="xl" color="#bc0930" mb={4} />
+              <Text color="#5B6B73">Checking authentication status...</Text>
+            </Box>
+          ) : !user ? (
+            <Box
+              border="2px solid #F5C7CF"
+              borderRadius="16px"
+              bg="white"
+              p={{ base: 6, md: 10 }}
+              textAlign="center"
+              boxShadow="md"
+              maxW="650px"
+              mx="auto"
+              my={8}
+            >
+              <Box
+                w={16}
+                h={16}
+                mx="auto"
+                mb={4}
+                bg="#fffcf2"
+                border="2px solid #F5C7CF"
+                borderRadius="full"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Lock size={32} color="#bc0930" />
+              </Box>
+              <Heading
+                fontSize={{ base: "xl", md: "2xl" }}
+                color="#bc0930"
+                mb={3}
+                fontFamily="var(--font-serif)"
+              >
+                Account Required to Checkout
+              </Heading>
+              <Text color="#5B6B73" fontSize="md" mb={6} lineHeight="tall">
+                Please sign in to your Daffodil Flower Shop account or create a new account to proceed with your order, secure payment, and track delivery.
+              </Text>
+              <HStack spacing={4} justify="center" flexWrap="wrap">
+                <Button
+                  as="a"
+                  href="/login?redirect=/checkout"
+                  bg="#bc0930"
+                  color="white"
+                  size="lg"
+                  px={8}
+                  _hover={{ bg: "#a10828", transform: "translateY(-1px)", boxShadow: "md" }}
+                  borderRadius="md"
+                  fontWeight="600"
+                >
+                  Sign In to Continue
+                </Button>
+                <Button
+                  as="a"
+                  href="/signup?redirect=/checkout"
+                  variant="outline"
+                  borderColor="#bc0930"
+                  color="#bc0930"
+                  size="lg"
+                  px={8}
+                  _hover={{ bg: "#fff8f3" }}
+                  borderRadius="md"
+                  fontWeight="600"
+                >
+                  Create Account
+                </Button>
+              </HStack>
+              <Box mt={6}>
+                <Button
+                  as="a"
+                  href="/shop"
+                  variant="ghost"
+                  color="#5B6B73"
+                  size="sm"
+                  _hover={{ color: "#bc0930" }}
+                >
+                  ← Return to Shop
+                </Button>
+              </Box>
+            </Box>
+          ) : (
+            <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={8}>
             <GridItem>
+              {/* Mobile Collapsible Order Summary */}
+              <Box
+                display={{ base: "block", lg: "none" }}
+                mb={6}
+                border="2px solid #F5C7CF"
+                borderRadius="16px"
+                bg="white"
+                overflow="hidden"
+                boxShadow="md"
+              >
+                <Box
+                  as="button"
+                  type="button"
+                  onClick={() => setMobileSummaryOpen(!mobileSummaryOpen)}
+                  w="100%"
+                  p={4}
+                  bg="#fffcf2"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  borderBottom={mobileSummaryOpen ? "1.5px solid #F5C7CF" : "none"}
+                >
+                  <HStack spacing={2} color="#bc0930">
+                    <ShoppingBag size={18} />
+                    <Text fontSize="sm" fontWeight="600">
+                      {mobileSummaryOpen ? "Hide order summary" : "Show order summary"}
+                    </Text>
+                    {mobileSummaryOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </HStack>
+                  <Text fontWeight="700" color="#2B2B2B" fontSize="md">
+                    ₱{((cart.total * 1.12) + (cart.total > 0 ? 150 : 0)).toFixed(2)}
+                  </Text>
+                </Box>
+
+                {mobileSummaryOpen && (
+                  <Box p={4}>
+                    <Stack spacing={3} mb={4}>
+                      {cart.items.length === 0 ? (
+                        <Text fontSize="sm" color="#5B6B73">Your cart is empty.</Text>
+                      ) : (
+                        cart.items.map((item, idx) => (
+                          <HStack key={item.id + idx} justify="space-between" align="center">
+                            <HStack spacing={3}>
+                              {item.image && (
+                                <ChakraImage
+                                  src={item.image}
+                                  alt={item.title}
+                                  w="44px"
+                                  h="44px"
+                                  objectFit="cover"
+                                  borderRadius="8px"
+                                  border="1px solid #F5C7CF"
+                                />
+                              )}
+                              <Box>
+                                <Text fontSize="sm" fontWeight="600" color="#2B2B2B" noOfLines={1}>
+                                  {item.title}
+                                </Text>
+                                <Text fontSize="xs" color="#5B6B73">
+                                  Qty: {item.quantity || 1}
+                                </Text>
+                              </Box>
+                            </HStack>
+                            <Text fontSize="sm" fontWeight="600" color="#2B2B2B">
+                              ₱{((Number(item.price) || 0) * (item.quantity || 1)).toFixed(2)}
+                            </Text>
+                          </HStack>
+                        ))
+                      )}
+                    </Stack>
+                    <Divider borderColor="#F5C7CF" mb={3} />
+                    <VStack spacing={1.5} align="stretch" fontSize="xs" color="#5B6B73">
+                      <HStack justify="space-between">
+                        <Text>Subtotal</Text>
+                        <Text fontWeight="500" color="#2B2B2B">₱{cart.total.toFixed(2)}</Text>
+                      </HStack>
+                      <HStack justify="space-between">
+                        <Text>Estimated Tax (12%)</Text>
+                        <Text fontWeight="500" color="#2B2B2B">₱{(cart.total * 0.12).toFixed(2)}</Text>
+                      </HStack>
+                      <HStack justify="space-between">
+                        <Text>Shipping (Metro Manila)</Text>
+                        <Text fontWeight="500" color="#2B2B2B">₱{cart.total > 0 ? "150.00" : "0.00"}</Text>
+                      </HStack>
+                    </VStack>
+                  </Box>
+                )}
+              </Box>
+
               <form onSubmit={handleSubmit}>
                 <Stack spacing={6}>
                   <Box
@@ -1174,6 +1387,7 @@ export default function CheckoutPage() {
               </Box>
             </GridItem>
           </Grid>
+          )}
         </Box>
       </Box>
     </>

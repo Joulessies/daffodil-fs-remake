@@ -58,6 +58,9 @@ export default function Footer() {
                 <Link href="/profile/orders">Order History</Link>
               </li>
               <li>
+                <Link href="/order/track">Track Order</Link>
+              </li>
+              <li>
                 <Link href="/wishlist">Wishlist</Link>
               </li>
             </ul>

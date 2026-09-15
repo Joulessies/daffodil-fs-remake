@@ -4,11 +4,12 @@ import { createClient } from "@supabase/supabase-js";
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const email = searchParams.get("email");
+    const email = searchParams.get("email")?.trim().toLowerCase() || "";
+    const userId = searchParams.get("user_id")?.trim() || "";
 
-    if (!email) {
+    if (!email && !userId) {
       return new Response(
-        JSON.stringify({ error: "Email parameter required" }),
+        JSON.stringify({ error: "Email or user_id parameter required" }),
         {
           status: 400,
         }
@@ -98,12 +99,19 @@ export async function GET(request) {
       .order("created_at", { ascending: false })
       .limit(10);
 
-    // Get orders for specific email
-    const { data: userOrders, error: userError } = await admin
-      .from("orders")
-      .select("*")
-      .eq("customer_email", email)
-      .order("created_at", { ascending: false });
+    // Get orders for specific user (by email or user_id)
+    let userQuery = admin.from("orders").select("*");
+    if (email && userId) {
+      userQuery = userQuery.or(`customer_email.ilike.${email},user_id.eq.${userId}`);
+    } else if (email) {
+      userQuery = userQuery.ilike("customer_email", email);
+    } else if (userId) {
+      userQuery = userQuery.eq("user_id", userId);
+    }
+    const { data: userOrders, error: userError } = await userQuery.order(
+      "created_at",
+      { ascending: false }
+    );
 
     if (allError) {
       console.error("Error fetching all orders:", allError);

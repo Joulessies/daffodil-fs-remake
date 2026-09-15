@@ -19,6 +19,19 @@ export async function POST(request) {
       });
     }
 
+    if (
+      !customerEmail ||
+      typeof customerEmail !== "string" ||
+      !customerEmail.includes("@")
+    ) {
+      return new Response(
+        JSON.stringify({
+          error: "Customer sign-in or registration is required to buy",
+        }),
+        { status: 401 }
+      );
+    }
+
     // Calculate total amount
     const totalAmount = items.reduce((sum, item) => {
       const price = Number(item.price) || 0;

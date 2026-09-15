@@ -28,6 +28,19 @@ export async function POST(request) {
       });
     }
 
+    if (
+      !customerEmail ||
+      typeof customerEmail !== "string" ||
+      !customerEmail.includes("@")
+    ) {
+      return new Response(
+        JSON.stringify({
+          error: "Customer sign-in or registration is required to buy",
+        }),
+        { status: 401 }
+      );
+    }
+
     // Build line items in centavos
     const line_items = items.map((it) => ({
       name: it.title || it.flowerType || "Item",

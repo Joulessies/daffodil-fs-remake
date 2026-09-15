@@ -31,7 +31,9 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import NavigationBar from "@/components/navigationbar";
-import { useCart } from "@/components/CartContext";
+import { useCustomizerStore, useCartStore } from "@/lib/store";
+import { useAuth } from "@/components/AuthProvider";
+import { useAuthPrompt } from "@/components/AuthPromptContext";
 import BouquetPreview from "@/components/BouquetPreview";
 import {
   Palette,
@@ -63,8 +65,33 @@ const ADDONS = {
 };
 
 export default function CustomizePage() {
+  const { user } = useAuth();
+  const authPrompt = useAuthPrompt();
   const toast = useToast();
-  const cart = useCart();
+  const cartAddItem = useCartStore((s) => s.addItem);
+  const cartOpen = useCartStore((s) => s.open);
+
+  const {
+    flowerType,
+    stems,
+    wrap,
+    color,
+    addons,
+    note,
+    aiImage,
+    aiNote,
+    aiLoading,
+    setFlowerType,
+    setStems,
+    setWrap,
+    setColor,
+    setAddons,
+    setNote,
+    setAiImage,
+    setAiLoading,
+    reset: resetCustomizer,
+  } = useCustomizerStore();
+
   const formatPeso = (n) =>
     new Intl.NumberFormat("en-PH", {
       style: "currency",
@@ -73,15 +100,6 @@ export default function CustomizePage() {
     }).format(n);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const [flowerType, setFlowerType] = useState("roses");
-  const [stems, setStems] = useState(12);
-  const [wrap, setWrap] = useState("kraft");
-  const [addons, setAddons] = useState([]);
-  const [color, setColor] = useState("red");
-  const [note, setNote] = useState("");
-  const [aiImage, setAiImage] = useState("");
-  const [aiNote, setAiNote] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
   const [aiAvailable, setAiAvailable] = useState(true);
   const [autoGenerate, setAutoGenerate] = useState(true);
   const lastSpecRef = useRef("");
@@ -209,8 +227,15 @@ export default function CustomizePage() {
   }, [flowerType, stems, wrap, addons]);
 
   const handleAddToCart = () => {
+    if (!user) {
+      authPrompt.open(
+        "Please sign in or register to add your custom bouquet to the cart."
+      );
+      return;
+    }
     const item = {
       id: `${flowerType}-${Date.now()}`,
+      title: `${stems} ${FLOWER_TYPES[flowerType]?.label || "Flower"} Bouquet`,
       flowerType,
       stems,
       color,
@@ -220,13 +245,10 @@ export default function CustomizePage() {
       image: aiImage || undefined,
       price,
     };
-    const ok = cart.addItem(item);
+    const ok = cartAddItem(item);
     if (ok) {
       toast({ title: "Added to cart", status: "success", duration: 2000 });
-      cart.open();
-    } else {
-      // addItem handles prompting for auth; show a gentle notice
-      toast({ title: "Please sign in to add items", status: "info" });
+      cartOpen();
     }
   };
 
@@ -235,7 +257,7 @@ export default function CustomizePage() {
   return (
     <>
       <NavigationBar />
-      <Box bg="#fffcf2" minH="100vh" py={8}>
+      <Box bg="#fffcf2" minH="100vh" pt={8} pb={{ base: "140px", lg: 8 }}>
         <Box maxW="1200px" mx="auto" px={{ base: 4, md: 6 }}>
           {/* Header Section */}
           <VStack spacing={4} mb={8} textAlign="center">
@@ -278,6 +300,45 @@ export default function CustomizePage() {
               boxShadow="lg"
             >
               <VStack spacing={6} align="stretch">
+                {/* Mobile Quick Price & Spec Banner */}
+                <Box
+                  display={{ base: "block", lg: "none" }}
+                  p={4}
+                  bg="#fff8f3"
+                  borderRadius="14px"
+                  border="1.5px solid #F5C7CF"
+                  mb={1}
+                >
+                  <HStack justify="space-between" align="center">
+                    <VStack align="start" spacing={0}>
+                      <Text
+                        fontSize="11px"
+                        fontWeight="700"
+                        color="#5B6B73"
+                        textTransform="uppercase"
+                        letterSpacing="0.5px"
+                      >
+                        Selected Bouquet
+                      </Text>
+                      <Text fontSize="md" fontWeight="700" color="#2B2B2B">
+                        {stems} {FLOWER_TYPES[flowerType]?.label} ({color})
+                      </Text>
+                      <Text fontSize="xs" color="#5B6B73">
+                        {WRAPS[wrap]?.label}
+                        {addons.length ? ` • +${addons.length} add-ons` : ""}
+                      </Text>
+                    </VStack>
+                    <VStack align="end" spacing={0}>
+                      <Text fontSize="xs" color="#5B6B73">
+                        Total
+                      </Text>
+                      <Text fontSize="xl" fontWeight="800" color="#bc0930">
+                        {formatPeso(price)}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </Box>
+
                 {/* Flower Type */}
                 <Box>
                   <HStack spacing={3} mb={4}>
@@ -714,12 +775,7 @@ export default function CustomizePage() {
                   borderRadius="12px"
                   leftIcon={<RotateCcw size={18} />}
                   onClick={() => {
-                    setFlowerType("roses");
-                    setStems(12);
-                    setColor("red");
-                    setWrap("kraft");
-                    setAddons([]);
-                    setNote("");
+                    resetCustomizer();
                   }}
                   _hover={{
                     bg: "#fffcf2",
@@ -844,6 +900,49 @@ export default function CustomizePage() {
               )}
             </Box>
           </SimpleGrid>
+
+          {/* Sticky Mobile Add to Cart Bar */}
+          <Box
+            display={{ base: "block", lg: "none" }}
+            position="fixed"
+            bottom="58px"
+            left={0}
+            right={0}
+            zIndex={990}
+            bg="rgba(255, 255, 255, 0.96)"
+            backdropFilter="blur(12px)"
+            borderTop="2px solid #F5C7CF"
+            boxShadow="0 -6px 20px rgba(0, 0, 0, 0.08)"
+            p={3}
+            px={4}
+          >
+            <HStack justify="space-between" align="center" maxW="500px" mx="auto">
+              <VStack align="start" spacing={0}>
+                <Text fontSize="xs" color="#5B6B73">
+                  {stems} stems • {FLOWER_TYPES[flowerType]?.label}
+                </Text>
+                <Text fontSize="xl" fontWeight="800" color="#bc0930" lineHeight="1.1">
+                  {formatPeso(price)}
+                </Text>
+              </VStack>
+
+              <HStack spacing={2}>
+                <Button
+                  bg="#bc0930"
+                  color="white"
+                  size="md"
+                  borderRadius="12px"
+                  fontWeight="600"
+                  leftIcon={<ShoppingCart size={18} />}
+                  onClick={handleAddToCart}
+                  _hover={{ bg: "#a10828" }}
+                  px={5}
+                >
+                  Add to Cart
+                </Button>
+              </HStack>
+            </HStack>
+          </Box>
         </Box>
       </Box>
     </>

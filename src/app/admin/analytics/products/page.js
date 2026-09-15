@@ -130,18 +130,24 @@ export default function ProductAnalyticsPage() {
   }
 
   return (
-    <Box minH="100vh" bg="#FFF8F3" p={{ base: 4, md: 6 }}>
-      <Flex align="center" justify="space-between" mb={6}>
+    <Box minH="100vh" bg="#FFF8F3" p={{ base: 3, sm: 4, md: 6 }}>
+      <Flex
+        align={{ base: "stretch", sm: "center" }}
+        direction={{ base: "column", sm: "row" }}
+        gap={{ base: 3, sm: 0 }}
+        justify="space-between"
+        mb={6}
+      >
         <Box>
           <Heading
-            size="xl"
+            size={{ base: "lg", md: "xl" }}
             color="#bc0930"
             style={{ fontFamily: "var(--font-rothek)" }}
             mb={1}
           >
             Product Performance Analytics
           </Heading>
-          <Text color="#5B6B73" fontSize="sm">
+          <Text color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }}>
             Track product sales and inventory metrics
           </Text>
         </Box>
@@ -149,33 +155,33 @@ export default function ProductAnalyticsPage() {
       </Flex>
 
       {/* Key Metrics */}
-      <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} spacing={4} mb={8}>
+      <SimpleGrid columns={{ base: 2, lg: 4 }} spacing={{ base: 2.5, sm: 4 }} mb={{ base: 6, md: 8 }}>
         <Box
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={6}
-          borderRadius="16px"
+          p={{ base: 3, sm: 5 }}
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
         >
           <HStack mb={2}>
             <Box p={2} borderRadius="8px" bg="#3b82f615" color="#3b82f6">
-              <Package size={20} />
+              <Package size={18} />
             </Box>
           </HStack>
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm" fontWeight="500">
+            <StatLabel color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }} fontWeight="500">
               Active Products
             </StatLabel>
             <StatNumber
-              fontSize="3xl"
+              fontSize={{ base: "xl", sm: "2xl", md: "3xl" }}
               fontWeight="bold"
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
               {activeProducts}
             </StatNumber>
-            <StatHelpText color="#8A9AA3" fontSize="xs">
+            <StatHelpText color="#8A9AA3" fontSize="xs" mb={0}>
               In catalog
             </StatHelpText>
           </Stat>
@@ -185,28 +191,28 @@ export default function ProductAnalyticsPage() {
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={6}
-          borderRadius="16px"
+          p={{ base: 3, sm: 5 }}
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
         >
           <HStack mb={2}>
             <Box p={2} borderRadius="8px" bg="#f59e0b15" color="#f59e0b">
-              <TrendingUp size={20} />
+              <TrendingUp size={18} />
             </Box>
           </HStack>
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm" fontWeight="500">
+            <StatLabel color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }} fontWeight="500">
               Low Stock Items
             </StatLabel>
             <StatNumber
-              fontSize="3xl"
+              fontSize={{ base: "xl", sm: "2xl", md: "3xl" }}
               fontWeight="bold"
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
               {lowStockProducts}
             </StatNumber>
-            <StatHelpText color="#8A9AA3" fontSize="xs">
+            <StatHelpText color="#8A9AA3" fontSize="xs" mb={0}>
               ≤ 5 units remaining
             </StatHelpText>
           </Stat>
@@ -216,28 +222,28 @@ export default function ProductAnalyticsPage() {
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={6}
-          borderRadius="16px"
+          p={{ base: 3, sm: 5 }}
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
         >
           <HStack mb={2}>
             <Box p={2} borderRadius="8px" bg="#0f8f4d15" color="#0f8f4d">
-              <DollarSign size={20} />
+              <DollarSign size={18} />
             </Box>
           </HStack>
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm" fontWeight="500">
+            <StatLabel color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }} fontWeight="500">
               Avg Product Price
             </StatLabel>
             <StatNumber
-              fontSize="2xl"
+              fontSize={{ base: "lg", sm: "xl", md: "2xl" }}
               fontWeight="bold"
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
               ₱{avgProductPrice.toFixed(2)}
             </StatNumber>
-            <StatHelpText color="#8A9AA3" fontSize="xs">
+            <StatHelpText color="#8A9AA3" fontSize="xs" mb={0}>
               Across all products
             </StatHelpText>
           </Stat>
@@ -247,28 +253,28 @@ export default function ProductAnalyticsPage() {
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={6}
-          borderRadius="16px"
+          p={{ base: 3, sm: 5 }}
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
         >
           <HStack mb={2}>
             <Box p={2} borderRadius="8px" bg="#8b5cf615" color="#8b5cf6">
-              <Package size={20} />
+              <Package size={18} />
             </Box>
           </HStack>
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm" fontWeight="500">
+            <StatLabel color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }} fontWeight="500">
               Total Stock Value
             </StatLabel>
             <StatNumber
-              fontSize="2xl"
+              fontSize={{ base: "lg", sm: "xl", md: "2xl" }}
               fontWeight="bold"
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
               ₱{totalStockValue.toFixed(2)}
             </StatNumber>
-            <StatHelpText color="#8A9AA3" fontSize="xs">
+            <StatHelpText color="#8A9AA3" fontSize="xs" mb={0}>
               Inventory value
             </StatHelpText>
           </Stat>
@@ -278,70 +284,119 @@ export default function ProductAnalyticsPage() {
       {/* Top Selling Products */}
       <Box
         bg="white"
-        p={6}
-        borderRadius="16px"
+        p={{ base: 3, sm: 4, md: 6 }}
+        borderRadius={{ base: "12px", md: "16px" }}
         border="1px solid #F5C7CF"
         as={motion.div}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        mb={8}
+        mb={{ base: 6, md: 8 }}
       >
         <Heading
-          size="md"
+          size="sm"
           mb={4}
           color="#bc0930"
           style={{ fontFamily: "var(--font-rothek)" }}
         >
           Top Selling Products by Revenue
         </Heading>
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart
-            data={productPerformance}
-            layout="horizontal"
-            margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#F5C7CF" />
-            <XAxis type="number" stroke="#5B6B73" fontSize={12} />
-            <YAxis
-              type="category"
-              dataKey="name"
-              stroke="#5B6B73"
-              fontSize={12}
-              width={90}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #F5C7CF",
-                borderRadius: "8px",
-              }}
-              formatter={(value) => `₱${Number(value).toFixed(2)}`}
-            />
-            <Legend />
-            <Bar dataKey="revenue" fill="#bc0930" name="Revenue (₱)" />
-          </BarChart>
-        </ResponsiveContainer>
+        <Box w="100%">
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart
+              data={productPerformance}
+              layout="horizontal"
+              margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#F5C7CF" />
+              <XAxis type="number" stroke="#5B6B73" fontSize={10} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                stroke="#5B6B73"
+                fontSize={9}
+                width={85}
+                tick={{ fontSize: 9 }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "white",
+                  border: "1px solid #F5C7CF",
+                  borderRadius: "8px",
+                  fontSize: 12,
+                }}
+                formatter={(value) => `₱${Number(value).toFixed(2)}`}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="revenue" fill="#bc0930" name="Revenue (₱)" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
       </Box>
 
-      {/* Product Performance Table */}
+      {/* Product Performance Table / Mobile Cards */}
       <Box
         bg="white"
-        p={6}
-        borderRadius="16px"
+        p={{ base: 3, sm: 4, md: 6 }}
+        borderRadius={{ base: "12px", md: "16px" }}
         border="1px solid #F5C7CF"
         as={motion.div}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <Heading
-          size="md"
+          size="sm"
           mb={4}
           color="#bc0930"
           style={{ fontFamily: "var(--font-rothek)" }}
         >
           Top 10 Best Performing Products
         </Heading>
-        <Box overflowX="auto">
+
+        {/* Mobile Product Cards (< md) */}
+        <Box display={{ base: "block", md: "none" }}>
+          {productPerformance.map((product, index) => (
+            <Box
+              key={product.productId}
+              p={3}
+              mb={2.5}
+              bg="#fffcf2"
+              borderRadius="10px"
+              border="1px solid #f8e1e7"
+            >
+              <Flex justify="space-between" align="flex-start" mb={2}>
+                <Flex align="center" gap={2} flex="1">
+                  <Badge
+                    colorScheme={
+                      index === 0
+                        ? "yellow"
+                        : index === 1
+                        ? "gray"
+                        : index === 2
+                        ? "orange"
+                        : "blue"
+                    }
+                    fontSize="xs"
+                  >
+                    #{index + 1}
+                  </Badge>
+                  <Text fontWeight="600" fontSize="sm" color="#bc0930" noOfLines={1}>
+                    {product.name}
+                  </Text>
+                </Flex>
+                <Text fontWeight="700" fontSize="sm" color="#0f8f4d">
+                  ₱{product.revenue.toFixed(2)}
+                </Text>
+              </Flex>
+              <Flex justify="space-between" fontSize="xs" color="#5B6B73" pt={1.5} borderTop="1px dashed #f5c7cf">
+                <Text>Orders: <Text as="span" fontWeight="600" color="gray.700">{product.sales}</Text></Text>
+                <Text>Quantity Sold: <Text as="span" fontWeight="600" color="gray.700">{product.quantity}</Text></Text>
+              </Flex>
+            </Box>
+          ))}
+        </Box>
+
+        {/* Desktop Table (>= md) */}
+        <Box overflowX="auto" display={{ base: "none", md: "block" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: "2px solid #F5C7CF" }}>

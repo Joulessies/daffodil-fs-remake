@@ -27,23 +27,26 @@ import {
   IconButton,
   Tooltip,
 } from "@chakra-ui/react";
-import { useEffect } from "react";
-import { useCart } from "./CartContext";
+import { useCartStore } from "@/lib/store";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/AuthProvider";
+import { useAuthPrompt } from "@/components/AuthPromptContext";
 import { PRODUCTS } from "@/lib/products";
 import { ShoppingBag, Trash2, Plus, Minus } from "lucide-react";
 
 export default function CartModal() {
-  const cart = useCart();
+  const { user } = useAuth();
+  const authPrompt = useAuthPrompt();
+  const router = useRouter();
+  const items = useCartStore((s) => s.items);
+  const isOpen = useCartStore((s) => s.isOpen);
+  const close = useCartStore((s) => s.close);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const clearCart = useCartStore((s) => s.clearCart);
+  const total = useCartStore((s) => s.getTotal());
   const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  // Bridge CartContext open/close to Chakra's Modal
-  useEffect(() => {
-    if (cart.isOpen) onOpen();
-    else onClose();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cart.isOpen]);
 
   const formatPeso = (n) =>
     new Intl.NumberFormat("en-PH", {
@@ -55,7 +58,7 @@ export default function CartModal() {
   return (
     <Modal
       isOpen={isOpen}
-      onClose={cart.close}
+      onClose={close}
       isCentered
       size={{ base: "full", md: "xl" }}
       scrollBehavior="inside"
@@ -97,14 +100,14 @@ export default function CartModal() {
                 Your Cart
               </Text>
               <Text fontSize="sm" color="#5B6B73" fontWeight="400">
-                {cart.items.length} {cart.items.length === 1 ? "item" : "items"}
+                {items.length} {items.length === 1 ? "item" : "items"}
               </Text>
             </VStack>
           </HStack>
         </ModalHeader>
         <ModalCloseButton color="#bc0930" _hover={{ bg: "#fff8f3" }} top={4} />
         <ModalBody py={6} px={6}>
-          {cart.items.length === 0 ? (
+          {items.length === 0 ? (
             <VStack spacing={4} py={12} textAlign="center">
               <Box
                 p={6}
@@ -129,7 +132,7 @@ export default function CartModal() {
                   color="white"
                   size="lg"
                   borderRadius="full"
-                  onClick={cart.close}
+                  onClick={close}
                   _hover={{
                     bg: "#a10828",
                     transform: "translateY(-2px)",
@@ -144,7 +147,7 @@ export default function CartModal() {
             </VStack>
           ) : (
             <Stack spacing={3}>
-              {cart.items.map((item, index) => {
+              {items.map((item, index) => {
                 const prod = PRODUCTS.find((p) => p.id === item.id);
                 const encodePathSegments = (path) => {
                   if (!path || typeof path !== "string") return "";
@@ -276,7 +279,7 @@ export default function CartModal() {
                               size="sm"
                               icon={<Minus size={14} />}
                               onClick={() =>
-                                cart.updateQuantity(
+                                updateQuantity(
                                   item.id,
                                   Math.max(1, (item.quantity || 1) - 1)
                                 )
@@ -313,7 +316,7 @@ export default function CartModal() {
                               size="sm"
                               icon={<Plus size={14} />}
                               onClick={() =>
-                                cart.updateQuantity(
+                                updateQuantity(
                                   item.id,
                                   Math.min(99, (item.quantity || 1) + 1)
                                 )
@@ -343,7 +346,7 @@ export default function CartModal() {
                               <IconButton
                                 size="sm"
                                 icon={<Trash2 size={14} />}
-                                onClick={() => cart.removeItem(item.id)}
+                                onClick={() => removeItem(item.id)}
                                 variant="ghost"
                                 colorScheme="red"
                                 minW="36px"
@@ -379,13 +382,13 @@ export default function CartModal() {
                 Subtotal
               </Text>
               <Text fontWeight="700" fontSize="xl" color="#bc0930">
-                {formatPeso(cart.total)}
+                {formatPeso(total)}
               </Text>
             </HStack>
             <Text fontSize="sm" color="#2B2B2B" fontWeight="500">
               Taxes and shipping calculated at checkout
             </Text>
-            {cart.total < 20 && cart.total > 0 && (
+            {total < 20 && total > 0 && (
               <Box
                 p={3}
                 bg="#fff3cd"
@@ -394,7 +397,7 @@ export default function CartModal() {
                 borderColor="#ffc107"
               >
                 <Text fontSize="xs" color="#856404" fontWeight="600">
-                  ⚠️ Minimum order: ₱20.00 (₱{(20 - cart.total).toFixed(2)} more
+                  ⚠️ Minimum order: ₱20.00 (₱{(20 - total).toFixed(2)} more
                   needed)
                 </Text>
               </Box>
@@ -410,34 +413,43 @@ export default function CartModal() {
               color="#bc0930"
               borderColor="#bc0930"
               _hover={{ bg: "#fff8f3" }}
-              onClick={cart.clearCart}
-              isDisabled={cart.items.length === 0}
+              onClick={clearCart}
+              isDisabled={items.length === 0}
               fontWeight="600"
               minH="48px"
             >
               Clear Cart
             </Button>
-            <Link href="/checkout" style={{ flex: 1, width: "100%" }}>
-              <Button
-                w="100%"
-                borderRadius="full"
-                bg="#bc0930"
-                color="white"
-                size="lg"
-                minH="48px"
-                _hover={{
-                  bg: "#a10828",
-                  transform: "translateY(-2px)",
-                  boxShadow: "lg",
-                }}
-                isDisabled={cart.items.length === 0}
-                onClick={cart.close}
-                fontWeight="600"
-                transition="all 0.2s"
-              >
-                Go to Checkout
-              </Button>
-            </Link>
+            <Button
+              flex={1}
+              w="100%"
+              borderRadius="full"
+              bg="#bc0930"
+              color="white"
+              size="lg"
+              minH="48px"
+              _hover={{
+                bg: "#a10828",
+                transform: "translateY(-2px)",
+                boxShadow: "lg",
+              }}
+              isDisabled={items.length === 0}
+              onClick={() => {
+                if (!user) {
+                  close();
+                  authPrompt.open(
+                    "Please sign in or register to proceed to checkout."
+                  );
+                  return;
+                }
+                close();
+                router.push("/checkout");
+              }}
+              fontWeight="600"
+              transition="all 0.2s"
+            >
+              Go to Checkout
+            </Button>
           </HStack>
         </ModalFooter>
       </ModalContent>

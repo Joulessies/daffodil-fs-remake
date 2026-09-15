@@ -1,8 +1,9 @@
 "use client";
 
 import NavigationBar from "@/components/navigationbar";
-import { useWishlist } from "@/components/WishlistContext";
-import { useCart } from "@/components/CartContext";
+import { useWishlistStore, useCartStore } from "@/lib/store";
+import { useAuth } from "@/components/AuthProvider";
+import { useAuthPrompt } from "@/components/AuthPromptContext";
 import {
   Box,
   Button,
@@ -24,14 +25,19 @@ import {
 import { Heart, ShoppingCart, Trash2, Plus } from "lucide-react";
 
 export default function WishlistPage() {
-  const wishlist = useWishlist();
-  const cart = useCart();
+  const { user } = useAuth();
+  const authPrompt = useAuthPrompt();
+  const wishlistItems = useWishlistStore((state) => state.items);
+  const wishlistRemove = useWishlistStore((state) => state.remove);
+  const wishlistClear = useWishlistStore((state) => state.clear);
+  const cartAddItem = useCartStore((state) => state.addItem);
+  const cartOpen = useCartStore((state) => state.open);
   const toast = useToast();
 
   return (
     <>
       <NavigationBar />
-      <Box minH="100vh" bg="var(--background-color)" py={{ base: 4, md: 8 }}>
+      <Box minH="100vh" bg="var(--background-color)" pt={{ base: 4, md: 8 }} pb={{ base: "88px", md: 8 }}>
         <Box maxW="1200px" mx="auto" px={{ base: 4, md: 6 }}>
           {/* Header Section */}
           <VStack spacing={6} align="stretch" mb={8}>
@@ -49,7 +55,8 @@ export default function WishlistPage() {
                   fontSize={{ base: "2xl", md: "3xl" }}
                   fontWeight={700}
                   color="var(--color-primary)"
-                  fontFamily="var(--font-rothek)"
+                  fontFamily="var(--font-serif)"
+                  letterSpacing="-0.015em"
                 >
                   Your Wishlist
                 </Heading>
@@ -57,21 +64,21 @@ export default function WishlistPage() {
                   color="var(--text-secondary)"
                   fontSize="sm"
                   lineHeight="1.2"
-                  fontFamily="var(--font-rothek)"
+                  fontFamily="var(--font-sans)"
                 >
-                  {wishlist.items.length}{" "}
-                  {wishlist.items.length === 1 ? "item" : "items"} saved
+                  {wishlistItems.length}{" "}
+                  {wishlistItems.length === 1 ? "item" : "items"} saved
                 </Text>
               </VStack>
 
-              {wishlist.items.length > 0 && (
+              {wishlistItems.length > 0 && (
                 <Button
                   variant="outline"
                   colorScheme="red"
                   size="sm"
                   onClick={() => {
-                    const count = wishlist.items.length;
-                    wishlist.clear();
+                    const count = wishlistItems.length;
+                    wishlistClear();
                     toast({
                       title: "Wishlist cleared",
                       description:
@@ -97,7 +104,7 @@ export default function WishlistPage() {
           </VStack>
 
           {/* Empty State */}
-          {wishlist.items.length === 0 ? (
+          {wishlistItems.length === 0 ? (
             <VStack
               spacing={6}
               py={16}
@@ -116,7 +123,7 @@ export default function WishlistPage() {
                 <Heading
                   fontSize="xl"
                   color="var(--text-primary)"
-                  fontFamily="var(--font-rothek)"
+                  fontFamily="var(--font-serif)"
                 >
                   Your wishlist is empty
                 </Heading>
@@ -145,9 +152,9 @@ export default function WishlistPage() {
                 lg: "repeat(3, 1fr)",
                 xl: "repeat(4, 1fr)",
               }}
-              gap={{ base: 4, md: 6 }}
+              gap={6}
             >
-              {wishlist.items.map((item) => (
+              {wishlistItems.map((item) => (
                 <GridItem key={item.id}>
                   <Box
                     bg="white"
@@ -196,7 +203,7 @@ export default function WishlistPage() {
                           bg: "red.500",
                           color: "white",
                         }}
-                        onClick={() => wishlist.remove(item.id)}
+                        onClick={() => wishlistRemove(item.id)}
                         boxShadow="md"
                       />
                     </Box>
@@ -236,7 +243,13 @@ export default function WishlistPage() {
                           size="sm"
                           leftIcon={<ShoppingCart size={16} />}
                           onClick={() => {
-                            const ok = cart.addItem({
+                            if (!user) {
+                              authPrompt.open(
+                                "Please sign in or register to add items to your cart."
+                              );
+                              return;
+                            }
+                            const ok = cartAddItem({
                               id: item.id,
                               title: item.title,
                               price: item.price,
@@ -250,6 +263,7 @@ export default function WishlistPage() {
                                 duration: 2000,
                                 isClosable: true,
                               });
+                              cartOpen();
                             }
                           }}
                           _hover={{
@@ -264,7 +278,7 @@ export default function WishlistPage() {
                           size="sm"
                           variant="outline"
                           colorScheme="red"
-                          onClick={() => wishlist.remove(item.id)}
+                          onClick={() => wishlistRemove(item.id)}
                           _hover={{
                             bg: "red.50",
                             borderColor: "red.300",

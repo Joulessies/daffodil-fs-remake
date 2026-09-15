@@ -13,7 +13,6 @@ import {
   Button,
   HStack,
 } from "@chakra-ui/react";
-import { useCart } from "@/components/CartContext";
 import NavigationBar from "@/components/navigationbar";
 import { Image as ChakraImage, Grid, GridItem, Tag } from "@chakra-ui/react";
 import Link from "next/link";
@@ -134,7 +133,6 @@ const CATALOG = [
 ];
 
 export default function ShopPage() {
-  const cart = useCart();
   const [dbProducts, setDbProducts] = useState([]);
 
   useEffect(() => {
@@ -202,7 +200,7 @@ export default function ShopPage() {
     <>
       <NavigationBar />
       <Box bg="#fffcf2" minH="100vh">
-        <Box maxW="1240px" mx="auto" px={{ base: 4, md: 6 }} py={8}>
+        <Box maxW="1240px" mx="auto" px={{ base: 4, md: 6 }} pt={8} pb={{ base: "88px", md: 8 }}>
           <Box textAlign="center" mb={8} position="relative">
             {(() => {
               const titleText = "Flower Shop";
@@ -414,9 +412,56 @@ export default function ShopPage() {
             </GridItem>
           </Grid>
 
+          {/* Quick Category Filter Pills on Mobile */}
+          <Box
+            display={{ base: "block", md: "none" }}
+            mt={6}
+            mb={2}
+            overflowX="auto"
+            py={2}
+            css={{
+              "&::-webkit-scrollbar": { display: "none" },
+              scrollbarWidth: "none",
+            }}
+          >
+            <HStack spacing={2} minW="max-content">
+              {[
+                { label: "🌸 New Arrivals", href: "#new-arrivals" },
+                { label: "💐 Arrangements", href: "#floral" },
+                { label: "🌷 Seasonal", href: "#seasonal" },
+                { label: "🎁 Gifts", href: "#gifts" },
+                { label: "✨ Customizer", href: "/customize" },
+              ].map((pill) => (
+                <Box
+                  key={pill.label}
+                  as={pill.href.startsWith("/") ? Link : "a"}
+                  href={pill.href}
+                  px={4}
+                  py={2}
+                  bg="white"
+                  border="1.5px solid #F5C7CF"
+                  borderRadius="full"
+                  fontSize="xs"
+                  fontWeight="600"
+                  color="#2B2B2B"
+                  boxShadow="sm"
+                  _active={{
+                    bg: "#bc0930",
+                    color: "white",
+                    borderColor: "#bc0930",
+                  }}
+                  transition="all 0.2s"
+                >
+                  {pill.label}
+                </Box>
+              ))}
+            </HStack>
+          </Box>
+
           <Stack spacing={14} mt={10}>
             {/* Newest products */}
             <Box
+              id="new-arrivals"
               as={motion.div}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -444,15 +489,26 @@ export default function ShopPage() {
               })()}
             </Box>
 
-            {CATALOG.map((category, idx) => (
-              <Box
-                key={category.title}
-                as={motion.div}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{ delay: idx * 0.05, duration: 0.4 }}
-              >
+            {CATALOG.map((category, idx) => {
+              const top = category.title;
+              const key =
+                top === "Floral Arrangements"
+                  ? "floral"
+                  : top === "Seasonal Flowers"
+                  ? "seasonal"
+                  : top === "Gift Collections"
+                  ? "gifts"
+                  : `cat-${idx}`;
+              return (
+                <Box
+                  key={category.title}
+                  id={key}
+                  as={motion.div}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{ delay: idx * 0.05, duration: 0.4 }}
+                >
                 <Heading as="h2" size="md" mb={3}>
                   {category.title}
                 </Heading>
@@ -480,10 +536,11 @@ export default function ShopPage() {
                       randomizePrice={category.title === "Seasonal Flowers"}
                       randomPriceRange={{ min: 599, max: 2499, step: 50 }}
                     />
-                  );
-                })()}
-              </Box>
-            ))}
+                    );
+                  })()}
+                </Box>
+              );
+            })}
           </Stack>
 
           {/* Floating cart button removed per request */}

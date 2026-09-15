@@ -36,6 +36,9 @@ import {
   User,
   MapPin,
   CreditCard,
+  CheckCircle,
+  Clock,
+  ExternalLink,
 } from "lucide-react";
 
 export default function OrderDetailPage() {
@@ -49,8 +52,7 @@ export default function OrderDetailPage() {
     let mounted = true;
     (async () => {
       try {
-        // Don't load order if user is not authenticated
-        if (!user?.email || !orderId) {
+        if (!orderId) {
           if (mounted) {
             setOrder(null);
             setLoading(false);
@@ -58,20 +60,64 @@ export default function OrderDetailPage() {
           return;
         }
 
-        const { supabase } = await import("@/lib/supabase");
-        if (!supabase) return;
+        let foundOrder = null;
 
-        const { data, error } = await supabase
-          .from("orders")
-          .select(
-            "id, order_number, total, status, created_at, tracking_url, items, customer_email, customer_name, customer_phone, shipping_address"
-          )
-          .eq("id", orderId)
-          .eq("customer_email", user.email)
-          .single();
+        // 1. Fetch via robust tracking API
+        try {
+          const res = await fetch(
+            `/api/order/track?query=${encodeURIComponent(
+              orderId
+            )}&email=${encodeURIComponent(user?.email || "")}`
+          );
+          const data = await res.json();
+          if (res.ok && data?.order) {
+            foundOrder = data.order;
+          }
+        } catch {}
 
-        if (error) throw error;
-        if (mounted) setOrder(data || null);
+        // 2. Client fallback via supabase if API failed
+        if (!foundOrder) {
+          try {
+            const { supabase } = await import("@/lib/supabase");
+            if (supabase) {
+              const { data } = await supabase
+                .from("orders")
+                .select("*")
+                .or(`id.eq.${orderId},order_number.eq.${orderId}`)
+                .maybeSingle();
+              if (data) foundOrder = data;
+            }
+          } catch {}
+        }
+
+        // 3. Fallback to localStorage.lastOrder if just placed
+        if (!foundOrder) {
+          try {
+            const raw = localStorage.getItem("lastOrder");
+            if (raw) {
+              const last = JSON.parse(raw);
+              const num = last.order_number || last.orderNumber;
+              if (num === orderId || last.id === orderId) {
+                foundOrder = {
+                  id: orderId,
+                  order_number: num || orderId,
+                  total: last.totals?.total || last.total || 0,
+                  status: last.payment?.status || last.status || "Paid",
+                  created_at: last.date
+                    ? new Date(last.date).toISOString()
+                    : new Date().toISOString(),
+                  customer_email: last.customer?.email || user?.email,
+                  customer_name: last.customer?.name,
+                  customer_phone: last.customer?.phone,
+                  shipping_address: last.customer?.shipping,
+                  items: last.items || [],
+                };
+              }
+            }
+          } catch {}
+        }
+
+        if (mounted) setOrder(foundOrder);
       } catch (error) {
         console.error("Error loading order:", error);
         if (mounted) setOrder(null);
@@ -196,7 +242,104 @@ export default function OrderDetailPage() {
                 </Text>
               </Box>
             ) : (
-              <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={6}>
+              <>
+                {/* Visual Order Progress Stepper Card */}
+                <Box
+                  bg="white"
+                  borderRadius="20px"
+                  border="2px solid #F5C7CF"
+                  p={{ base: 6, md: 8 }}
+                  boxShadow="0 4px 16px rgba(188, 9, 48, 0.06)"
+                >
+                  <HStack justify="space-between" mb={6} flexWrap="wrap" gap={3}>
+                    <HStack spacing={2}>
+                      <Truck size={22} color="#bc0930" />
+                      <Heading size="md" color="#bc0930" fontFamily="var(--font-rothek)">
+                        Live Delivery Progress
+                      </Heading>
+                    </HStack>
+                    <Link href={`/order/track?id=${encodeURIComponent(order.order_number || order.id)}`}>
+                      <Button size="sm" variant="outline" borderColor="#bc0930" color="#bc0930" rightIcon={<ExternalLink size={14} />}>
+                        Public Tracking View
+                      </Button>
+                    </Link>
+                  </HStack>
+
+                  {/* Stepper Steps */}
+                  {(() => {
+                    const rawStatus = (order.status || "pending").toLowerCase();
+                    let currentStageIndex = 0;
+                    if (rawStatus === "paid" || rawStatus === "processing") currentStageIndex = 1;
+                    else if (rawStatus === "shipped" || rawStatus === "out_for_delivery") currentStageIndex = 2;
+                    else if (rawStatus === "delivered" || rawStatus === "completed") currentStageIndex = 3;
+                    else if (rawStatus === "cancelled") currentStageIndex = -1;
+
+                    const stages = [
+                      { step: 1, title: "Order Placed", desc: "Received & Confirmed" },
+                      { step: 2, title: "Arranging Flowers", desc: "Florist Handcrafting" },
+                      { step: 3, title: "Out for Delivery", desc: "En Route to Recipient" },
+                      { step: 4, title: "Delivered", desc: "Delivered & Received" },
+                    ];
+
+                    return (
+                      <Grid
+                        templateColumns={{ base: "1fr", md: "repeat(4, 1fr)" }}
+                        gap={{ base: 6, md: 3 }}
+                        mt={4}
+                      >
+                        {stages.map((stage, idx) => {
+                          const isComplete = currentStageIndex >= idx;
+                          const isCurrent = currentStageIndex === idx;
+
+                          return (
+                            <VStack
+                              key={stage.step}
+                              align={{ base: "start", md: "center" }}
+                              textAlign={{ base: "left", md: "center" }}
+                              spacing={2}
+                            >
+                              <Box
+                                w="44px"
+                                h="44px"
+                                borderRadius="full"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                bg={isComplete ? "#bc0930" : "#F5C7CF"}
+                                color="white"
+                                boxShadow={isCurrent ? "0 0 0 4px rgba(188, 9, 48, 0.2)" : "none"}
+                                transition="all 0.3s"
+                              >
+                                {isComplete ? (
+                                  <CheckCircle size={22} />
+                                ) : idx === 1 ? (
+                                  <Clock size={20} />
+                                ) : idx === 2 ? (
+                                  <Truck size={20} />
+                                ) : (
+                                  <Package size={20} />
+                                )}
+                              </Box>
+                              <Text
+                                fontSize="sm"
+                                fontWeight={isCurrent ? "800" : isComplete ? "700" : "500"}
+                                color={isComplete ? "#bc0930" : "#5B6B73"}
+                                fontFamily="var(--font-rothek)"
+                              >
+                                {stage.title}
+                              </Text>
+                              <Text fontSize="xs" color="#5B6B73">
+                                {stage.desc}
+                              </Text>
+                            </VStack>
+                          );
+                        })}
+                      </Grid>
+                    );
+                  })()}
+                </Box>
+
+                <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={6}>
                 {/* Main Content */}
                 <GridItem>
                   <VStack spacing={6} align="stretch">
@@ -451,7 +594,8 @@ export default function OrderDetailPage() {
                   </VStack>
                 </GridItem>
               </Grid>
-            )}
+            </>
+          )}
           </VStack>
         </Box>
       </Box>

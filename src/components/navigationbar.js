@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import {
   IconButton,
   Drawer,
@@ -48,16 +47,24 @@ import {
   LogOut,
   LogIn,
   UserPlus,
+  Phone,
+  Truck,
 } from "lucide-react";
 import CartButton from "./CartButton";
-import { useWishlist } from "./WishlistContext";
+import { useWishlistStore, useUIStore } from "@/lib/store";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function NavigationBar() {
   const { user, isAdmin } = useAuth();
-  const wishlist = useWishlist();
+  const wishlistItems = useWishlistStore((state) => state.items);
+  const isOpen = useUIStore((s) => s.isMobileMenuOpen);
+  const onOpen = useUIStore((s) => s.openMobileMenu);
+  const onClose = useUIStore((s) => s.closeMobileMenu);
+  const isProfileOpen = useUIStore((s) => s.isProfileOpen);
+  const onOpenProfile = useUIStore((s) => s.openProfile);
+  const onCloseProfile = useUIStore((s) => s.closeProfile);
   const toast = useToast();
   const displayName = useMemo(() => {
     const name =
@@ -65,12 +72,6 @@ export default function NavigationBar() {
     const email = user?.email || "";
     return name || email;
   }, [user]);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const {
-    isOpen: isProfileOpen,
-    onOpen: onOpenProfile,
-    onClose: onCloseProfile,
-  } = useDisclosure();
   const [query, setQuery] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [firstName, setFirstName] = useState("");
@@ -90,10 +91,12 @@ export default function NavigationBar() {
   // Link styles with hover effects
   const linkStyle = {
     textDecoration: "none",
-    color: "#2d3748",
-    fontSize: 14,
-    fontFamily: "var(--font-rothek)",
-    fontWeight: 500,
+    color: "#374151",
+    fontSize: "0.8125rem",
+    fontFamily: "var(--font-sans)",
+    fontWeight: 600,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
     position: "relative",
     transition: "color 0.2s ease",
     display: "inline-block",
@@ -102,10 +105,12 @@ export default function NavigationBar() {
   const buttonStyle = {
     background: "none",
     border: "none",
-    color: "#2d3748",
-    fontSize: 14,
-    fontFamily: "var(--font-rothek)",
-    fontWeight: 500,
+    color: "#374151",
+    fontSize: "0.8125rem",
+    fontFamily: "var(--font-sans)",
+    fontWeight: 600,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
     cursor: "pointer",
     position: "relative",
     transition: "color 0.2s ease",
@@ -417,16 +422,25 @@ export default function NavigationBar() {
               flex: 1,
             }}
           >
-            <Link href="/" style={{ textDecoration: "none" }}>
-              <Image
+            <Link
+              href="/"
+              style={{
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <img
                 src="/images/logo.svg"
                 alt="Daffodil"
-                width={180}
-                height={50}
-                priority
+                width="195"
+                height="36"
                 style={{
+                  width: "195px",
                   maxWidth: "100%",
                   height: "auto",
+                  display: "block",
                 }}
               />
             </Link>
@@ -479,7 +493,7 @@ export default function NavigationBar() {
                       color: "#bc0930",
                     }}
                   />
-                  {wishlist?.items?.length > 0 && (
+                  {wishlistItems?.length > 0 && (
                     <span
                       style={{
                         position: "absolute",
@@ -497,10 +511,11 @@ export default function NavigationBar() {
                         fontSize: 10,
                         fontWeight: 700,
                         lineHeight: 1,
+                        fontFamily: "var(--font-sans)",
                         boxShadow: "0 0 0 2px #fffcf2",
                       }}
                     >
-                      {Math.min(99, wishlist.items.length)}
+                      {Math.min(99, wishlistItems.length)}
                     </span>
                   )}
                 </div>
@@ -542,7 +557,7 @@ export default function NavigationBar() {
                       color: "#bc0930",
                     }}
                   />
-                  {wishlist?.items?.length > 0 && (
+                  {wishlistItems?.length > 0 && (
                     <span
                       style={{
                         position: "absolute",
@@ -560,10 +575,11 @@ export default function NavigationBar() {
                         fontSize: 10,
                         fontWeight: 700,
                         lineHeight: 1,
+                        fontFamily: "var(--font-sans)",
                         boxShadow: "0 0 0 2px #fffcf2",
                       }}
                     >
-                      {Math.min(99, wishlist.items.length)}
+                      {Math.min(99, wishlistItems.length)}
                     </span>
                   )}
                 </div>
@@ -612,6 +628,14 @@ export default function NavigationBar() {
             style={linkStyle}
           >
             Customize
+          </Link>
+          <Link
+            prefetch={false}
+            href="/contact"
+            className="nav-link"
+            style={linkStyle}
+          >
+            Contact
           </Link>
           {user && (
             <button
@@ -840,6 +864,46 @@ export default function NavigationBar() {
                             Customize
                           </CButton>
                         </Link>
+                        <Link
+                          href="/contact"
+                          onClick={onClose}
+                          style={{ textDecoration: "none" }}
+                        >
+                          <CButton
+                            variant="ghost"
+                            width="100%"
+                            justifyContent="flex-start"
+                            leftIcon={<Phone size={18} />}
+                            minH="48px"
+                            fontSize="md"
+                            fontWeight="500"
+                            color="#2d3748"
+                            borderRadius="12px"
+                            _hover={{ bg: "#fff8f3", color: "#bc0930" }}
+                          >
+                            Contact Us
+                          </CButton>
+                        </Link>
+                        <Link
+                          href="/order/track"
+                          onClick={onClose}
+                          style={{ textDecoration: "none" }}
+                        >
+                          <CButton
+                            variant="ghost"
+                            width="100%"
+                            justifyContent="flex-start"
+                            leftIcon={<Truck size={18} />}
+                            minH="48px"
+                            fontSize="md"
+                            fontWeight="500"
+                            color="#2d3748"
+                            borderRadius="12px"
+                            _hover={{ bg: "#fff8f3", color: "#bc0930" }}
+                          >
+                            Track Order
+                          </CButton>
+                        </Link>
 
                         {/* Quick Links */}
                         <Divider borderColor="#e8e2d6" my={2} />
@@ -861,7 +925,7 @@ export default function NavigationBar() {
                             _hover={{ bg: "#fff8f3", color: "#bc0930" }}
                           >
                             Wishlist
-                            {wishlist?.items?.length > 0 && (
+                            {wishlistItems?.length > 0 && (
                               <Badge
                                 ml={2}
                                 bg="#bc0930"
@@ -870,31 +934,53 @@ export default function NavigationBar() {
                                 fontSize="xs"
                                 px={2}
                               >
-                                {wishlist.items.length}
+                                {wishlistItems.length}
                               </Badge>
                             )}
                           </CButton>
                         </Link>
 
                         {user && (
-                          <CButton
-                            onClick={() => {
-                              onClose();
-                              onOpenProfile();
-                            }}
-                            variant="ghost"
-                            width="100%"
-                            justifyContent="flex-start"
-                            leftIcon={<User size={18} />}
-                            minH="48px"
-                            fontSize="md"
-                            fontWeight="500"
-                            color="#2d3748"
-                            borderRadius="12px"
-                            _hover={{ bg: "#fff8f3", color: "#bc0930" }}
-                          >
-                            Profile
-                          </CButton>
+                          <>
+                            <CButton
+                              onClick={() => {
+                                onClose();
+                                onOpenProfile();
+                              }}
+                              variant="ghost"
+                              width="100%"
+                              justifyContent="flex-start"
+                              leftIcon={<User size={18} />}
+                              minH="48px"
+                              fontSize="md"
+                              fontWeight="500"
+                              color="#2d3748"
+                              borderRadius="12px"
+                              _hover={{ bg: "#fff8f3", color: "#bc0930" }}
+                            >
+                              Profile
+                            </CButton>
+                            <Link
+                              href="/profile/orders"
+                              onClick={onClose}
+                              style={{ textDecoration: "none" }}
+                            >
+                              <CButton
+                                variant="ghost"
+                                width="100%"
+                                justifyContent="flex-start"
+                                leftIcon={<Package size={18} />}
+                                minH="48px"
+                                fontSize="md"
+                                fontWeight="500"
+                                color="#2d3748"
+                                borderRadius="12px"
+                                _hover={{ bg: "#fff8f3", color: "#bc0930" }}
+                              >
+                                My Orders
+                              </CButton>
+                            </Link>
+                          </>
                         )}
 
                         {isAdmin && (
@@ -979,6 +1065,25 @@ export default function NavigationBar() {
                             </Link>
                           </CStack>
                         )}
+
+                        {/* Store Help Card */}
+                        <CBox
+                          mt={4}
+                          p={3}
+                          bg="#fff8f3"
+                          borderRadius="12px"
+                          border="1px solid #F5C7CF"
+                        >
+                          <Text fontSize="xs" fontWeight="700" color="#bc0930" mb={0.5}>
+                            Daffodil & Co. Florist
+                          </Text>
+                          <Text fontSize="xs" color="#5B6B73" mb={1}>
+                            Fresh floral delivery in Metro Manila
+                          </Text>
+                          <Text fontSize="xs" color="#2B2B2B" fontWeight="600">
+                            📞 (02) 8123-4567 • 8AM - 7PM
+                          </Text>
+                        </CBox>
                       </CStack>
                     </motion.div>
                   </DrawerBody>
@@ -1078,10 +1183,10 @@ export default function NavigationBar() {
                     >
                       Quick Actions
                     </Text>
-                    <HStack spacing={3}>
-                      <Link href="/profile/orders" style={{ flex: 1 }}>
+                    <HStack spacing={2}>
+                      <Link href="/profile/orders" onClick={onCloseProfile} style={{ flex: 1 }}>
                         <CButton
-                          leftIcon={<Package size={16} />}
+                          leftIcon={<Package size={15} />}
                           bg="#bc0930"
                           color="white"
                           _hover={{
@@ -1098,12 +1203,32 @@ export default function NavigationBar() {
                           My Orders
                         </CButton>
                       </Link>
-                      <Link href="/wishlist" style={{ flex: 1 }}>
+                      <Link href="/order/track" onClick={onCloseProfile} style={{ flex: 1 }}>
                         <CButton
-                          leftIcon={<Heart size={16} />}
+                          leftIcon={<Truck size={15} />}
                           variant="outline"
                           borderColor="#bc0930"
                           color="#bc0930"
+                          _hover={{
+                            bg: "#fff8f3",
+                            transform: "translateY(-1px)",
+                            boxShadow: "md",
+                          }}
+                          borderRadius="md"
+                          fontWeight="600"
+                          transition="all 0.2s"
+                          w="full"
+                          size="sm"
+                        >
+                          Track Order
+                        </CButton>
+                      </Link>
+                      <Link href="/wishlist" onClick={onCloseProfile} style={{ flex: 1 }}>
+                        <CButton
+                          leftIcon={<Heart size={15} />}
+                          variant="outline"
+                          borderColor="#F5C7CF"
+                          color="#5B6B73"
                           _hover={{
                             bg: "#fff8f3",
                             transform: "translateY(-1px)",

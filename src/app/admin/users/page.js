@@ -75,7 +75,7 @@ export default function AdminUsersPage() {
   const suspend = async (id, suspended) => {
     if (
       !window.confirm(
-        "Remove this user? This will suspend their account and remove them from the users list."
+        "Remove this user? This will suspend their account and remove them from the users list.",
       )
     )
       return;
@@ -126,7 +126,7 @@ export default function AdminUsersPage() {
 
       if (!res.ok) {
         throw new Error(
-          data?.error || `Failed to update user role (${res.status})`
+          data?.error || `Failed to update user role (${res.status})`,
         );
       }
 
@@ -166,7 +166,7 @@ export default function AdminUsersPage() {
 
     if (
       !window.confirm(
-        `Delete user "${userEmail}" permanently? This action cannot be undone.`
+        `Delete user "${userEmail}" permanently? This action cannot be undone.`,
       )
     )
       return;
@@ -210,14 +210,14 @@ export default function AdminUsersPage() {
         !query ||
         String(u.email || "")
           .toLowerCase()
-          .includes(query.toLowerCase())
+          .includes(query.toLowerCase()),
     )
     .filter((u) =>
       roleFilter === "all"
         ? true
         : roleFilter === "admin"
-        ? !!u.is_admin
-        : !u.is_admin
+          ? !!u.is_admin
+          : !u.is_admin,
     );
 
   // Pagination logic
@@ -244,35 +244,44 @@ export default function AdminUsersPage() {
 
   return (
     <Box
-      p={{ base: 4, md: 8 }}
+      p={{ base: 3, sm: 4, md: 6 }}
       className={styles.usersPage}
       minH="100vh"
       bg="#fffcf2"
     >
       <Box maxW="1400px" mx="auto">
-        <Box mb={8}>
-          <Heading
-            size="xl"
-            mb={2}
-            style={{ fontFamily: "var(--font-rothek)" }}
-            color="#bc0930"
-            letterSpacing="-0.02em"
-          >
-            Users Management
-          </Heading>
-          <Text color="#5B6B73" fontSize="md" fontWeight="500">
-            Manage roles and access • Showing {startIndex + 1}-
-            {Math.min(endIndex, filtered.length)} of {filtered.length} users
-          </Text>
-        </Box>
-
-        <HStack
-          spacing={3}
+        <Flex
+          align={{ base: "stretch", sm: "center" }}
+          direction={{ base: "column", sm: "row" }}
+          gap={{ base: 3, sm: 4 }}
+          justify="space-between"
           mb={6}
-          align="stretch"
-          flexWrap="wrap"
+        >
+          <Box>
+            <Heading
+              size={{ base: "lg", md: "xl" }}
+              mb={1}
+              style={{ fontFamily: "var(--font-rothek)" }}
+              color="#bc0930"
+              letterSpacing="-0.02em"
+            >
+              Users Management
+            </Heading>
+            <Text color="#5B6B73" fontSize="sm" fontWeight="500">
+              Manage roles and access • Showing {startIndex + 1}-
+              {Math.min(endIndex, filtered.length)} of {filtered.length} users
+            </Text>
+          </Box>
+          <AdminBackButton />
+        </Flex>
+
+        <Flex
+          direction={{ base: "column", sm: "row" }}
+          gap={3}
+          mb={6}
+          align={{ base: "stretch", sm: "center" }}
           bg="#FFF8F3"
-          p={4}
+          p={{ base: 3, md: 4 }}
           borderRadius="16px"
           boxShadow="sm"
           border="1px solid"
@@ -284,10 +293,10 @@ export default function AdminUsersPage() {
             </InputLeftElement>
             <Input
               placeholder="Search by email..."
-              size="md"
+              size="sm"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              borderRadius="12px"
+              borderRadius="10px"
               border="1px solid"
               borderColor="gray.300"
               _focus={{
@@ -300,11 +309,11 @@ export default function AdminUsersPage() {
             />
           </InputGroup>
           <Select
-            size="md"
+            size="sm"
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            maxW={{ base: "100%", md: "180px" }}
-            borderRadius="12px"
+            w={{ base: "100%", sm: "160px" }}
+            borderRadius="10px"
             border="1px solid"
             borderColor="gray.300"
             _focus={{
@@ -319,101 +328,185 @@ export default function AdminUsersPage() {
             <option value="admin">Admins</option>
             <option value="user">Users</option>
           </Select>
-          <Flex ml="auto" gap={2}>
-            <AdminBackButton />
-          </Flex>
-        </HStack>
+        </Flex>
 
         <Box
           bg="#FFF8F3"
           borderRadius="16px"
-          overflow="hidden"
           boxShadow="sm"
           border="1px solid"
           borderColor="#F5C7CF"
+          p={{ base: 3, md: 0 }}
         >
-          <Table size="md" variant="simple">
-            <Thead bg="#fff">
-              <Tr>
-                <Th
-                  py={4}
-                  color="#5B6B73"
-                  fontWeight="700"
-                  fontSize="xs"
-                  textTransform="uppercase"
-                  letterSpacing="wider"
+          {loading ? (
+            <Box p={6}>
+              <VStack spacing={3} align="stretch">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} h="50px" borderRadius="md" />
+                ))}
+              </VStack>
+            </Box>
+          ) : paginatedItems.length === 0 ? (
+            <Box py={16} textAlign="center">
+              <VStack spacing={3}>
+                <Box
+                  boxSize="64px"
+                  bg="gray.100"
+                  borderRadius="full"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
                 >
-                  User
-                </Th>
-                <Th
-                  py={4}
-                  color="#5B6B73"
-                  fontWeight="700"
-                  fontSize="xs"
-                  textTransform="uppercase"
-                  letterSpacing="wider"
-                >
-                  Role
-                </Th>
-                <Th
-                  textAlign="right"
-                  py={4}
-                  color="#5B6B73"
-                  fontWeight="700"
-                  fontSize="xs"
-                  textTransform="uppercase"
-                  letterSpacing="wider"
-                >
-                  Actions
-                </Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {loading ? (
-                [...Array(6)].map((_, i) => (
-                  <Tr key={i} _hover={{ bg: "#fff" }} transition="all 0.2s">
-                    <Td py={5}>
-                      <HStack spacing={3}>
-                        <Skeleton boxSize="48px" borderRadius="full" />
-                        <Skeleton h="18px" w="220px" borderRadius="md" />
+                  <Search size={28} color="#A0AEC0" />
+                </Box>
+                <Text color="gray.600" fontSize="lg" fontWeight="600">
+                  No users found
+                </Text>
+                <Text color="gray.500" fontSize="sm">
+                  Try adjusting your search or filters
+                </Text>
+              </VStack>
+            </Box>
+          ) : (
+            <>
+              {/* Mobile User Cards (< md) */}
+              <VStack
+                spacing={3}
+                align="stretch"
+                display={{ base: "flex", md: "none" }}
+              >
+                {paginatedItems.map((u) => (
+                  <Box
+                    key={u.id}
+                    p={3.5}
+                    bg="white"
+                    borderRadius="12px"
+                    border="1px solid #f5e6e8"
+                  >
+                    <Flex justify="space-between" align="center" mb={2}>
+                      <HStack spacing={2.5} minW={0} flex={1}>
+                        <Avatar
+                          name={u.email}
+                          size="sm"
+                          bg="#bc0930"
+                          color="white"
+                          fontWeight="600"
+                        />
+                        <Text
+                          fontWeight="600"
+                          fontSize="sm"
+                          color="gray.800"
+                          noOfLines={1}
+                          wordBreak="break-all"
+                        >
+                          {u.email}
+                        </Text>
+                        <IconButton
+                          aria-label="Copy email"
+                          icon={<Copy size={13} />}
+                          size="xs"
+                          variant="ghost"
+                          onClick={() => copyEmail(u.email)}
+                        />
                       </HStack>
-                    </Td>
-                    <Td py={5}>
-                      <Skeleton h="24px" w="80px" borderRadius="full" />
-                    </Td>
-                    <Td textAlign="right" py={5}>
-                      <HStack spacing={2} justify="flex-end">
-                        <Skeleton h="32px" w="85px" borderRadius="md" />
-                        <Skeleton h="32px" w="85px" borderRadius="md" />
-                      </HStack>
-                    </Td>
-                  </Tr>
-                ))
-              ) : paginatedItems.length === 0 ? (
-                <Tr>
-                  <Td colSpan={3} py={16}>
-                    <VStack spacing={3}>
-                      <Box
-                        boxSize="64px"
-                        bg="gray.100"
+                      <Tag
+                        bg={u.is_admin ? "#bc0930" : "#5B6B73"}
+                        color="white"
+                        size="sm"
                         borderRadius="full"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
+                        px={2.5}
+                        py={0.5}
+                        fontWeight="600"
+                        flexShrink={0}
                       >
-                        <Search size={28} color="#A0AEC0" />
-                      </Box>
-                      <Text color="gray.600" fontSize="lg" fontWeight="600">
-                        No users found
-                      </Text>
-                      <Text color="gray.500" fontSize="sm">
-                        Try adjusting your search or filters
-                      </Text>
-                    </VStack>
-                  </Td>
-                </Tr>
-              ) : (
-                paginatedItems.map((u) => (
+                        {u.is_admin ? "Admin" : "User"}
+                      </Tag>
+                    </Flex>
+
+                    <Flex
+                      justify="flex-end"
+                      gap={2}
+                      pt={2.5}
+                      borderTop="1px dashed #f5e6e8"
+                    >
+                      <Button
+                        size="xs"
+                        variant={u.is_admin ? "outline" : "solid"}
+                        bg={u.is_admin ? "transparent" : "#bc0930"}
+                        color={u.is_admin ? "#bc0930" : "white"}
+                        borderColor={u.is_admin ? "#bc0930" : undefined}
+                        leftIcon={<ShieldCheck size={13} />}
+                        isLoading={!!loadingPromote[u.id]}
+                        onClick={() => promote(u.id, u.is_admin)}
+                      >
+                        {u.is_admin ? "Demote" : "Promote"}
+                      </Button>
+                      <Button
+                        size="xs"
+                        colorScheme="red"
+                        leftIcon={<Ban size={13} />}
+                        isLoading={!!loadingSuspend[u.id]}
+                        onClick={() => suspend(u.id, false)}
+                      >
+                        Remove
+                      </Button>
+                      {u.is_admin && currentUser?.id !== u.id && (
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          colorScheme="red"
+                          leftIcon={<Trash2 size={13} />}
+                          isLoading={!!loadingDelete[u.id]}
+                          onClick={() => deleteUser(u.id, u.email, u.is_admin)}
+                        >
+                          Delete
+                        </Button>
+                      )}
+                    </Flex>
+                  </Box>
+                ))}
+              </VStack>
+
+              {/* Desktop Table (>= md) */}
+              <Box display={{ base: "none", md: "block" }} overflowX="auto">
+                <Table size="md" variant="simple" minW="720px">
+                  <Thead bg="#fff">
+                    <Tr>
+                      <Th
+                        py={4}
+                        color="#5B6B73"
+                        fontWeight="700"
+                        fontSize="xs"
+                        textTransform="uppercase"
+                        letterSpacing="wider"
+                      >
+                        User
+                      </Th>
+                      <Th
+                        py={4}
+                        color="#5B6B73"
+                        fontWeight="700"
+                        fontSize="xs"
+                        textTransform="uppercase"
+                        letterSpacing="wider"
+                      >
+                        Role
+                      </Th>
+                      <Th
+                        textAlign="right"
+                        py={4}
+                        color="#5B6B73"
+                        fontWeight="700"
+                        fontSize="xs"
+                        textTransform="uppercase"
+                        letterSpacing="wider"
+                      >
+                        Actions
+                      </Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {paginatedItems.map((u) => (
                   <Tr
                     key={u.id}
                     _hover={{ bg: "#fff" }}
@@ -479,44 +572,52 @@ export default function AdminUsersPage() {
                       )}
                     </Td>
                     <Td textAlign="right" py={5}>
-                      <HStack spacing={2} justify="flex-end">
-                        <Button
-                          size="sm"
-                          variant={u.is_admin ? "outline" : "solid"}
-                          bg={u.is_admin ? "transparent" : "#bc0930"}
-                          color={u.is_admin ? "#bc0930" : "white"}
-                          borderColor={u.is_admin ? "#bc0930" : undefined}
-                          leftIcon={<ShieldCheck size={16} />}
-                          isLoading={!!loadingPromote[u.id]}
-                          onClick={() => promote(u.id, u.is_admin)}
-                          borderRadius="md"
-                          fontWeight="600"
-                          _hover={{
-                            transform: "translateY(-1px)",
-                            boxShadow: "md",
-                            bg: u.is_admin ? "#fff8f3" : "#a10828",
-                          }}
-                          transition="all 0.2s"
+                      <Flex
+                        gap={2}
+                        justify="flex-end"
+                        flexWrap="wrap"
+                        align="center"
+                      >
+                        <Tooltip
+                          label={u.is_admin ? "Demote to user" : "Promote to admin"}
+                          hasArrow
                         >
-                          {u.is_admin ? "Demote" : "Promote"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="solid"
-                          colorScheme="red"
-                          leftIcon={<Ban size={16} />}
-                          isLoading={!!loadingSuspend[u.id]}
-                          onClick={() => suspend(u.id, false)}
-                          borderRadius="md"
-                          fontWeight="600"
-                          _hover={{
-                            transform: "translateY(-1px)",
-                            boxShadow: "md",
-                          }}
-                          transition="all 0.2s"
-                        >
-                          Remove
-                        </Button>
+                          <IconButton
+                            size="sm"
+                            variant={u.is_admin ? "outline" : "solid"}
+                            bg={u.is_admin ? "transparent" : "#bc0930"}
+                            color={u.is_admin ? "#bc0930" : "white"}
+                            borderColor={u.is_admin ? "#bc0930" : undefined}
+                            icon={<ShieldCheck size={16} />}
+                            isLoading={!!loadingPromote[u.id]}
+                            onClick={() => promote(u.id, u.is_admin)}
+                            borderRadius="md"
+                            _hover={{
+                              transform: "translateY(-1px)",
+                              boxShadow: "md",
+                              bg: u.is_admin ? "#fff8f3" : "#a10828",
+                            }}
+                            transition="all 0.2s"
+                            aria-label={u.is_admin ? "Demote" : "Promote"}
+                          />
+                        </Tooltip>
+                        <Tooltip label="Remove user" hasArrow>
+                          <IconButton
+                            size="sm"
+                            variant="solid"
+                            colorScheme="red"
+                            icon={<Ban size={16} />}
+                            isLoading={!!loadingSuspend[u.id]}
+                            onClick={() => suspend(u.id, false)}
+                            borderRadius="md"
+                            _hover={{
+                              transform: "translateY(-1px)",
+                              boxShadow: "md",
+                            }}
+                            transition="all 0.2s"
+                            aria-label="Remove user"
+                          />
+                        </Tooltip>
                         {u.is_admin && (
                           <Tooltip
                             label={
@@ -547,14 +648,16 @@ export default function AdminUsersPage() {
                             />
                           </Tooltip>
                         )}
-                      </HStack>
+                      </Flex>
                     </Td>
-                  </Tr>
-                ))
-              )}
-            </Tbody>
-          </Table>
-        </Box>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </Box>
+          </>
+        )}
+      </Box>
 
         {/* Pagination Controls */}
         {filtered.length > 0 && (

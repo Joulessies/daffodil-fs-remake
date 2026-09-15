@@ -5,6 +5,10 @@ const theme = extendTheme({
     initialColorMode: "light",
     useSystemColorMode: false,
   },
+  fonts: {
+    heading: 'var(--font-heading), "Playfair Display", Georgia, serif',
+    body: 'var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  },
   // Brand palette and semantic tokens aligned with globals.scss
   colors: {
     brand: {

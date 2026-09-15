@@ -113,22 +113,28 @@ export default function AdminCMSHomepagePage() {
   }
 
   return (
-    <Box minH="100vh" bg="#FFF8F3" p={{ base: 4, md: 6 }}>
-      <Flex align="center" justify="space-between" mb={6}>
+    <Box minH="100vh" bg="#FFF8F3" p={{ base: 3, sm: 4, md: 6 }}>
+      <Flex
+        align={{ base: "stretch", sm: "center" }}
+        direction={{ base: "column", sm: "row" }}
+        gap={{ base: 3, sm: 0 }}
+        justify="space-between"
+        mb={6}
+      >
         <Box>
           <Heading
-            size="xl"
+            size={{ base: "lg", md: "xl" }}
             color="#bc0930"
             style={{ fontFamily: "var(--font-rothek)" }}
             mb={1}
           >
             CMS - Homepage Content
           </Heading>
-          <Text color="#5B6B73" fontSize="sm">
+          <Text color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }}>
             Manage your homepage sections and content
           </Text>
         </Box>
-        <HStack spacing={2}>
+        <Flex gap={2} flexWrap="wrap" align="center">
           <Button
             onClick={handleSave}
             colorScheme="red"
@@ -136,21 +142,23 @@ export default function AdminCMSHomepagePage() {
             _hover={{ bg: "#a10828" }}
             isLoading={saving}
             loadingText="Saving..."
+            size="sm"
+            flex={{ base: "1", sm: "initial" }}
           >
             Save Changes
           </Button>
           <AdminBackButton />
-        </HStack>
+        </Flex>
       </Flex>
 
-      <VStack spacing={6}>
+      <VStack spacing={{ base: 4, md: 6 }}>
         {sections.map((section) => (
           <Box
             key={section.id}
             bg="white"
-            borderRadius="16px"
+            borderRadius={{ base: "12px", md: "16px" }}
             border="1px solid #F5C7CF"
-            p={6}
+            p={{ base: 3.5, sm: 4, md: 6 }}
             w="full"
             as={motion.div}
             initial={{ opacity: 0, y: 20 }}
@@ -158,7 +166,7 @@ export default function AdminCMSHomepagePage() {
           >
             <VStack align="stretch" spacing={4}>
               <Heading
-                size="md"
+                size="sm"
                 color="#bc0930"
                 style={{ fontFamily: "var(--font-rothek)" }}
               >
@@ -166,8 +174,10 @@ export default function AdminCMSHomepagePage() {
               </Heading>
 
               <FormControl>
-                <FormLabel>Content Type</FormLabel>
+                <FormLabel fontSize="xs" fontWeight="600" color="#5B6B73">Content Type</FormLabel>
                 <Select
+                  size="sm"
+                  borderRadius="md"
                   value={section.content_type}
                   onChange={(e) =>
                     updateSection(section.id, "content_type", e.target.value)
@@ -180,8 +190,10 @@ export default function AdminCMSHomepagePage() {
               </FormControl>
 
               <FormControl>
-                <FormLabel>Content</FormLabel>
+                <FormLabel fontSize="xs" fontWeight="600" color="#5B6B73">Content</FormLabel>
                 <Textarea
+                  size="sm"
+                  borderRadius="md"
                   value={section.content}
                   onChange={(e) =>
                     updateSection(section.id, "content", e.target.value)
@@ -190,12 +202,13 @@ export default function AdminCMSHomepagePage() {
                   fontFamily={
                     section.content_type === "json" ? "monospace" : "inherit"
                   }
+                  fontSize="xs"
                   resize="vertical"
                 />
               </FormControl>
 
               <FormControl>
-                <FormLabel>Display Order</FormLabel>
+                <FormLabel fontSize="xs" fontWeight="600" color="#5B6B73">Display Order</FormLabel>
                 <input
                   type="number"
                   value={section.display_order}
@@ -208,15 +221,16 @@ export default function AdminCMSHomepagePage() {
                   }
                   style={{
                     width: "100%",
-                    padding: "8px",
+                    padding: "6px 10px",
                     borderRadius: "6px",
                     border: "1px solid #E2E8F0",
+                    fontSize: "14px",
                   }}
                 />
               </FormControl>
 
-              <Flex justify="space-between" align="center">
-                <Text color="#5B6B73" fontSize="sm">
+              <Flex justify="space-between" align="center" pt={1}>
+                <Text color="#5B6B73" fontSize="sm" fontWeight="500">
                   Active
                 </Text>
                 <Switch

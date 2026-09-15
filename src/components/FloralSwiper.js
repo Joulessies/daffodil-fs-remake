@@ -289,65 +289,17 @@ export default function FloralSwiper({
         size="lg"
       />
 
-      {/* Navigation Buttons - Mobile */}
-      <IconButton
-        aria-label="Previous slide"
-        icon={<ChevronLeft size={20} />}
-        position="absolute"
-        left={2}
-        top="50%"
-        transform="translateY(-50%)"
-        zIndex={10}
-        onClick={() => swiper?.slidePrev()}
-        bg="white"
-        color="#bc0930"
-        border="2px solid"
-        borderColor="#F5C7CF"
-        borderRadius="full"
-        boxShadow="md"
-        _hover={{
-          bg: "#bc0930",
-          color: "white",
-        }}
-        transition="all 0.3s"
-        display={{ base: "flex", md: "none" }}
-        size="sm"
-      />
-
-      <IconButton
-        aria-label="Next slide"
-        icon={<ChevronRight size={20} />}
-        position="absolute"
-        right={2}
-        top="50%"
-        transform="translateY(-50%)"
-        zIndex={10}
-        onClick={() => swiper?.slideNext()}
-        bg="white"
-        color="#bc0930"
-        border="2px solid"
-        borderColor="#F5C7CF"
-        borderRadius="full"
-        boxShadow="md"
-        _hover={{
-          bg: "#bc0930",
-          color: "white",
-        }}
-        transition="all 0.3s"
-        display={{ base: "flex", md: "none" }}
-        size="sm"
-      />
-
       <Swiper
         modules={[Navigation, A11y]}
-        spaceBetween={16}
-        slidesPerView={1}
+        spaceBetween={14}
+        slidesPerView={1.12}
         grabCursor
         onSwiper={setSwiper}
         breakpoints={{
-          640: { slidesPerView: 1 },
-          768: { slidesPerView: 2 },
-          1024: { slidesPerView: 3 },
+          480: { slidesPerView: 1.25, spaceBetween: 14 },
+          640: { slidesPerView: 1.8, spaceBetween: 16 },
+          768: { slidesPerView: 2.2, spaceBetween: 16 },
+          1024: { slidesPerView: 3, spaceBetween: 18 },
         }}
         style={{ paddingBottom: 24 }}
       >

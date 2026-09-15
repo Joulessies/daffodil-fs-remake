@@ -254,12 +254,18 @@ export default function AdminOrdersPage() {
   ).length;
 
   return (
-    <Box minH="100vh" bg="#FFF8F3" p={{ base: 4, md: 6 }}>
+    <Box minH="100vh" bg="#FFF8F3" p={{ base: 3, sm: 4, md: 6 }}>
       {/* Header */}
-      <Flex align="center" justify="space-between" mb={6}>
+      <Flex
+        align={{ base: "stretch", sm: "center" }}
+        direction={{ base: "column", sm: "row" }}
+        gap={{ base: 3, sm: 4 }}
+        justify="space-between"
+        mb={6}
+      >
         <Box>
           <Heading
-            size="xl"
+            size={{ base: "lg", md: "xl" }}
             color="#bc0930"
             style={{ fontFamily: "var(--font-rothek)" }}
           >
@@ -269,11 +275,12 @@ export default function AdminOrdersPage() {
             {filteredItems.length} of {items.length} orders
           </Text>
         </Box>
-        <HStack spacing={2}>
+        <HStack spacing={2} alignSelf={{ base: "flex-start", sm: "auto" }}>
           <Button
             leftIcon={<Plus size={16} />}
             colorScheme="red"
             bg="#bc0930"
+            _hover={{ bg: "#a10828" }}
             size="sm"
             onClick={onOpen}
           >
@@ -284,25 +291,25 @@ export default function AdminOrdersPage() {
       </Flex>
 
       {/* Statistics */}
-      <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={6}>
+      <SimpleGrid columns={{ base: 2, md: 4 }} spacing={{ base: 3, md: 4 }} mb={6}>
         <Box
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={4}
+          p={{ base: 3, md: 4 }}
           borderRadius="12px"
           border="1px solid #F5C7CF"
         >
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm">
+            <StatLabel color="#5B6B73" fontSize="xs">
               Total Orders
             </StatLabel>
-            <StatNumber color="#bc0930" fontSize="2xl">
+            <StatNumber color="#bc0930" fontSize={{ base: "xl", sm: "2xl" }}>
               {items.length}
             </StatNumber>
-            <StatHelpText>
+            <StatHelpText fontSize="2xs" mb={0}>
               <Package
-                size={14}
+                size={12}
                 style={{ display: "inline", marginRight: 4 }}
               />
               All time
@@ -313,24 +320,24 @@ export default function AdminOrdersPage() {
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={4}
+          p={{ base: 3, md: 4 }}
           borderRadius="12px"
           border="1px solid #F5C7CF"
         >
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm">
+            <StatLabel color="#5B6B73" fontSize="xs">
               Total Revenue
             </StatLabel>
-            <StatNumber color="#0f8f4d" fontSize="2xl">
+            <StatNumber color="#0f8f4d" fontSize={{ base: "lg", sm: "2xl" }} wordBreak="break-word">
               ₱
               {Number(totalRevenue).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
             </StatNumber>
-            <StatHelpText>
+            <StatHelpText fontSize="2xs" mb={0}>
               <DollarSign
-                size={14}
+                size={12}
                 style={{ display: "inline", marginRight: 4 }}
               />
               All time
@@ -341,19 +348,19 @@ export default function AdminOrdersPage() {
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={4}
+          p={{ base: 3, md: 4 }}
           borderRadius="12px"
           border="1px solid #F5C7CF"
         >
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm">
+            <StatLabel color="#5B6B73" fontSize="xs">
               Pending
             </StatLabel>
-            <StatNumber color="#f59e0b" fontSize="2xl">
+            <StatNumber color="#f59e0b" fontSize={{ base: "xl", sm: "2xl" }}>
               {pendingCount}
             </StatNumber>
-            <StatHelpText>
-              <Clock size={14} style={{ display: "inline", marginRight: 4 }} />
+            <StatHelpText fontSize="2xs" mb={0}>
+              <Clock size={12} style={{ display: "inline", marginRight: 4 }} />
               Needs attention
             </StatHelpText>
           </Stat>
@@ -362,27 +369,26 @@ export default function AdminOrdersPage() {
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={4}
+          p={{ base: 3, md: 4 }}
           borderRadius="12px"
           border="1px solid #F5C7CF"
         >
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm">
+            <StatLabel color="#5B6B73" fontSize="xs">
               Completed
             </StatLabel>
-            <StatNumber color="#0f8f4d" fontSize="2xl">
+            <StatNumber color="#0f8f4d" fontSize={{ base: "xl", sm: "2xl" }}>
               {completedCount}
             </StatNumber>
-            <StatHelpText>
+            <StatHelpText fontSize="2xs" mb={0}>
               <CheckCircle
-                size={14}
+                size={12}
                 style={{ display: "inline", marginRight: 4 }}
               />
-              Success rate:{" "}
               {items.length > 0
                 ? ((completedCount / items.length) * 100).toFixed(0)
                 : 0}
-              %
+              % rate
             </StatHelpText>
           </Stat>
         </Box>
@@ -391,7 +397,7 @@ export default function AdminOrdersPage() {
       {/* Filters and Actions */}
       <Box
         bg="white"
-        p={4}
+        p={{ base: 3, md: 4 }}
         borderRadius="12px"
         border="1px solid #F5C7CF"
         mb={4}
@@ -413,141 +419,212 @@ export default function AdminOrdersPage() {
             />
           </InputGroup>
 
-          <Select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            maxW={{ base: "100%", md: "200px" }}
-            size="sm"
-            icon={<Filter size={16} />}
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </Select>
-
-          <Menu>
-            <MenuButton
-              as={Button}
-              rightIcon={<ChevronDown size={16} />}
+          <Flex gap={2} direction={{ base: "column", sm: "row" }} flexWrap="wrap">
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              w={{ base: "100%", sm: "160px" }}
               size="sm"
-              variant="outline"
-              maxW={{ base: "100%", md: "auto" }}
+              icon={<Filter size={16} />}
             >
-              Sort: {sortBy.replace("_", " ")}
-            </MenuButton>
-            <MenuList>
-              <MenuItem onClick={() => setSortBy("date_desc")}>
-                Date (Newest)
-              </MenuItem>
-              <MenuItem onClick={() => setSortBy("date_asc")}>
-                Date (Oldest)
-              </MenuItem>
-              <MenuItem onClick={() => setSortBy("total_desc")}>
-                Total (High to Low)
-              </MenuItem>
-              <MenuItem onClick={() => setSortBy("total_asc")}>
-                Total (Low to High)
-              </MenuItem>
-            </MenuList>
-          </Menu>
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </Select>
+
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<ChevronDown size={16} />}
+                size="sm"
+                variant="outline"
+                w={{ base: "100%", sm: "auto" }}
+              >
+                Sort: {sortBy.replace("_", " ")}
+              </MenuButton>
+              <MenuList>
+                <MenuItem onClick={() => setSortBy("date_desc")}>
+                  Date (Newest)
+                </MenuItem>
+                <MenuItem onClick={() => setSortBy("date_asc")}>
+                  Date (Oldest)
+                </MenuItem>
+                <MenuItem onClick={() => setSortBy("total_desc")}>
+                  Total (High to Low)
+                </MenuItem>
+                <MenuItem onClick={() => setSortBy("total_asc")}>
+                  Total (Low to High)
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Flex>
 
           <Button
             leftIcon={<Download size={16} />}
             size="sm"
             variant="outline"
             colorScheme="red"
+            borderColor="#F5C7CF"
             onClick={exportToCSV}
             ml={{ base: 0, md: "auto" }}
+            w={{ base: "100%", sm: "auto" }}
           >
             Export CSV
           </Button>
         </Flex>
       </Box>
 
-      {/* Orders Table */}
+      {/* Orders View (Mobile Cards + Desktop Table) */}
       <Box
         bg="white"
         borderRadius="12px"
         border="1px solid #F5C7CF"
         overflow="hidden"
+        p={{ base: 3, md: 0 }}
       >
-        <Box overflowX="auto">
-          <Table variant="simple" size="sm">
-            <Thead bg="#FFF8F3">
-              <Tr>
-                <Th>Order #</Th>
-                <Th>Date</Th>
-                <Th>Customer</Th>
-                <Th>Status</Th>
-                <Th isNumeric>Total</Th>
-                <Th textAlign="center">Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {loading ? (
-                <Tr>
-                  <Td colSpan={6} textAlign="center" py={8}>
-                    <Text color="#5B6B73">Loading orders...</Text>
-                  </Td>
-                </Tr>
-              ) : filteredItems.length === 0 ? (
-                <Tr>
-                  <Td colSpan={6} textAlign="center" py={8}>
-                    <Text color="#5B6B73">No orders found</Text>
-                  </Td>
-                </Tr>
-              ) : (
-                filteredItems.map((order) => (
-                  <Tr key={order.id} _hover={{ bg: "#FFF8F3" }}>
-                    <Td fontWeight="600">{order.order_number}</Td>
-                    <Td color="#5B6B73" fontSize="sm">
-                      {new Date(order.created_at).toLocaleDateString()}
-                      <br />
-                      <Text as="span" fontSize="xs">
-                        {new Date(order.created_at).toLocaleTimeString()}
+        {loading ? (
+          <Box textAlign="center" py={12}>
+            <Text color="#5B6B73">Loading orders...</Text>
+          </Box>
+        ) : filteredItems.length === 0 ? (
+          <Box textAlign="center" py={12}>
+            <Text color="#5B6B73">No orders found</Text>
+          </Box>
+        ) : (
+          <>
+            {/* Mobile Card List (< md) */}
+            <VStack
+              spacing={3}
+              align="stretch"
+              display={{ base: "flex", md: "none" }}
+            >
+              {filteredItems.map((order) => (
+                <Box
+                  key={order.id}
+                  p={3.5}
+                  bg="#FFF8F3"
+                  borderRadius="12px"
+                  border="1px solid #F5C7CF"
+                >
+                  <Flex justify="space-between" align="center" mb={1.5}>
+                    <Text fontWeight="700" fontSize="sm" color="#bc0930">
+                      {order.order_number}
+                    </Text>
+                    <Badge
+                      colorScheme={getStatusColor(order.status)}
+                      fontSize="2xs"
+                      px={2}
+                      py={0.5}
+                      borderRadius="full"
+                    >
+                      {order.status}
+                    </Badge>
+                  </Flex>
+
+                  <Box fontSize="xs" color="#5B6B73" mb={2}>
+                    <Text fontWeight="600" color="#2D3748">
+                      {order.customer_name || "Guest Customer"}
+                    </Text>
+                    {order.customer_email && (
+                      <Text noOfLines={1} color="#8A9AA3">
+                        {order.customer_email}
                       </Text>
-                    </Td>
-                    <Td>
-                      <Text fontSize="sm">{order.customer_name || "-"}</Text>
-                      <Text fontSize="xs" color="#5B6B73">
-                        {order.customer_email || "-"}
+                    )}
+                  </Box>
+
+                  <Flex justify="space-between" align="center" pt={2} borderTop="1px dashed #F5C7CF">
+                    <Box fontSize="2xs" color="#8A9AA3">
+                      <Text>{new Date(order.created_at).toLocaleDateString()}</Text>
+                      <Text>{new Date(order.created_at).toLocaleTimeString()}</Text>
+                    </Box>
+                    <HStack spacing={3}>
+                      <Text fontWeight="700" fontSize="md" color="#bc0930">
+                        ₱{Number(order.total || 0).toFixed(2)}
                       </Text>
-                    </Td>
-                    <Td>
-                      <Badge
-                        colorScheme={getStatusColor(order.status)}
-                        fontSize="xs"
-                        px={2}
-                        py={1}
-                        borderRadius="full"
-                      >
-                        {order.status}
-                      </Badge>
-                    </Td>
-                    <Td isNumeric fontWeight="600" color="#bc0930">
-                      ₱{Number(order.total || 0).toFixed(2)}
-                    </Td>
-                    <Td textAlign="center">
                       <Link href={`/admin/orders/${order.id}`}>
-                        <IconButton
-                          icon={<Eye size={16} />}
+                        <Button
                           size="xs"
-                          variant="outline"
                           colorScheme="red"
-                          aria-label="View order"
-                        />
+                          bg="#bc0930"
+                          _hover={{ bg: "#a10828" }}
+                          leftIcon={<Eye size={14} />}
+                        >
+                          View
+                        </Button>
                       </Link>
-                    </Td>
+                    </HStack>
+                  </Flex>
+                </Box>
+              ))}
+            </VStack>
+
+            {/* Desktop Table (>= md) */}
+            <Box display={{ base: "none", md: "block" }} overflowX="auto">
+              <Table variant="simple" size="sm">
+                <Thead bg="#FFF8F3">
+                  <Tr>
+                    <Th>Order #</Th>
+                    <Th>Date</Th>
+                    <Th>Customer</Th>
+                    <Th>Status</Th>
+                    <Th isNumeric>Total</Th>
+                    <Th textAlign="center">Actions</Th>
                   </Tr>
-                ))
-              )}
-            </Tbody>
-          </Table>
-        </Box>
+                </Thead>
+                <Tbody>
+                  {filteredItems.map((order) => (
+                    <Tr key={order.id} _hover={{ bg: "#FFF8F3" }}>
+                      <Td fontWeight="600">{order.order_number}</Td>
+                      <Td color="#5B6B73" fontSize="sm">
+                        {new Date(order.created_at).toLocaleDateString()}
+                        <br />
+                        <Text as="span" fontSize="xs">
+                          {new Date(order.created_at).toLocaleTimeString()}
+                        </Text>
+                      </Td>
+                      <Td>
+                        <Text fontSize="sm">{order.customer_name || "-"}</Text>
+                        <Text fontSize="xs" color="#5B6B73">
+                          {order.customer_email || "-"}
+                        </Text>
+                      </Td>
+                      <Td>
+                        <Badge
+                          colorScheme={getStatusColor(order.status)}
+                          fontSize="xs"
+                          px={2}
+                          py={1}
+                          borderRadius="full"
+                        >
+                          {order.status}
+                        </Badge>
+                      </Td>
+                      <Td isNumeric fontWeight="600" color="#bc0930">
+                        ₱{Number(order.total || 0).toFixed(2)}
+                      </Td>
+                      <Td textAlign="center">
+                        <Link href={`/admin/orders/${order.id}`}>
+                          <IconButton
+                            icon={<Eye size={16} />}
+                            size="xs"
+                            variant="outline"
+                            colorScheme="red"
+                            borderColor="#F5C7CF"
+                            aria-label="View order"
+                          />
+                        </Link>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </Box>
+          </>
+        )}
       </Box>
 
       {/* Create Manual Order Modal */}
@@ -557,6 +634,7 @@ export default function AdminOrdersPage() {
           bg="#FFF8F3"
           borderRadius="16px"
           border="2px solid #F5C7CF"
+          mx={{ base: 3, md: "auto" }}
         >
           <ModalHeader
             color="#bc0930"

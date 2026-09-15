@@ -22,8 +22,7 @@ import {
   VStack,
   Skeleton,
   Avatar,
-} from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+} from "@chakra-ui/react";import { useEffect, useState } from "react";
 import AdminBackButton from "@/components/AdminBackButton";
 import { Star, Trash2, Check, X, MessageSquare } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
@@ -122,19 +121,25 @@ export default function AdminReviewsPage() {
   }
 
   return (
-    <Box p={8} bg="#fffcf2" minH="100vh">
+    <Box p={{ base: 3, sm: 4, md: 6 }} bg="#fffcf2" minH="100vh">
       <Box maxW="1400px" mx="auto">
-        <Flex align="center" justify="space-between" mb={8}>
+        <Flex
+          align={{ base: "stretch", md: "center" }}
+          direction={{ base: "column", md: "row" }}
+          gap={{ base: 3, md: 0 }}
+          justify="space-between"
+          mb={{ base: 4, md: 8 }}
+        >
           <Box>
             <Heading
-              size="xl"
-              mb={2}
+              size={{ base: "lg", md: "xl" }}
+              mb={1}
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
               Product Reviews
             </Heading>
-            <Text color="#5B6B73" fontSize="md">
+            <Text color="#5B6B73" fontSize={{ base: "sm", md: "md" }}>
               Manage customer reviews and ratings
             </Text>
           </Box>
@@ -144,20 +149,26 @@ export default function AdminReviewsPage() {
         <Box
           border="1px solid"
           borderColor="#F5C7CF"
-          borderRadius="16px"
-          p={6}
+          borderRadius={{ base: "12px", md: "16px" }}
+          p={{ base: 3, sm: 4, md: 6 }}
           bg="#FFF8F3"
           boxShadow="sm"
         >
           {/* Filters */}
-          <HStack spacing={3} mb={6} flexWrap="wrap">
+          <Flex
+            direction={{ base: "column", md: "row" }}
+            gap={3}
+            mb={6}
+            align={{ base: "stretch", md: "center" }}
+          >
             <Input
               placeholder="Search reviews, products, or users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              maxW="400px"
+              w={{ base: "100%", md: "360px" }}
               borderRadius="md"
               borderColor="#F5C7CF"
+              bg="white"
               _hover={{ borderColor: "#bc0930" }}
               _focus={{
                 borderColor: "#bc0930",
@@ -167,9 +178,10 @@ export default function AdminReviewsPage() {
             <Select
               value={ratingFilter}
               onChange={(e) => setRatingFilter(e.target.value)}
-              maxW="200px"
+              w={{ base: "100%", md: "180px" }}
               borderRadius="md"
               borderColor="#F5C7CF"
+              bg="white"
               _hover={{ borderColor: "#bc0930" }}
               _focus={{
                 borderColor: "#bc0930",
@@ -192,10 +204,11 @@ export default function AdminReviewsPage() {
               color="#bc0930"
               borderRadius="md"
               _hover={{ bg: "#fff8f3" }}
+              w={{ base: "100%", md: "auto" }}
             >
               Refresh
             </Button>
-          </HStack>
+          </Flex>
 
           <Text fontSize="sm" color="#5B6B73" mb={4}>
             Showing {paginatedReviews.length} of {filteredReviews.length}{" "}
@@ -230,161 +243,231 @@ export default function AdminReviewsPage() {
               </Text>
             </Box>
           ) : (
-            <Box
-              bg="white"
-              borderRadius="12px"
-              overflow="hidden"
-              border="1px solid"
-              borderColor="#f5e6e8"
-            >
-              <Table size="md" variant="simple">
-                <Thead bg="#fff">
-                  <Tr>
-                    <Th
-                      py={4}
-                      color="#5B6B73"
-                      fontWeight="700"
-                      fontSize="xs"
-                      textTransform="uppercase"
-                      letterSpacing="wider"
-                    >
-                      Product
-                    </Th>
-                    <Th
-                      py={4}
-                      color="#5B6B73"
-                      fontWeight="700"
-                      fontSize="xs"
-                      textTransform="uppercase"
-                      letterSpacing="wider"
-                    >
-                      Customer
-                    </Th>
-                    <Th
-                      py={4}
-                      color="#5B6B73"
-                      fontWeight="700"
-                      fontSize="xs"
-                      textTransform="uppercase"
-                      letterSpacing="wider"
-                    >
-                      Rating
-                    </Th>
-                    <Th
-                      py={4}
-                      color="#5B6B73"
-                      fontWeight="700"
-                      fontSize="xs"
-                      textTransform="uppercase"
-                      letterSpacing="wider"
-                    >
-                      Review
-                    </Th>
-                    <Th
-                      py={4}
-                      color="#5B6B73"
-                      fontWeight="700"
-                      fontSize="xs"
-                      textTransform="uppercase"
-                      letterSpacing="wider"
-                    >
-                      Date
-                    </Th>
-                    <Th
-                      py={4}
-                      textAlign="right"
-                      color="#5B6B73"
-                      fontWeight="700"
-                      fontSize="xs"
-                      textTransform="uppercase"
-                      letterSpacing="wider"
-                    >
-                      Actions
-                    </Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {paginatedReviews.map((review) => (
-                    <Tr
-                      key={review.id}
-                      _hover={{ bg: "#fffcf2" }}
-                      transition="all 0.2s"
-                      borderBottom="1px solid"
-                      borderColor="#f5e6e8"
-                    >
-                      <Td py={4}>
-                        <Text fontWeight="600" fontSize="sm" color="gray.700">
+            <>
+              {/* Mobile Review Cards (< md) */}
+              <VStack
+                spacing={3}
+                align="stretch"
+                display={{ base: "flex", md: "none" }}
+              >
+                {paginatedReviews.map((review) => (
+                  <Box
+                    key={review.id}
+                    p={3.5}
+                    bg="white"
+                    borderRadius="12px"
+                    border="1px solid"
+                    borderColor="#f5e6e8"
+                    boxShadow="sm"
+                  >
+                    <Flex justify="space-between" align="flex-start" mb={2} gap={2}>
+                      <Box flex="1">
+                        <Text fontWeight="700" fontSize="sm" color="gray.800" noOfLines={1}>
                           {review.products?.title || "Unknown Product"}
                         </Text>
-                      </Td>
-                      <Td py={4}>
-                        <HStack spacing={2}>
-                          <Avatar
-                            size="sm"
-                            name={review.user_email}
-                            bg="#bc0930"
-                            color="white"
-                          />
-                          <Text fontSize="sm" color="#5B6B73">
-                            {review.user_email || "Anonymous"}
-                          </Text>
-                        </HStack>
-                      </Td>
-                      <Td py={4}>
-                        <HStack spacing={1}>
-                          {[1, 2, 3, 4, 5].map((n) => (
-                            <Star
-                              key={n}
-                              size={14}
-                              fill={n <= review.rating ? "#f59e0b" : "none"}
-                              color={n <= review.rating ? "#f59e0b" : "#e5e7eb"}
-                            />
-                          ))}
-                          <Text
-                            fontSize="sm"
-                            fontWeight="600"
-                            color="#5B6B73"
-                            ml={1}
-                          >
-                            ({review.rating}/5)
-                          </Text>
-                        </HStack>
-                      </Td>
-                      <Td py={4} maxW="300px">
-                        <Text fontSize="sm" color="#5B6B73" noOfLines={2}>
-                          {review.content}
-                        </Text>
-                      </Td>
-                      <Td py={4}>
-                        <Text fontSize="xs" color="#5B6B73">
+                        <Text fontSize="xs" color="gray.500">
                           {new Date(review.created_at).toLocaleDateString()}
                         </Text>
-                      </Td>
-                      <Td textAlign="right" py={4}>
-                        <HStack spacing={2} justify="flex-end">
-                          <Tooltip label="Delete review" hasArrow>
-                            <IconButton
-                              size="sm"
-                              variant="solid"
-                              colorScheme="red"
-                              icon={<Trash2 size={16} />}
-                              onClick={() => deleteReview(review.id)}
-                              borderRadius="md"
-                              _hover={{
-                                transform: "translateY(-1px)",
-                                boxShadow: "md",
-                              }}
-                              transition="all 0.2s"
-                              aria-label="Delete"
-                            />
-                          </Tooltip>
-                        </HStack>
-                      </Td>
+                      </Box>
+                      <HStack spacing={1} bg="#fffcf2" px={2} py={1} borderRadius="md" border="1px solid #fce7eb">
+                        <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                        <Text fontSize="xs" fontWeight="700" color="gray.700">
+                          {review.rating}/5
+                        </Text>
+                      </HStack>
+                    </Flex>
+
+                    <HStack spacing={2} mb={2.5}>
+                      <Avatar
+                        size="xs"
+                        name={review.user_email}
+                        bg="#bc0930"
+                        color="white"
+                      />
+                      <Text fontSize="xs" color="#5B6B73" noOfLines={1}>
+                        {review.user_email || "Anonymous"}
+                      </Text>
+                    </HStack>
+
+                    <Box bg="#fffcf2" p={2.5} borderRadius="8px" mb={3} border="1px solid #f8e1e7">
+                      <Text fontSize="xs" color="gray.700" whiteSpace="pre-wrap">
+                        {review.content || "No text content"}
+                      </Text>
+                    </Box>
+
+                    <Flex justify="flex-end">
+                      <Button
+                        size="xs"
+                        colorScheme="red"
+                        variant="outline"
+                        leftIcon={<Trash2 size={13} />}
+                        onClick={() => deleteReview(review.id)}
+                      >
+                        Delete Review
+                      </Button>
+                    </Flex>
+                  </Box>
+                ))}
+              </VStack>
+
+              {/* Desktop Reviews Table (>= md) */}
+              <Box
+                bg="white"
+                borderRadius="12px"
+                overflowX="auto"
+                border="1px solid"
+                borderColor="#f5e6e8"
+                display={{ base: "none", md: "block" }}
+              >
+                <Table size="md" variant="simple" minW="760px">
+                  <Thead bg="#fff">
+                    <Tr>
+                      <Th
+                        py={4}
+                        color="#5B6B73"
+                        fontWeight="700"
+                        fontSize="xs"
+                        textTransform="uppercase"
+                        letterSpacing="wider"
+                      >
+                        Product
+                      </Th>
+                      <Th
+                        py={4}
+                        color="#5B6B73"
+                        fontWeight="700"
+                        fontSize="xs"
+                        textTransform="uppercase"
+                        letterSpacing="wider"
+                      >
+                        Customer
+                      </Th>
+                      <Th
+                        py={4}
+                        color="#5B6B73"
+                        fontWeight="700"
+                        fontSize="xs"
+                        textTransform="uppercase"
+                        letterSpacing="wider"
+                      >
+                        Rating
+                      </Th>
+                      <Th
+                        py={4}
+                        color="#5B6B73"
+                        fontWeight="700"
+                        fontSize="xs"
+                        textTransform="uppercase"
+                        letterSpacing="wider"
+                      >
+                        Review
+                      </Th>
+                      <Th
+                        py={4}
+                        color="#5B6B73"
+                        fontWeight="700"
+                        fontSize="xs"
+                        textTransform="uppercase"
+                        letterSpacing="wider"
+                      >
+                        Date
+                      </Th>
+                      <Th
+                        py={4}
+                        textAlign="right"
+                        color="#5B6B73"
+                        fontWeight="700"
+                        fontSize="xs"
+                        textTransform="uppercase"
+                        letterSpacing="wider"
+                      >
+                        Actions
+                      </Th>
                     </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </Box>
+                  </Thead>
+                  <Tbody>
+                    {paginatedReviews.map((review) => (
+                      <Tr
+                        key={review.id}
+                        _hover={{ bg: "#fffcf2" }}
+                        transition="all 0.2s"
+                        borderBottom="1px solid"
+                        borderColor="#f5e6e8"
+                      >
+                        <Td py={4}>
+                          <Text fontWeight="600" fontSize="sm" color="gray.700">
+                            {review.products?.title || "Unknown Product"}
+                          </Text>
+                        </Td>
+                        <Td py={4}>
+                          <HStack spacing={2}>
+                            <Avatar
+                              size="sm"
+                              name={review.user_email}
+                              bg="#bc0930"
+                              color="white"
+                            />
+                            <Text fontSize="sm" color="#5B6B73">
+                              {review.user_email || "Anonymous"}
+                            </Text>
+                          </HStack>
+                        </Td>
+                        <Td py={4}>
+                          <HStack spacing={1}>
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <Star
+                                key={n}
+                                size={14}
+                                fill={n <= review.rating ? "#f59e0b" : "none"}
+                                color={n <= review.rating ? "#f59e0b" : "#e5e7eb"}
+                              />
+                            ))}
+                            <Text
+                              fontSize="sm"
+                              fontWeight="600"
+                              color="#5B6B73"
+                              ml={1}
+                            >
+                              ({review.rating}/5)
+                            </Text>
+                          </HStack>
+                        </Td>
+                        <Td py={4} maxW="300px">
+                          <Text fontSize="sm" color="#5B6B73" noOfLines={2}>
+                            {review.content}
+                          </Text>
+                        </Td>
+                        <Td py={4}>
+                          <Text fontSize="xs" color="#5B6B73">
+                            {new Date(review.created_at).toLocaleDateString()}
+                          </Text>
+                        </Td>
+                        <Td textAlign="right" py={4}>
+                          <HStack spacing={2} justify="flex-end">
+                            <Tooltip label="Delete review" hasArrow>
+                              <IconButton
+                                size="sm"
+                                variant="solid"
+                                colorScheme="red"
+                                icon={<Trash2 size={16} />}
+                                onClick={() => deleteReview(review.id)}
+                                borderRadius="md"
+                                _hover={{
+                                  transform: "translateY(-1px)",
+                                  boxShadow: "md",
+                                }}
+                                transition="all 0.2s"
+                                aria-label="Delete"
+                              />
+                            </Tooltip>
+                          </HStack>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </Box>
+            </>
           )}
 
           {/* Pagination */}

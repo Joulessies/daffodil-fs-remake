@@ -50,20 +50,68 @@ export default function OrdersPage() {
           return;
         }
 
-        const { supabase } = await import("@/lib/supabase");
-        if (!supabase) return;
+        let userOrders = [];
 
-        const { data, error } = await supabase
-          .from("orders")
-          .select(
-            "id, order_number, total, status, created_at, tracking_url, customer_email"
-          )
-          .eq("customer_email", user.email)
-          .order("created_at", { ascending: false });
+        // 1. Fetch via API with service role bypassing RLS
+        try {
+          const res = await fetch(
+            `/api/profile/orders?email=${encodeURIComponent(
+              user.email
+            )}&user_id=${user.id || ""}`
+          );
+          const data = await res.json();
+          if (res.ok && Array.isArray(data.userOrders)) {
+            userOrders = data.userOrders;
+          }
+        } catch {}
 
-        if (error) throw error;
+        // 2. Client fallback if API was unavailable
+        if (userOrders.length === 0) {
+          try {
+            const { supabase } = await import("@/lib/supabase");
+            if (supabase) {
+              const { data } = await supabase
+                .from("orders")
+                .select("*")
+                .or(
+                  `customer_email.ilike.${user.email},user_id.eq.${user.id || ""}`
+                )
+                .order("created_at", { ascending: false });
+              if (data && data.length > 0) userOrders = data;
+            }
+          } catch {}
+        }
+
+        // 3. Check localStorage.lastOrder to ensure just-placed orders appear immediately
+        try {
+          const raw = localStorage.getItem("lastOrder");
+          if (raw) {
+            const last = JSON.parse(raw);
+            const num = last.order_number || last.orderNumber;
+            if (
+              num &&
+              !userOrders.some((o) => (o.order_number || o.id) === num)
+            ) {
+              userOrders = [
+                {
+                  id: num,
+                  order_number: num,
+                  total: last.totals?.total || last.total || 0,
+                  status: last.payment?.status || last.status || "Paid",
+                  created_at: last.date
+                    ? new Date(last.date).toISOString()
+                    : new Date().toISOString(),
+                  customer_email: last.customer?.email || user.email,
+                  items: last.items || [],
+                },
+                ...userOrders,
+              ];
+            }
+          }
+        } catch {}
+
         if (mounted) {
-          setOrders(data || []);
+          setOrders(userOrders);
         }
       } catch (error) {
         console.error("Error loading orders:", error);
@@ -75,7 +123,7 @@ export default function OrdersPage() {
     return () => {
       mounted = false;
     };
-  }, [user?.email]);
+  }, [user?.email, user?.id]);
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -158,20 +206,33 @@ export default function OrdersPage() {
         <Box maxW={1100} mx="auto">
           <VStack spacing={6} align="stretch">
             {/* Header */}
-            <Box>
-              <Heading
-                size="xl"
-                color="#bc0930"
-                mb={2}
-                style={{ fontFamily: "var(--font-rothek)" }}
-              >
-                Order History & Tracking
-              </Heading>
-              <Text color="#5B6B73" fontSize="md">
-                View your past orders, track shipments, and manage your
-                purchases
-              </Text>
-            </Box>
+            <HStack justify="space-between" align={{ base: "start", sm: "center" }} flexWrap="wrap" gap={3}>
+              <Box>
+                <Heading
+                  size="xl"
+                  color="#bc0930"
+                  mb={2}
+                  style={{ fontFamily: "var(--font-rothek)" }}
+                >
+                  Order History & Tracking
+                </Heading>
+                <Text color="#5B6B73" fontSize="md">
+                  View your past orders, track shipments, and manage your purchases
+                </Text>
+              </Box>
+              <Link href="/order/track">
+                <Button
+                  leftIcon={<Truck size={16} />}
+                  bg="#bc0930"
+                  color="white"
+                  _hover={{ bg: "#a10828" }}
+                  borderRadius="full"
+                  size="md"
+                >
+                  Track by Order #
+                </Button>
+              </Link>
+            </HStack>
 
             {/* Orders List */}
             {authLoading || loading ? (
@@ -297,6 +358,21 @@ export default function OrdersPage() {
                             }}
                           >
                             View Details
+                          </Button>
+                        </Link>
+                        <Link
+                          href={`/order/track?id=${encodeURIComponent(
+                            order.order_number || order.id
+                          )}`}
+                        >
+                          <Button
+                            size="sm"
+                            bg="#bc0930"
+                            color="white"
+                            leftIcon={<Truck size={14} />}
+                            _hover={{ bg: "#a10828" }}
+                          >
+                            Track Order
                           </Button>
                         </Link>
                         {order.tracking_url && (

@@ -1,17 +1,30 @@
 @font-face {
-  font-family: "Rothek";
-  src: url("/fonts/rothek-extralight-webfont.woff2") format("woff2"),
-    url("/fonts/rothek-extralight-webfont.woff") format("woff");
-  font-weight: 200;
+  font-family: "Santa Catarina";
+  src: url("/fonts/santa-catarina.woff") format("woff");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
-:root {
-  --font-santa-catarina: "Santa Catarina", serif;
-  --font-geist-sans: "Geist", sans-serif;
-  --font-geist-mono: "Geist Mono", monospace;
-  --font-rothek: "Rothek", sans-serif;
+@font-face {
+  font-family: "Rothek";
+  src: url("/fonts/rothek-extralight-webfont.woff2") format("woff2"),
+    url("/fonts/rothek-extralight-webfont.woff") format("woff");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root,
+body {
+  --font-serif: var(--font-playfair), "Playfair Display", Georgia, serif;
+  --font-sans: var(--font-plus-jakarta), var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  --font-heading: var(--font-serif);
+  --font-body: var(--font-sans);
+  --font-rothek: var(--font-sans);
+  --font-santa-catarina: "Santa Catarina", var(--font-serif);
+  --font-geist-sans: var(--font-sans);
+  --font-geist-mono: monospace;
   --color-primary: #bc0930;
   --color-primary-light: #d91b3f;
   --color-primary-dark: #9a0727;
@@ -37,14 +50,17 @@
 
 html {
   font-size: 16px;
-  scroll-behavior: smooth;
   overflow-x: hidden;
+}
+
+html[data-scroll-behavior="smooth"] {
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--background-color);
-  font-family: var(--font-rothek), system-ui, -apple-system, Segoe UI, Roboto,
-    Ubuntu, Cantarell, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
+  font-weight: 400;
   line-height: 1.6;
   color: var(--text-primary);
   margin: 0;
@@ -52,6 +68,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 h1,
@@ -60,36 +77,42 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-rothek);
+  font-family: var(--font-heading);
   color: var(--color-primary);
-  font-weight: 200;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
   margin: 0 0 1rem 0;
 }
 
 h1 {
-  font-size: clamp(1.75rem, 4vw, 3rem);
+  font-size: clamp(1.85rem, 4vw, 3.25rem);
+  font-weight: 700;
 }
 
 h2 {
   font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-weight: 600;
 }
 
 h3 {
   font-size: clamp(1.25rem, 3vw, 1.875rem);
+  font-weight: 600;
 }
 
 h4 {
   font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 600;
 }
 
 h5 {
   font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 600;
 }
 
 h6 {
   font-size: clamp(0.875rem, 1.5vw, 1.125rem);
+  font-weight: 600;
 }
 
 p {
@@ -97,10 +120,11 @@ p {
   color: var(--text-secondary);
   font-size: clamp(0.875rem, 2vw, 1rem);
   line-height: 1.7;
+  font-weight: 400;
 }
 
 a {
-  font-family: var(--font-rothek);
+  font-family: inherit;
   font-weight: 500;
   font-size: clamp(0.875rem, 2vw, 1rem);
   color: var(--color-primary);
@@ -120,7 +144,7 @@ a {
 }
 
 button {
-  font-family: var(--font-rothek);
+  font-family: inherit;
   cursor: pointer;
   border: none;
   background: none;
@@ -134,9 +158,14 @@ button {
   }
 }
 
-/* Utility font classes used on <body> in layout */
+/* Utility font classes used across components */
 .font-rothek {
-  font-family: var(--font-rothek) !important;
+  font-family: var(--font-sans) !important;
+}
+
+.font-rothek-stylized {
+  font-family: "Rothek", var(--font-sans) !important;
+  font-weight: 200;
 }
 
 .font-santa-katarina {

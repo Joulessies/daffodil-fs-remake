@@ -21,6 +21,7 @@ import {
   Skeleton,
   VStack,
   Icon,
+  IconButton,
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
 import { Flex } from "@chakra-ui/react";
@@ -55,16 +56,16 @@ export default function AdminInventoryPage() {
         (p) =>
           !term ||
           p.title?.toLowerCase().includes(term) ||
-          p.category?.toLowerCase().includes(term)
+          p.category?.toLowerCase().includes(term),
       )
       .filter((p) =>
         status === "all"
           ? true
           : status === "low"
-          ? Number(p.stock) <= 5
-          : status === "oos"
-          ? Number(p.stock) === 0
-          : true
+            ? Number(p.stock) <= 5
+            : status === "oos"
+              ? Number(p.stock) === 0
+              : true,
       )
       .sort((a, b) => a.title.localeCompare(b.title));
   }, [items, q, status]);
@@ -95,19 +96,25 @@ export default function AdminInventoryPage() {
   };
 
   return (
-    <Box p={8} bg="#fffcf2" minH="100vh">
+    <Box p={{ base: 3, sm: 4, md: 6 }} bg="#fffcf2" minH="100vh">
       <Box maxW="1400px" mx="auto">
-        <Flex align="center" justify="space-between" mb={8}>
+        <Flex
+          align={{ base: "stretch", sm: "center" }}
+          direction={{ base: "column", sm: "row" }}
+          gap={{ base: 3, sm: 4 }}
+          justify="space-between"
+          mb={6}
+        >
           <Box>
             <Heading
-              size="xl"
-              mb={2}
+              size={{ base: "lg", md: "xl" }}
+              mb={1}
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
               Inventory Management
             </Heading>
-            <Text color="#5B6B73" fontSize="md">
+            <Text color="#5B6B73" fontSize="sm">
               Track and manage product stock levels
             </Text>
           </Box>
@@ -118,18 +125,24 @@ export default function AdminInventoryPage() {
           border="1px solid"
           borderColor="#F5C7CF"
           borderRadius="16px"
-          p={6}
+          p={{ base: 4, md: 6 }}
           bg="#FFF8F3"
           boxShadow="sm"
         >
-          <HStack spacing={3} mb={6} align="center" flexWrap="wrap">
+          <Flex
+            direction={{ base: "column", sm: "row" }}
+            gap={3}
+            mb={6}
+            align={{ base: "stretch", sm: "center" }}
+          >
             <Input
               placeholder="Search title or category"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              maxW="360px"
+              w={{ base: "100%", sm: "320px" }}
               borderRadius="md"
               borderColor="#F5C7CF"
+              size="sm"
               _hover={{ borderColor: "#bc0930" }}
               _focus={{
                 borderColor: "#bc0930",
@@ -139,9 +152,10 @@ export default function AdminInventoryPage() {
             <Select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              maxW="220px"
+              w={{ base: "100%", sm: "200px" }}
               borderRadius="md"
               borderColor="#F5C7CF"
+              size="sm"
               _hover={{ borderColor: "#bc0930" }}
               _focus={{
                 borderColor: "#bc0930",
@@ -153,13 +167,14 @@ export default function AdminInventoryPage() {
               <option value="oos">Out of Stock</option>
             </Select>
             <Button
-              size="md"
+              size="sm"
               onClick={load}
               isLoading={loading}
-              leftIcon={<RefreshCw size={16} />}
+              leftIcon={<RefreshCw size={15} />}
               variant="outline"
               borderColor="#bc0930"
               color="#bc0930"
+              w={{ base: "100%", sm: "auto" }}
               borderRadius="md"
               _hover={{
                 bg: "#fff8f3",
@@ -167,7 +182,7 @@ export default function AdminInventoryPage() {
             >
               Refresh
             </Button>
-          </HStack>
+          </Flex>
 
           {loading ? (
             <VStack spacing={3} align="stretch">
@@ -181,26 +196,141 @@ export default function AdminInventoryPage() {
               py={12}
               bg="white"
               borderRadius="12px"
-              border="1px solid"
-              borderColor="#f5e6e8"
             >
-              <Icon as={Package} w={12} h={12} color="#bc0930" mb={3} />
-              <Text fontSize="lg" fontWeight="600" color="#5B6B73" mb={2}>
-                No products found
+              <Text fontSize="md" fontWeight="600" color="#5B6B73">
+                No inventory items found
               </Text>
-              <Text fontSize="sm" color="#5B6B73">
+              <Text fontSize="sm" color="#8A9AA3">
                 Try adjusting your search or filters
               </Text>
             </Box>
           ) : (
-            <Box
-              bg="white"
-              borderRadius="12px"
-              overflow="hidden"
-              border="1px solid"
-              borderColor="#f5e6e8"
-            >
-              <Table size="md" variant="simple">
+            <>
+              {/* Mobile Inventory Cards (< md) */}
+              <VStack
+                spacing={3}
+                align="stretch"
+                display={{ base: "flex", md: "none" }}
+                mb={4}
+              >
+                {pageItems.map((p) => {
+                  const stockLevel = Number(p.stock || 0);
+                  const isLowStock = stockLevel <= 5 && stockLevel > 0;
+                  const isOutOfStock = stockLevel === 0;
+
+                  return (
+                    <Box
+                      key={p.id}
+                      p={3.5}
+                      bg="white"
+                      borderRadius="12px"
+                      border="1px solid #f5e6e8"
+                    >
+                      <Flex justify="space-between" align="start" mb={1.5}>
+                        <Box flex={1} minW={0} pr={2}>
+                          <Text fontWeight="600" fontSize="sm" color="gray.800" noOfLines={2}>
+                            {p.title}
+                          </Text>
+                          <Text fontSize="xs" color="#5B6B73" textTransform="capitalize">
+                            {p.category || "Uncategorized"} • ₱{Number(p.price || 0).toFixed(2)}
+                          </Text>
+                        </Box>
+                        <Badge
+                          colorScheme={
+                            p.status === "active"
+                              ? "green"
+                              : p.status === "out-of-stock"
+                                ? "red"
+                                : "gray"
+                          }
+                          fontSize="2xs"
+                          px={2}
+                          py={0.5}
+                          borderRadius="full"
+                          flexShrink={0}
+                        >
+                          {p.status}
+                        </Badge>
+                      </Flex>
+
+                      <Flex
+                        justify="space-between"
+                        align="center"
+                        pt={3}
+                        mt={2}
+                        borderTop="1px dashed #f5e6e8"
+                      >
+                        <HStack spacing={1.5}>
+                          {isOutOfStock && <AlertCircle size={15} color="#E53E3E" />}
+                          {isLowStock && <TrendingDown size={15} color="#DD6B20" />}
+                          {!isOutOfStock && !isLowStock && <Package size={15} color="#38A169" />}
+                          <Text
+                            fontWeight="700"
+                            fontSize="sm"
+                            color={
+                              isOutOfStock
+                                ? "#E53E3E"
+                                : isLowStock
+                                  ? "#DD6B20"
+                                  : "#38A169"
+                            }
+                          >
+                            {stockLevel} in stock
+                          </Text>
+                        </HStack>
+
+                        {/* Quick Touch Stepper */}
+                        <HStack spacing={1}>
+                          <IconButton
+                            size="xs"
+                            variant="outline"
+                            borderColor="#bc0930"
+                            color="#bc0930"
+                            icon={<span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1 }}>−</span>}
+                            onClick={() =>
+                              setStock(p.id, Math.max(0, Number(p.stock || 0) - 1))
+                            }
+                            aria-label="Decrease stock"
+                          />
+                          <Box
+                            px={2}
+                            py={0.5}
+                            bg="#FFF8F3"
+                            border="1px solid #F5C7CF"
+                            borderRadius="md"
+                            fontSize="xs"
+                            fontWeight="700"
+                            minW="32px"
+                            textAlign="center"
+                          >
+                            {p.stock}
+                          </Box>
+                          <IconButton
+                            size="xs"
+                            variant="outline"
+                            borderColor="#bc0930"
+                            color="#bc0930"
+                            icon={<span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1 }}>+</span>}
+                            onClick={() => setStock(p.id, Number(p.stock || 0) + 1)}
+                            aria-label="Increase stock"
+                          />
+                        </HStack>
+                      </Flex>
+                    </Box>
+                  );
+                })}
+              </VStack>
+
+              {/* Desktop Table View (>= md) */}
+              <Box
+                display={{ base: "none", md: "block" }}
+                bg="white"
+                borderRadius="12px"
+                overflowX="auto"
+                border="1px solid"
+                borderColor="#f5e6e8"
+              >
+              <Table size="md" variant="simple" minW="720px">
                 <Thead bg="#fff">
                   <Tr>
                     <Th
@@ -305,8 +435,8 @@ export default function AdminInventoryPage() {
                               p.status === "active"
                                 ? "green"
                                 : p.status === "out-of-stock"
-                                ? "red"
-                                : "gray"
+                                  ? "red"
+                                  : "gray"
                             }
                             borderRadius="full"
                             px={3}
@@ -335,8 +465,8 @@ export default function AdminInventoryPage() {
                                 isOutOfStock
                                   ? "#E53E3E"
                                   : isLowStock
-                                  ? "#DD6B20"
-                                  : "#38A169"
+                                    ? "#DD6B20"
+                                    : "#38A169"
                               }
                             >
                               {stockLevel}
@@ -344,12 +474,12 @@ export default function AdminInventoryPage() {
                           </HStack>
                         </Td>
                         <Td textAlign="right" py={4}>
-                          <HStack spacing={2} justify="flex-end">
+                          <Flex gap={2} justify="flex-end" flexWrap="wrap" align="center">
                             <NumberInput
                               size="sm"
                               min={0}
                               defaultValue={p.stock}
-                              w="90px"
+                              w="80px"
                               borderRadius="md"
                             >
                               <NumberInputField
@@ -368,7 +498,7 @@ export default function AdminInventoryPage() {
                               onClick={(e) => {
                                 const input =
                                   e.currentTarget.parentElement.querySelector(
-                                    "input"
+                                    "input",
                                   );
                                 setStock(p.id, input ? input.value : p.stock);
                               }}
@@ -382,40 +512,38 @@ export default function AdminInventoryPage() {
                             >
                               Set
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              borderColor="#bc0930"
-                              color="#bc0930"
-                              onClick={() =>
-                                setStock(p.id, Number(p.stock || 0) + 1)
-                              }
-                              borderRadius="md"
-                              _hover={{
-                                bg: "#fff8f3",
-                              }}
-                            >
-                              +1
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              borderColor="#bc0930"
-                              color="#bc0930"
-                              onClick={() =>
-                                setStock(
-                                  p.id,
-                                  Math.max(0, Number(p.stock || 0) - 1)
-                                )
-                              }
-                              borderRadius="md"
-                              _hover={{
-                                bg: "#fff8f3",
-                              }}
-                            >
-                              -1
-                            </Button>
-                          </HStack>
+                            <HStack spacing={1}>
+                              <IconButton
+                                size="sm"
+                                variant="outline"
+                                borderColor="#bc0930"
+                                color="#bc0930"
+                                icon={<span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1 }}>+</span>}
+                                onClick={() =>
+                                  setStock(p.id, Number(p.stock || 0) + 1)
+                                }
+                                borderRadius="md"
+                                _hover={{ bg: "#fff8f3" }}
+                                aria-label="Increase stock by 1"
+                              />
+                              <IconButton
+                                size="sm"
+                                variant="outline"
+                                borderColor="#bc0930"
+                                color="#bc0930"
+                                icon={<span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1 }}>−</span>}
+                                onClick={() =>
+                                  setStock(
+                                    p.id,
+                                    Math.max(0, Number(p.stock || 0) - 1),
+                                  )
+                                }
+                                borderRadius="md"
+                                _hover={{ bg: "#fff8f3" }}
+                                aria-label="Decrease stock by 1"
+                              />
+                            </HStack>
+                          </Flex>
                         </Td>
                       </Tr>
                     );
@@ -423,7 +551,8 @@ export default function AdminInventoryPage() {
                 </Tbody>
               </Table>
             </Box>
-          )}
+          </>
+        )}
 
           <Flex
             justify="space-between"

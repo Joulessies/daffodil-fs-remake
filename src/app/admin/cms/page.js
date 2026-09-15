@@ -26,18 +26,24 @@ export default function CMSPage() {
   }
 
   return (
-    <Box minH="100vh" bg="#FFF8F3" p={{ base: 4, md: 6 }}>
-      <Flex align="center" justify="space-between" mb={6}>
+    <Box minH="100vh" bg="#FFF8F3" p={{ base: 3, sm: 4, md: 6 }}>
+      <Flex
+        align={{ base: "stretch", sm: "center" }}
+        direction={{ base: "column", sm: "row" }}
+        gap={{ base: 3, sm: 0 }}
+        justify="space-between"
+        mb={6}
+      >
         <Box>
           <Heading
-            size="xl"
+            size={{ base: "lg", md: "xl" }}
             color="#bc0930"
             style={{ fontFamily: "var(--font-rothek)" }}
             mb={1}
           >
             Content Management System
           </Heading>
-          <Text color="#5B6B73" fontSize="sm">
+          <Text color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }}>
             Manage the About page content
           </Text>
         </Box>
@@ -56,7 +62,7 @@ export default function CMSPage() {
           animate={{ opacity: 1, y: 0 }}
           whileHover={{ y: -4, boxShadow: "xl" }}
           cursor="pointer"
-          maxW="400px"
+          maxW={{ base: "100%", sm: "400px" }}
         >
           <Box
             p={3}

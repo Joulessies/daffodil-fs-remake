@@ -1,62 +1,16 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo } from "react";
+import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { useAuth } from "./AuthProvider";
 import { useAuthPrompt } from "./AuthPromptContext";
 
-const WishlistContext = createContext({
-  items: [],
-  add: (_item) => {},
-  remove: (_id) => {},
-  toggle: (_item) => {},
-  contains: (_id) => false,
-  clear: () => {},
-});
-
-function normalizeItem(raw) {
-  const title = String(raw?.title || "").trim();
-  const slug = (raw?.id || title || Math.random().toString(36).slice(2))
-    .toString()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-  return {
-    id: slug,
-    title,
-    image: raw?.image || null,
-    price: Number(raw?.price) || null,
-  };
-}
+const WishlistContext = createContext(null);
 
 export function WishlistProvider({ children }) {
-  const [items, setItems] = useState([]);
+  const store = useWishlistStore();
   const { user, isLoading } = useAuth();
   const authPrompt = useAuthPrompt();
-
-  // Storage key is scoped per user to isolate favorites between accounts (and guest)
-  const storageKey = useMemo(
-    () => (user?.id ? `wishlist:${user.id}` : "wishlist:guest"),
-    [user?.id]
-  );
-
-  // Load when account changes
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      setItems(raw ? JSON.parse(raw) : []);
-    } catch {
-      setItems([]);
-    }
-  }, [storageKey]);
-
-  // Persist
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(items));
-    } catch {}
-  }, [items, storageKey]);
-
-  const contains = (id) => items.some((it) => it.id === id);
 
   const requireAuthOrRedirect = (reason) => {
     if (isLoading) return true;
@@ -68,47 +22,49 @@ export function WishlistProvider({ children }) {
   };
 
   const add = (item) => {
-    if (!requireAuthOrRedirect("Please log in or register to save favorites."))
+    if (!requireAuthOrRedirect("Please log in or register to save favorites.")) {
       return;
-    const normalized = normalizeItem(item);
-    setItems((prev) =>
-      contains(normalized.id) ? prev : [normalized, ...prev]
-    );
+    }
+    store.add(item);
   };
 
   const remove = (id) => {
     if (
       !requireAuthOrRedirect("Please log in or register to modify favorites.")
-    )
+    ) {
       return;
-    setItems((prev) => prev.filter((it) => it.id !== id));
+    }
+    store.remove(id);
   };
 
   const toggle = (item) => {
     if (
       !requireAuthOrRedirect("Please log in or register to modify favorites.")
-    )
+    ) {
       return;
-    const normalized = normalizeItem(item);
-    setItems((prev) => {
-      const exists = prev.some((it) => it.id === normalized.id);
-      return exists
-        ? prev.filter((it) => it.id !== normalized.id)
-        : [normalized, ...prev];
-    });
+    }
+    store.toggle(item);
   };
 
   const clear = () => {
     if (
       !requireAuthOrRedirect("Please log in or register to modify favorites.")
-    )
+    ) {
       return;
-    setItems([]);
+    }
+    store.clear();
   };
 
   const value = useMemo(
-    () => ({ items, add, remove, toggle, contains, clear }),
-    [items]
+    () => ({
+      items: store.items,
+      add,
+      remove,
+      toggle,
+      contains: store.contains,
+      clear,
+    }),
+    [store.items]
   );
 
   return (
@@ -119,5 +75,18 @@ export function WishlistProvider({ children }) {
 }
 
 export function useWishlist() {
-  return useContext(WishlistContext);
+  const ctx = useContext(WishlistContext);
+  if (ctx) return ctx;
+
+  const store = useWishlistStore();
+  return {
+    items: store.items,
+    add: store.add,
+    remove: store.remove,
+    toggle: store.toggle,
+    contains: store.contains,
+    clear: store.clear,
+  };
 }
+
+export { useWishlistStore };

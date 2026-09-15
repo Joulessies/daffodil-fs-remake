@@ -140,13 +140,19 @@ export default function AdminOrderDetailPage() {
     : [];
 
   return (
-    <Box minH="100vh" bg="#FFF8F3" p={{ base: 4, md: 6 }}>
+    <Box minH="100vh" bg="#FFF8F3" p={{ base: 3, sm: 4, md: 6 }}>
       {/* Header */}
-      <Flex align="center" justify="space-between" mb={6}>
+      <Flex
+        align={{ base: "stretch", sm: "center" }}
+        direction={{ base: "column", sm: "row" }}
+        gap={{ base: 3, sm: 4 }}
+        justify="space-between"
+        mb={6}
+      >
         <Box>
-          <HStack spacing={3} mb={2}>
+          <Flex align="center" gap={3} flexWrap="wrap" mb={1}>
             <Heading
-              size="xl"
+              size={{ base: "lg", md: "xl" }}
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
@@ -154,28 +160,31 @@ export default function AdminOrderDetailPage() {
             </Heading>
             <Badge
               colorScheme={getStatusColor(order.status)}
-              fontSize="md"
+              fontSize={{ base: "xs", sm: "sm" }}
               px={3}
               py={1}
               borderRadius="full"
             >
               {order.status}
             </Badge>
-          </HStack>
+          </Flex>
           <Text color="#5B6B73" fontSize="sm">
             Created {new Date(order.created_at).toLocaleString()}
           </Text>
         </Box>
-        <HStack spacing={2}>
+        <HStack spacing={2} alignSelf={{ base: "flex-start", sm: "auto" }}>
           <Button
             leftIcon={<Printer size={16} />}
             size="sm"
             variant="outline"
+            borderColor="#F5C7CF"
+            color="#bc0930"
+            _hover={{ bg: "#FFF8F3" }}
             onClick={() => window.print()}
           >
             Print
           </Button>
-          <AdminBackButton />
+          <AdminBackButton fallbackHref="/admin/orders" />
         </HStack>
       </Flex>
 
@@ -191,7 +200,7 @@ export default function AdminOrderDetailPage() {
               bg="white"
               borderRadius="16px"
               border="1px solid #F5C7CF"
-              p={6}
+              p={{ base: 4, md: 6 }}
             >
               <HStack mb={4}>
                 <Package size={20} color="#bc0930" />
@@ -200,49 +209,91 @@ export default function AdminOrderDetailPage() {
                   color="#bc0930"
                   style={{ fontFamily: "var(--font-rothek)" }}
                 >
-                  Order Items
+                  Order Items ({orderItems.length})
                 </Heading>
               </HStack>
               <Divider mb={4} borderColor="#F5C7CF" />
               {orderItems.length > 0 ? (
-                <Table variant="simple" size="sm">
-                  <Thead>
-                    <Tr>
-                      <Th>Product</Th>
-                      <Th isNumeric>Quantity</Th>
-                      <Th isNumeric>Price</Th>
-                      <Th isNumeric>Subtotal</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
+                <>
+                  {/* Mobile Order Items (< md) */}
+                  <VStack spacing={3} align="stretch" display={{ base: "flex", md: "none" }}>
                     {orderItems.map((item, index) => (
-                      <Tr key={index}>
-                        <Td>
-                          <HStack>
-                            {item.image && (
-                              <Image
-                                src={item.image}
-                                alt={item.title}
-                                boxSize="40px"
-                                objectFit="cover"
-                                borderRadius="8px"
-                              />
-                            )}
-                            <Text fontSize="sm">{item.title || item.name}</Text>
-                          </HStack>
-                        </Td>
-                        <Td isNumeric>{item.quantity || 1}</Td>
-                        <Td isNumeric>₱{Number(item.price || 0).toFixed(2)}</Td>
-                        <Td isNumeric fontWeight="600">
-                          ₱
-                          {(
-                            Number(item.price || 0) * (item.quantity || 1)
-                          ).toFixed(2)}
-                        </Td>
-                      </Tr>
+                      <Box
+                        key={index}
+                        p={3}
+                        bg="#FFF8F3"
+                        borderRadius="10px"
+                        border="1px solid #F5C7CF"
+                      >
+                        <Flex gap={3} align="center">
+                          {item.image && (
+                            <Image
+                              src={item.image}
+                              alt={item.title || item.name}
+                              boxSize="50px"
+                              objectFit="cover"
+                              borderRadius="8px"
+                              flexShrink={0}
+                            />
+                          )}
+                          <Box flex={1} minW={0}>
+                            <Text fontSize="sm" fontWeight="600" color="#2D3748" noOfLines={2}>
+                              {item.title || item.name}
+                            </Text>
+                            <Text fontSize="xs" color="#5B6B73" mt={0.5}>
+                              Qty: {item.quantity || 1} × ₱{Number(item.price || 0).toFixed(2)}
+                            </Text>
+                          </Box>
+                          <Text fontWeight="700" fontSize="sm" color="#bc0930" flexShrink={0}>
+                            ₱{(Number(item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                          </Text>
+                        </Flex>
+                      </Box>
                     ))}
-                  </Tbody>
-                </Table>
+                  </VStack>
+
+                  {/* Desktop Table (>= md) */}
+                  <Box display={{ base: "none", md: "block" }} overflowX="auto">
+                    <Table variant="simple" size="sm" minW="400px">
+                      <Thead>
+                        <Tr>
+                          <Th>Product</Th>
+                          <Th isNumeric>Qty</Th>
+                          <Th isNumeric>Price</Th>
+                          <Th isNumeric>Subtotal</Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        {orderItems.map((item, index) => (
+                          <Tr key={index}>
+                            <Td>
+                              <HStack>
+                                {item.image && (
+                                  <Image
+                                    src={item.image}
+                                    alt={item.title}
+                                    boxSize="40px"
+                                    objectFit="cover"
+                                    borderRadius="8px"
+                                  />
+                                )}
+                                <Text fontSize="sm">{item.title || item.name}</Text>
+                              </HStack>
+                            </Td>
+                            <Td isNumeric>{item.quantity || 1}</Td>
+                            <Td isNumeric>₱{Number(item.price || 0).toFixed(2)}</Td>
+                            <Td isNumeric fontWeight="600">
+                              ₱
+                              {(
+                                Number(item.price || 0) * (item.quantity || 1)
+                              ).toFixed(2)}
+                            </Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                    </Table>
+                  </Box>
+                </>
               ) : (
                 <Text color="#5B6B73" textAlign="center" py={4}>
                   No items in this order
@@ -273,7 +324,7 @@ export default function AdminOrderDetailPage() {
               bg="white"
               borderRadius="16px"
               border="1px solid #F5C7CF"
-              p={6}
+              p={{ base: 4, md: 6 }}
             >
               <HStack mb={4}>
                 <User size={20} color="#bc0930" />
@@ -287,36 +338,34 @@ export default function AdminOrderDetailPage() {
               </HStack>
               <Divider mb={4} borderColor="#F5C7CF" />
               <VStack spacing={3} align="stretch">
-                <HStack>
-                  <User size={16} color="#5B6B73" />
-                  <Text color="#5B6B73" w="120px">
-                    Name:
-                  </Text>
+                <Grid templateColumns={{ base: "1fr", sm: "120px 1fr" }} gap={2} alignItems="center">
+                  <HStack spacing={2} color="#5B6B73">
+                    <User size={16} />
+                    <Text>Name:</Text>
+                  </HStack>
                   <Text fontWeight="500">{order.customer_name || "-"}</Text>
-                </HStack>
-                <HStack>
-                  <Mail size={16} color="#5B6B73" />
-                  <Text color="#5B6B73" w="120px">
-                    Email:
-                  </Text>
-                  <Text fontWeight="500">{order.customer_email || "-"}</Text>
-                </HStack>
-                <HStack>
-                  <Phone size={16} color="#5B6B73" />
-                  <Text color="#5B6B73" w="120px">
-                    Phone:
-                  </Text>
+                </Grid>
+                <Grid templateColumns={{ base: "1fr", sm: "120px 1fr" }} gap={2} alignItems="center">
+                  <HStack spacing={2} color="#5B6B73">
+                    <Mail size={16} />
+                    <Text>Email:</Text>
+                  </HStack>
+                  <Text fontWeight="500" wordBreak="break-all">{order.customer_email || "-"}</Text>
+                </Grid>
+                <Grid templateColumns={{ base: "1fr", sm: "120px 1fr" }} gap={2} alignItems="center">
+                  <HStack spacing={2} color="#5B6B73">
+                    <Phone size={16} />
+                    <Text>Phone:</Text>
+                  </HStack>
                   <Text fontWeight="500">{order.customer_phone || "-"}</Text>
-                </HStack>
-                <HStack align="start">
-                  <MapPin size={16} color="#5B6B73" style={{ marginTop: 4 }} />
-                  <Text color="#5B6B73" w="120px">
-                    Address:
-                  </Text>
-                  <Text fontWeight="500" flex={1}>
-                    {order.shipping_address || "-"}
-                  </Text>
-                </HStack>
+                </Grid>
+                <Grid templateColumns={{ base: "1fr", sm: "120px 1fr" }} gap={2} alignItems="start">
+                  <HStack spacing={2} color="#5B6B73" mt={{ base: 0, sm: 1 }}>
+                    <MapPin size={16} />
+                    <Text>Address:</Text>
+                  </HStack>
+                  <Text fontWeight="500">{order.shipping_address || "-"}</Text>
+                </Grid>
               </VStack>
             </Box>
 
@@ -330,7 +379,7 @@ export default function AdminOrderDetailPage() {
                 bg="white"
                 borderRadius="16px"
                 border="1px solid #F5C7CF"
-                p={6}
+                p={{ base: 4, md: 6 }}
               >
                 <HStack mb={4}>
                   <DollarSign size={20} color="#bc0930" />
@@ -344,33 +393,28 @@ export default function AdminOrderDetailPage() {
                 </HStack>
                 <Divider mb={4} borderColor="#F5C7CF" />
                 <VStack spacing={3} align="stretch">
-                  <HStack>
-                    <Text color="#5B6B73" w="150px">
-                      Payment Method:
-                    </Text>
+                  <Grid templateColumns={{ base: "1fr", sm: "160px 1fr" }} gap={2} alignItems="center">
+                    <Text color="#5B6B73">Payment Method:</Text>
                     <Text fontWeight="500">{order.payment_method}</Text>
-                  </HStack>
-                  <HStack>
-                    <Text color="#5B6B73" w="150px">
-                      Payment Status:
-                    </Text>
+                  </Grid>
+                  <Grid templateColumns={{ base: "1fr", sm: "160px 1fr" }} gap={2} alignItems="center">
+                    <Text color="#5B6B73">Payment Status:</Text>
                     <Badge
                       colorScheme={
                         order.payment_status === "paid" ? "green" : "yellow"
                       }
+                      w="fit-content"
                     >
                       {order.payment_status || "pending"}
                     </Badge>
-                  </HStack>
+                  </Grid>
                   {order.transaction_id && (
-                    <HStack>
-                      <Text color="#5B6B73" w="150px">
-                        Transaction ID:
-                      </Text>
-                      <Text fontWeight="500" fontSize="sm">
+                    <Grid templateColumns={{ base: "1fr", sm: "160px 1fr" }} gap={2} alignItems="center">
+                      <Text color="#5B6B73">Transaction ID:</Text>
+                      <Text fontWeight="500" fontSize="sm" wordBreak="break-all">
                         {order.transaction_id}
                       </Text>
-                    </HStack>
+                    </Grid>
                   )}
                 </VStack>
               </Box>
@@ -389,7 +433,7 @@ export default function AdminOrderDetailPage() {
               bg="white"
               borderRadius="16px"
               border="1px solid #F5C7CF"
-              p={6}
+              p={{ base: 4, md: 6 }}
             >
               <HStack mb={4}>
                 <FileText size={20} color="#bc0930" />
@@ -453,6 +497,7 @@ export default function AdminOrderDetailPage() {
                   leftIcon={<Save size={16} />}
                   colorScheme="red"
                   bg="#bc0930"
+                  _hover={{ bg: "#a10828" }}
                   onClick={save}
                   isLoading={saving}
                   w="full"
@@ -471,7 +516,7 @@ export default function AdminOrderDetailPage() {
               bg="white"
               borderRadius="16px"
               border="1px solid #F5C7CF"
-              p={6}
+              p={{ base: 4, md: 6 }}
             >
               <HStack mb={4}>
                 <Calendar size={20} color="#bc0930" />

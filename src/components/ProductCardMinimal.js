@@ -9,11 +9,12 @@ import {
   Button,
   useToast,
 } from "@chakra-ui/react";
+import { useMemo, useState } from "react";
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
-import { useWishlist } from "./WishlistContext";
-import { useCart } from "./CartContext";
+import { useWishlistStore, useCartStore } from "@/lib/store";
+import { useAuth } from "@/components/AuthProvider";
+import { useAuthPrompt } from "@/components/AuthPromptContext";
 
 export default function ProductCardMinimal({
   id,
@@ -32,11 +33,13 @@ export default function ProductCardMinimal({
   benefits,
   onCardClick,
 }) {
-  const wishlist = useWishlist();
-  const cart = useCart();
-  const toast = useToast();
+  const { user } = useAuth();
+  const authPrompt = useAuthPrompt();
   const itemId = (id || title).toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  const isSaved = wishlist.contains(itemId);
+  const isSaved = useWishlistStore((state) => state.contains(itemId));
+  const toggleWishlist = useWishlistStore((state) => state.toggle);
+  const cartAddItem = useCartStore((state) => state.addItem);
+  const toast = useToast();
   const computedSku = useMemo(() => {
     let base = (sku || id || title || "ITEM").toString();
     base = base
@@ -237,8 +240,14 @@ export default function ProductCardMinimal({
               variant="ghost"
               onClick={(e) => {
                 e.stopPropagation();
-                const wasSaved = wishlist.contains(itemId);
-                wishlist.toggle({ id: itemId, title, image, price });
+                if (!user) {
+                  authPrompt.open(
+                    "Please sign in or register to save items to your wishlist."
+                  );
+                  return;
+                }
+                const wasSaved = isSaved;
+                toggleWishlist({ id: itemId, title, image, price });
                 const nowSaved = !wasSaved;
                 toast({
                   title: nowSaved
@@ -269,6 +278,12 @@ export default function ProductCardMinimal({
               isDisabled={isOutOfStock}
               onClick={(e) => {
                 e.stopPropagation();
+                if (!user) {
+                  authPrompt.open(
+                    "Please sign in or register to add items to your cart."
+                  );
+                  return;
+                }
                 if (isOutOfStock) {
                   toast({
                     title: "Unavailable",
@@ -280,7 +295,7 @@ export default function ProductCardMinimal({
                   });
                   return;
                 }
-                const ok = cart.addItem({
+                const ok = cartAddItem({
                   id: id || itemId,
                   title,
                   image: imgSrc || resolvedImage || image,

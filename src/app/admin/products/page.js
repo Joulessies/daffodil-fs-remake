@@ -22,6 +22,7 @@ import {
   Textarea,
   useToast,
   HStack,
+  VStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Flex, Text, Badge, IconButton, Tooltip } from "@chakra-ui/react";
@@ -46,11 +47,12 @@ export default function AdminProductsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
+  const [mobileTab, setMobileTab] = useState("catalog"); // "catalog" | "form"
 
   const load = async () => {
     setLoading(true);
     const res = await fetch(
-      `/api/admin/products?page=${page}&pageSize=${pageSize}`
+      `/api/admin/products?page=${page}&pageSize=${pageSize}`,
     );
     const data = await res.json();
     if (res.ok) {
@@ -107,6 +109,7 @@ export default function AdminProductsPage() {
         images: "",
       });
       setEditingId(null);
+      setMobileTab("catalog");
       load();
     } finally {
       setSubmitting(false);
@@ -131,6 +134,7 @@ export default function AdminProductsPage() {
       status: p.status || "active",
       images: Array.isArray(p.images) ? p.images.join(", ") : "",
     });
+    setMobileTab("form");
   };
 
   const cancelEdit = () => {
@@ -143,36 +147,81 @@ export default function AdminProductsPage() {
       category: "",
       images: "",
     });
+    setMobileTab("catalog");
   };
 
   return (
-    <Box p={{ base: 4, md: 8 }} minH="100vh" bg="#fffcf2">
+    <Box p={{ base: 3, sm: 4, md: 6 }} minH="100vh" bg="#fffcf2">
       <Box maxW="1600px" mx="auto">
-        <Flex align="center" justify="space-between" mb={8}>
+        <Flex
+          align={{ base: "stretch", sm: "center" }}
+          direction={{ base: "column", sm: "row" }}
+          gap={{ base: 3, sm: 4 }}
+          justify="space-between"
+          mb={6}
+        >
           <Box>
             <Heading
-              size="xl"
-              mb={2}
+              size={{ base: "lg", md: "xl" }}
+              mb={1}
               style={{ fontFamily: "var(--font-rothek)" }}
               color="#bc0930"
               letterSpacing="-0.02em"
             >
               Products Management
             </Heading>
-            <Box color="#5B6B73" fontSize="md" fontWeight="500">
+            <Box color="#5B6B73" fontSize="sm" fontWeight="500">
               Manage your product catalog • Total: {total} products
             </Box>
           </Box>
           <AdminBackButton />
         </Flex>
 
-        <Grid templateColumns={{ base: "1fr", md: "1fr 2fr" }} gap={6}>
-          <GridItem>
+        {/* Mobile View Toggle Switcher (< lg) */}
+        <Flex
+          display={{ base: "flex", lg: "none" }}
+          mb={4}
+          p={1}
+          bg="#F5C7CF40"
+          borderRadius="12px"
+        >
+          <Button
+            flex={1}
+            size="sm"
+            variant={mobileTab === "catalog" ? "solid" : "ghost"}
+            bg={mobileTab === "catalog" ? "#bc0930" : "transparent"}
+            color={mobileTab === "catalog" ? "white" : "#5B6B73"}
+            _hover={{ bg: mobileTab === "catalog" ? "#a10828" : "transparent" }}
+            borderRadius="8px"
+            onClick={() => setMobileTab("catalog")}
+            fontWeight="600"
+            fontSize="xs"
+          >
+            Catalog ({total})
+          </Button>
+          <Button
+            flex={1}
+            size="sm"
+            variant={mobileTab === "form" ? "solid" : "ghost"}
+            bg={mobileTab === "form" ? "#bc0930" : "transparent"}
+            color={mobileTab === "form" ? "white" : "#5B6B73"}
+            _hover={{ bg: mobileTab === "form" ? "#a10828" : "transparent" }}
+            borderRadius="8px"
+            onClick={() => setMobileTab("form")}
+            fontWeight="600"
+            fontSize="xs"
+          >
+            {editingId ? "Edit Product" : "+ Add Product"}
+          </Button>
+        </Flex>
+
+        <Grid templateColumns={{ base: "1fr", lg: "380px 1fr" }} gap={6}>
+          <GridItem display={{ base: mobileTab === "form" ? "block" : "none", lg: "block" }}>
             <Box
               border="1px solid"
               borderColor="#F5C7CF"
               borderRadius="16px"
-              p={6}
+              p={{ base: 4, md: 6 }}
               bg="#FFF8F3"
               boxShadow="sm"
             >
@@ -404,18 +453,19 @@ export default function AdminProductsPage() {
               </Stack>
             </Box>
           </GridItem>
-          <GridItem>
+          <GridItem display={{ base: mobileTab === "catalog" ? "block" : "none", lg: "block" }}>
             <Box
               border="1px solid"
               borderColor="#F5C7CF"
               borderRadius="16px"
-              p={6}
+              p={{ base: 4, md: 6 }}
               bg="#FFF8F3"
               boxShadow="sm"
             >
               <Grid
-                templateColumns={{ base: "1fr", md: "1fr auto" }}
+                templateColumns={{ base: "1fr", sm: "1fr auto" }}
                 alignItems="center"
+                gap={{ base: 3, sm: 0 }}
                 mb={5}
               >
                 <GridItem>
@@ -427,8 +477,8 @@ export default function AdminProductsPage() {
                     All Products
                   </Heading>
                 </GridItem>
-                <GridItem textAlign={{ base: "left", md: "right" }}>
-                  <HStack spacing={2} justify={{ base: "start", md: "end" }}>
+                <GridItem>
+                  <Flex gap={2} flexWrap="wrap" justify={{ base: "start", sm: "end" }}>
                     <Button
                       size="sm"
                       variant="outline"
@@ -480,17 +530,119 @@ export default function AdminProductsPage() {
                     >
                       Seed Low Stock
                     </Button>
-                  </HStack>
+                  </Flex>
                 </GridItem>
               </Grid>
+
+              {/* Mobile Products Cards (< md) */}
+              <VStack spacing={3} align="stretch" display={{ base: "flex", md: "none" }} mb={4}>
+                {items.map((p) => {
+                  const firstImg =
+                    (Array.isArray(p.images) && p.images.length > 0 && p.images[0]) ||
+                    (typeof p.images === "string" && p.images.split(",")[0]?.trim());
+                  return (
+                    <Box
+                      key={p.id}
+                      p={3.5}
+                      bg="white"
+                      borderRadius="12px"
+                      border="1px solid #f5e6e8"
+                    >
+                      <Flex gap={3} align="start">
+                        {firstImg ? (
+                          <Box
+                            as="img"
+                            src={firstImg}
+                            alt={p.title}
+                            width="60px"
+                            height="60px"
+                            borderRadius="8px"
+                            objectFit="cover"
+                            flexShrink={0}
+                            border="1px solid #eee"
+                          />
+                        ) : (
+                          <Box
+                            width="60px"
+                            height="60px"
+                            borderRadius="8px"
+                            bg="#FFF8F3"
+                            border="1px solid #F5C7CF"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            flexShrink={0}
+                          >
+                            <Package size={24} color="#bc0930" />
+                          </Box>
+                        )}
+
+                        <Box flex={1} minW={0}>
+                          <Text fontWeight="600" fontSize="sm" color="gray.800" noOfLines={2}>
+                            {p.title}
+                          </Text>
+                          <HStack spacing={2} mt={1} wrap="wrap">
+                            <Badge
+                              colorScheme={
+                                p.status === "active"
+                                  ? "green"
+                                  : p.status === "out-of-stock"
+                                    ? "red"
+                                    : "gray"
+                              }
+                              borderRadius="full"
+                              px={2}
+                              py={0.5}
+                              fontSize="2xs"
+                              fontWeight="600"
+                            >
+                              {p.status}
+                            </Badge>
+                            <Text fontSize="xs" color="#5B6B73">
+                              Stock: {p.stock}
+                            </Text>
+                          </HStack>
+                          <Text fontWeight="700" fontSize="sm" color="#bc0930" mt={1}>
+                            ₱{Number(p.price || 0).toFixed(2)}
+                          </Text>
+                        </Box>
+                      </Flex>
+
+                      <Flex justify="flex-end" gap={2} mt={3} pt={2} borderTop="1px dashed #f5e6e8">
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          borderColor="#bc0930"
+                          color="#bc0930"
+                          leftIcon={<Edit2 size={13} />}
+                          onClick={() => onEdit(p)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="xs"
+                          colorScheme="red"
+                          leftIcon={<Trash2 size={13} />}
+                          onClick={() => remove(p.id)}
+                        >
+                          Delete
+                        </Button>
+                      </Flex>
+                    </Box>
+                  );
+                })}
+              </VStack>
+
+              {/* Desktop Table View (>= md) */}
               <Box
+                display={{ base: "none", md: "block" }}
                 bg="white"
                 borderRadius="12px"
-                overflow="hidden"
+                overflowX="auto"
                 border="1px solid"
                 borderColor="#f5e6e8"
               >
-                <Table size="md" variant="simple">
+                <Table size="md" variant="simple" minW="760px">
                   <Thead bg="#fff">
                     <Tr>
                       <Th
@@ -571,8 +723,8 @@ export default function AdminProductsPage() {
                               p.status === "active"
                                 ? "green"
                                 : p.status === "out-of-stock"
-                                ? "red"
-                                : "gray"
+                                  ? "red"
+                                  : "gray"
                             }
                             borderRadius="full"
                             px={3}

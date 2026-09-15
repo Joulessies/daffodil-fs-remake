@@ -18,7 +18,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import NavigationBar from "@/components/navigationbar";
-import { useCart } from "@/components/CartContext";
+import { useCartStore } from "@/lib/store";
 import {
   CheckCircle,
   Package,
@@ -33,7 +33,7 @@ import {
 export default function OrderConfirmationPage() {
   const [order, setOrder] = useState(null);
   const [mounted, setMounted] = useState(false);
-  const cart = useCart();
+  const clearCart = useCartStore((s) => s.clearCart);
   const clearedRef = useRef(false);
 
   useEffect(() => {
@@ -106,10 +106,10 @@ export default function OrderConfirmationPage() {
     try {
       if (order && !clearedRef.current) {
         clearedRef.current = true;
-        cart.clearCart();
+        clearCart();
       }
     } catch {}
-  }, [order, cart]);
+  }, [order, clearCart]);
 
   if (!mounted) return null;
 
@@ -587,10 +587,32 @@ export default function OrderConfirmationPage() {
                       <Text color="#5B6B73" fontSize="sm">
                         We'll send you updates when your order ships.
                       </Text>
-                      {order.trackingUrl ? (
+                      <Link
+                        href={`/order/track?id=${encodeURIComponent(
+                          order.order_number || order.orderNumber || ""
+                        )}&email=${encodeURIComponent(
+                          order.customer_email || order.customer?.email || ""
+                        )}`}
+                        style={{ width: "100%" }}
+                      >
+                        <Button
+                          bg="#bc0930"
+                          color="white"
+                          leftIcon={<Truck size={16} />}
+                          _hover={{ bg: "#a10828" }}
+                          size="md"
+                          borderRadius="full"
+                          w="full"
+                        >
+                          Track Live Delivery Progress
+                        </Button>
+                      </Link>
+                      {order.tracking_url && (
                         <Button
                           as="a"
-                          href={order.trackingUrl}
+                          href={order.tracking_url}
+                          target="_blank"
+                          rel="noreferrer"
                           variant="outline"
                           borderColor="#F5C7CF"
                           color="#bc0930"
@@ -600,13 +622,10 @@ export default function OrderConfirmationPage() {
                           }}
                           size="sm"
                           borderRadius="full"
+                          w="full"
                         >
-                          Track your package
+                          Courier Partner Link
                         </Button>
-                      ) : (
-                        <Text color="#5B6B73" fontSize="sm">
-                          Tracking link will appear when available.
-                        </Text>
                       )}
                       <Button
                         as="a"

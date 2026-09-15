@@ -114,18 +114,24 @@ export default function CMSPromotionEditor({ promotion = null }) {
   };
 
   return (
-    <Box minH="100vh" bg="#FFF8F3" p={{ base: 4, md: 6 }}>
-      <Flex align="center" justify="space-between" mb={6}>
+    <Box minH="100vh" bg="#FFF8F3" p={{ base: 3, sm: 4, md: 6 }}>
+      <Flex
+        align={{ base: "stretch", sm: "center" }}
+        direction={{ base: "column", sm: "row" }}
+        gap={{ base: 3, sm: 0 }}
+        justify="space-between"
+        mb={6}
+      >
         <Box>
           <Heading
-            size="xl"
+            size={{ base: "lg", md: "xl" }}
             color="#bc0930"
             style={{ fontFamily: "var(--font-rothek)" }}
             mb={1}
           >
             {promotion ? "Edit Promotion" : "New Promotion"}
           </Heading>
-          <Text color="#5B6B73" fontSize="sm">
+          <Text color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }}>
             {promotion
               ? "Update promotion details"
               : "Create a new promotion or banner"}
@@ -137,9 +143,9 @@ export default function CMSPromotionEditor({ promotion = null }) {
       <form onSubmit={handleSubmit}>
         <Box
           bg="white"
-          borderRadius="16px"
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
-          p={6}
+          p={{ base: 3.5, sm: 4, md: 6 }}
           as={motion.div}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -219,7 +225,7 @@ export default function CMSPromotionEditor({ promotion = null }) {
               </Text>
             </FormControl>
 
-            <Flex w="full" gap={4}>
+            <Flex w="full" gap={4} direction={{ base: "column", sm: "row" }}>
               <FormControl>
                 <FormLabel>Start Date</FormLabel>
                 <Input
@@ -267,6 +273,7 @@ export default function CMSPromotionEditor({ promotion = null }) {
                 _hover={{ bg: "#a10828" }}
                 isLoading={loading}
                 loadingText="Saving..."
+                w={{ base: "full", sm: "auto" }}
               >
                 {promotion ? "Update Promotion" : "Create Promotion"}
               </Button>

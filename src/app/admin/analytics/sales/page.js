@@ -171,28 +171,35 @@ export default function SalesAnalyticsPage() {
   }
 
   return (
-    <Box minH="100vh" bg="#FFF8F3" p={{ base: 4, md: 6 }}>
-      <Flex align="center" justify="space-between" mb={6}>
+    <Box minH="100vh" bg="#FFF8F3" p={{ base: 3, sm: 4, md: 6 }}>
+      <Flex
+        align={{ base: "stretch", sm: "center" }}
+        direction={{ base: "column", sm: "row" }}
+        gap={{ base: 3, sm: 0 }}
+        justify="space-between"
+        mb={6}
+      >
         <Box>
           <Heading
-            size="xl"
+            size={{ base: "lg", md: "xl" }}
             color="#bc0930"
             style={{ fontFamily: "var(--font-rothek)" }}
             mb={1}
           >
             Sales & Revenue Analytics
           </Heading>
-          <Text color="#5B6B73" fontSize="sm">
+          <Text color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }}>
             Track your sales performance and revenue trends
           </Text>
         </Box>
-        <HStack spacing={2}>
+        <Flex gap={2} flexWrap="wrap" align="center">
           <Select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            w="150px"
+            w={{ base: "100%", sm: "150px" }}
             bg="white"
             borderRadius="md"
+            size="sm"
           >
             <option value="all">All Time</option>
             <option value="90d">Last 90 Days</option>
@@ -200,37 +207,37 @@ export default function SalesAnalyticsPage() {
             <option value="7d">Last 7 Days</option>
           </Select>
           <AdminBackButton />
-        </HStack>
+        </Flex>
       </Flex>
 
       {/* Key Metrics */}
-      <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} spacing={4} mb={8}>
+      <SimpleGrid columns={{ base: 2, lg: 4 }} spacing={{ base: 2.5, sm: 4 }} mb={{ base: 6, md: 8 }}>
         <Box
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={6}
-          borderRadius="16px"
+          p={{ base: 3, sm: 5 }}
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
         >
           <HStack mb={2}>
             <Box p={2} borderRadius="8px" bg="#bc093015" color="#bc0930">
-              <ShoppingBag size={20} />
+              <ShoppingBag size={18} />
             </Box>
           </HStack>
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm" fontWeight="500">
+            <StatLabel color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }} fontWeight="500">
               Total Orders
             </StatLabel>
             <StatNumber
-              fontSize="3xl"
+              fontSize={{ base: "xl", sm: "2xl", md: "3xl" }}
               fontWeight="bold"
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
               {totalOrders}
             </StatNumber>
-            <StatHelpText color="#8A9AA3" fontSize="xs">
+            <StatHelpText color="#8A9AA3" fontSize="xs" mb={0}>
               {timeRange === "all"
                 ? "All time"
                 : `Last ${timeRange.replace("d", "")} days`}
@@ -242,21 +249,21 @@ export default function SalesAnalyticsPage() {
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={6}
-          borderRadius="16px"
+          p={{ base: 3, sm: 5 }}
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
         >
           <HStack mb={2}>
             <Box p={2} borderRadius="8px" bg="#0f8f4d15" color="#0f8f4d">
-              <DollarSign size={20} />
+              <DollarSign size={18} />
             </Box>
           </HStack>
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm" fontWeight="500">
+            <StatLabel color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }} fontWeight="500">
               Total Revenue
             </StatLabel>
             <StatNumber
-              fontSize="2xl"
+              fontSize={{ base: "lg", sm: "xl", md: "2xl" }}
               fontWeight="bold"
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
@@ -267,7 +274,7 @@ export default function SalesAnalyticsPage() {
                 maximumFractionDigits: 2,
               })}
             </StatNumber>
-            <StatHelpText color="#8A9AA3" fontSize="xs">
+            <StatHelpText color="#8A9AA3" fontSize="xs" mb={0}>
               {timeRange === "all"
                 ? "All time"
                 : `Last ${timeRange.replace("d", "")} days`}
@@ -279,28 +286,28 @@ export default function SalesAnalyticsPage() {
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={6}
-          borderRadius="16px"
+          p={{ base: 3, sm: 5 }}
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
         >
           <HStack mb={2}>
             <Box p={2} borderRadius="8px" bg="#3b82f615" color="#3b82f6">
-              <TrendingUp size={20} />
+              <TrendingUp size={18} />
             </Box>
           </HStack>
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm" fontWeight="500">
+            <StatLabel color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }} fontWeight="500">
               Avg Order Value
             </StatLabel>
             <StatNumber
-              fontSize="2xl"
+              fontSize={{ base: "lg", sm: "xl", md: "2xl" }}
               fontWeight="bold"
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
               ₱{avgOrderValue.toFixed(2)}
             </StatNumber>
-            <StatHelpText color="#8A9AA3" fontSize="xs">
+            <StatHelpText color="#8A9AA3" fontSize="xs" mb={0}>
               Per transaction
             </StatHelpText>
           </Stat>
@@ -310,28 +317,28 @@ export default function SalesAnalyticsPage() {
           as={motion.div}
           whileHover={{ y: -2 }}
           bg="white"
-          p={6}
-          borderRadius="16px"
+          p={{ base: 3, sm: 5 }}
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
         >
           <HStack mb={2}>
             <Box p={2} borderRadius="8px" bg="#8b5cf615" color="#8b5cf6">
-              <Activity size={20} />
+              <Activity size={18} />
             </Box>
           </HStack>
           <Stat>
-            <StatLabel color="#5B6B73" fontSize="sm" fontWeight="500">
+            <StatLabel color="#5B6B73" fontSize={{ base: "xs", sm: "sm" }} fontWeight="500">
               Completion Rate
             </StatLabel>
             <StatNumber
-              fontSize="2xl"
+              fontSize={{ base: "lg", sm: "xl", md: "2xl" }}
               fontWeight="bold"
               color="#bc0930"
               style={{ fontFamily: "var(--font-rothek)" }}
             >
               {completionRate.toFixed(1)}%
             </StatNumber>
-            <StatHelpText color="#8A9AA3" fontSize="xs">
+            <StatHelpText color="#8A9AA3" fontSize="xs" mb={0}>
               Successfully completed
             </StatHelpText>
           </Stat>
@@ -339,44 +346,45 @@ export default function SalesAnalyticsPage() {
       </SimpleGrid>
 
       {/* Charts */}
-      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6} mb={8}>
+      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={{ base: 4, md: 6 }} mb={{ base: 6, md: 8 }}>
         {/* Revenue Trend */}
         <Box
           bg="white"
-          p={6}
-          borderRadius="16px"
+          p={{ base: 3, sm: 4, md: 6 }}
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
           as={motion.div}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <Heading
-            size="md"
+            size="sm"
             mb={4}
             color="#bc0930"
             style={{ fontFamily: "var(--font-rothek)" }}
           >
             Revenue Trend
           </Heading>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={timeSeriesData}>
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={timeSeriesData} margin={{ left: -15, right: 8, top: 4, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F5C7CF" />
-              <XAxis dataKey="date" stroke="#5B6B73" fontSize={12} />
-              <YAxis stroke="#5B6B73" fontSize={12} />
+              <XAxis dataKey="date" stroke="#5B6B73" fontSize={10} tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+              <YAxis stroke="#5B6B73" fontSize={10} width={45} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "white",
                   border: "1px solid #F5C7CF",
                   borderRadius: "8px",
+                  fontSize: 12,
                 }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
               <Line
                 type="monotone"
                 dataKey="revenue"
                 stroke="#0f8f4d"
                 strokeWidth={2}
-                dot={{ fill: "#0f8f4d", r: 4 }}
+                dot={{ fill: "#0f8f4d", r: 3 }}
                 name="Revenue (₱)"
               />
             </LineChart>
@@ -386,32 +394,29 @@ export default function SalesAnalyticsPage() {
         {/* Orders Status Distribution */}
         <Box
           bg="white"
-          p={6}
-          borderRadius="16px"
+          p={{ base: 3, sm: 4, md: 6 }}
+          borderRadius={{ base: "12px", md: "16px" }}
           border="1px solid #F5C7CF"
           as={motion.div}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <Heading
-            size="md"
+            size="sm"
             mb={4}
             color="#bc0930"
             style={{ fontFamily: "var(--font-rothek)" }}
           >
             Orders by Status
           </Heading>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie
                 data={statusDistribution}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) =>
-                  `${name}: ${(percent * 100).toFixed(0)}%`
-                }
-                outerRadius={80}
+                outerRadius={75}
                 fill="#8884d8"
                 dataKey="value"
               >
@@ -422,7 +427,8 @@ export default function SalesAnalyticsPage() {
                   />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
             </PieChart>
           </ResponsiveContainer>
         </Box>
@@ -431,34 +437,35 @@ export default function SalesAnalyticsPage() {
       {/* Orders over Time */}
       <Box
         bg="white"
-        p={6}
-        borderRadius="16px"
+        p={{ base: 3, sm: 4, md: 6 }}
+        borderRadius={{ base: "12px", md: "16px" }}
         border="1px solid #F5C7CF"
         as={motion.div}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <Heading
-          size="md"
+          size="sm"
           mb={4}
           color="#bc0930"
           style={{ fontFamily: "var(--font-rothek)" }}
         >
           Orders Over Time
         </Heading>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={timeSeriesData}>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={timeSeriesData} margin={{ left: -15, right: 8, top: 4, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F5C7CF" />
-            <XAxis dataKey="date" stroke="#5B6B73" fontSize={12} />
-            <YAxis stroke="#5B6B73" fontSize={12} />
+            <XAxis dataKey="date" stroke="#5B6B73" fontSize={10} tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+            <YAxis stroke="#5B6B73" fontSize={10} width={35} />
             <Tooltip
               contentStyle={{
                 backgroundColor: "white",
                 border: "1px solid #F5C7CF",
                 borderRadius: "8px",
+                fontSize: 12,
               }}
             />
-            <Legend />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
             <Bar dataKey="orders" fill="#bc0930" name="Orders" />
           </BarChart>
         </ResponsiveContainer>

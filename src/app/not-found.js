@@ -14,7 +14,13 @@ export default function NotFound() {
       }}
     >
       <div style={{ marginBottom: "40px" }}>
-        <img src="/images/logo.svg" alt="Daffodil" width="200" height="125" />
+        <img
+          src="/images/logo.svg"
+          alt="Daffodil"
+          width="195"
+          height="36"
+          style={{ maxWidth: "100%", height: "auto", display: "block" }}
+        />
       </div>
 
       <div style={{ marginBottom: "60px" }}>

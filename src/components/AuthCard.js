@@ -197,11 +197,17 @@ export default function AuthCard({ mode = "login" }) {
         )}
 
         <VStack spacing={6} align="center">
-          <Image
+          <img
             src="/images/logo.svg"
             alt="Daffodil"
-            width={120}
-            height={120}
+            width="195"
+            height="36"
+            style={{
+              width: "180px",
+              maxWidth: "100%",
+              height: "auto",
+              display: "block",
+            }}
           />
           <Heading
             fontSize="2xl"

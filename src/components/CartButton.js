@@ -1,50 +1,66 @@
 "use client";
 
-import { Box, IconButton, Text } from "@chakra-ui/react";
+import { Box, IconButton } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
-import { useCart } from "./CartContext";
+import { useCartStore } from "@/lib/store";
 
 export default function CartButton() {
-  const cart = useCart();
-  const totalQty = (cart.items || []).reduce(
+  const items = useCartStore((state) => state.items);
+  const openCart = useCartStore((state) => state.open);
+
+  const totalQty = (items || []).reduce(
     (sum, it) => sum + (Number(it.quantity) || 1),
     0
   );
+
   return (
-    <Box position="relative" display="inline-block">
+    <Box position="relative" display="inline-flex" alignItems="center" justifyContent="center">
       <IconButton
         aria-label="Open cart"
         icon={<ShoppingBag size={20} />}
         variant="ghost"
-        onClick={cart.open}
+        color="#2d3748"
+        _hover={{
+          bg: "#fff8f3",
+          color: "#bc0930",
+        }}
+        onClick={openCart}
       />
       <AnimatePresence>
         {totalQty > 0 && (
-          <Box
-            as={motion.div}
-            initial={{ scale: 0, opacity: 0, y: -6 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 360, damping: 22 }}
-            position="absolute"
-            top={0}
-            right={0}
-            transform="translate(25%, -25%)"
-            bg="#bc0930"
-            color="#fff"
-            borderRadius="full"
-            minW="18px"
-            h="18px"
-            px={1}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
+          <motion.span
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 450, damping: 25 }}
+            style={{
+              position: "absolute",
+              top: "-2px",
+              right: "-2px",
+              backgroundColor: "#bc0930",
+              color: "#ffffff",
+              borderRadius: "9999px",
+              minWidth: "18px",
+              height: "18px",
+              padding: "0 4px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "10px",
+              fontWeight: 700,
+              lineHeight: 1,
+              fontFamily: "var(--font-sans)",
+              boxShadow: "0 0 0 2px #fffcf2",
+              pointerEvents: "none",
+              userSelect: "none",
+              textAlign: "center",
+              margin: 0,
+              zIndex: 3,
+            }}
           >
-            <Text fontSize="xs" lineHeight={1}>
-              {totalQty}
-            </Text>
-          </Box>
+            {totalQty > 99 ? "99+" : totalQty}
+          </motion.span>
         )}
       </AnimatePresence>
     </Box>

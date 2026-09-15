@@ -12,16 +12,21 @@ import {
   Image as ChakraImage,
   Stack,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { findProductById } from "@/lib/products";
-import { useCart } from "@/components/CartContext";
-import { useWishlist } from "@/components/WishlistContext";
-import { useEffect as useEffect2, useState as useState2 } from "react";
+import { useCartStore, useWishlistStore } from "@/lib/store";
+import { useAuth } from "@/components/AuthProvider";
+import { useAuthPrompt } from "@/components/AuthPromptContext";
 
 export default function ProductDetailPage() {
+  const { user } = useAuth();
+  const authPrompt = useAuthPrompt();
   const params = useParams();
-  const cart = useCart();
-  const wishlist = useWishlist();
+  const cartAddItem = useCartStore((s) => s.addItem);
+  const cartOpen = useCartStore((s) => s.open);
+  const toggleWishlist = useWishlistStore((s) => s.toggle);
+  const toast = useToast();
   const [reviews, setReviews] = useState([]);
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(5);
@@ -89,6 +94,10 @@ export default function ProductDetailPage() {
   }
 
   const submitReview = async () => {
+    if (!user) {
+      authPrompt.open("Please sign in or register to submit a review.");
+      return;
+    }
     try {
       setSubmitting(true);
       const { supabase } = await import("@/lib/supabase");
@@ -178,14 +187,31 @@ export default function ProductDetailPage() {
                       size="lg"
                       bg="#bc0930"
                       color="white"
-                      onClick={() =>
-                        cart.addItem({
+                      onClick={() => {
+                        if (!user) {
+                          authPrompt.open(
+                            "Please sign in or register to add items to your cart."
+                          );
+                          return;
+                        }
+                        if (!product) return;
+                        cartAddItem({
                           id: product.id,
                           title: product.title,
                           price: product.price,
-                          image: product.images?.[0],
-                        })
-                      }
+                          image: product.images?.[0] || product.image,
+                          quantity: 1,
+                        });
+                        cartOpen();
+                        toast({
+                          title: "Added to cart",
+                          description: `${product.title} added to your cart.`,
+                          status: "success",
+                          duration: 2000,
+                          isClosable: true,
+                          position: "top",
+                        });
+                      }}
                       _hover={{
                         bg: "#a10828",
                         transform: "translateY(-1px)",
@@ -203,14 +229,28 @@ export default function ProductDetailPage() {
                       variant="outline"
                       borderColor="#bc0930"
                       color="#bc0930"
-                      onClick={() =>
-                        wishlist.toggle({
+                      onClick={() => {
+                        if (!user) {
+                          authPrompt.open(
+                            "Please sign in or register to save items to your wishlist."
+                          );
+                          return;
+                        }
+                        if (!product) return;
+                        toggleWishlist({
                           id: product.id,
                           title: product.title,
-                          image: product.images?.[0],
+                          image: product.images?.[0] || product.image,
                           price: product.price,
-                        })
-                      }
+                        });
+                        toast({
+                          title: "Wishlist updated",
+                          status: "info",
+                          duration: 1500,
+                          isClosable: true,
+                          position: "top",
+                        });
+                      }}
                       _hover={{
                         bg: "#fff8f3",
                       }}

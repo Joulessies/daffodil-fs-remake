@@ -30,25 +30,31 @@ import {
   IconButton,
   Box,
 } from "@chakra-ui/react";
-import { useCart } from "./CartContext";
-import { useWishlist } from "./WishlistContext";
+import { useCartStore, useWishlistStore } from "@/lib/store";
+import { useAuth } from "@/components/AuthProvider";
+import { useAuthPrompt } from "@/components/AuthPromptContext";
 import { ShoppingCart, Heart, Star, ZoomIn, X } from "lucide-react";
 
 export default function ProductDetailsModal({ isOpen, onClose, product }) {
-  const cart = useCart();
-  const wishlist = useWishlist();
+  const { user } = useAuth();
+  const authPrompt = useAuthPrompt();
+  const addItem = useCartStore((s) => s.addItem);
+  const isSaved = useWishlistStore((s) => s.contains(product?.id));
+  const toggleWishlist = useWishlistStore((s) => s.toggle);
   const toast = useToast();
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState([]);
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
 
-  // Reset quantity when product changes
+  // Reset quantity and active image when product changes
   useEffect(() => {
     setQuantity(1);
+    setActiveImageIndex(0);
   }, [product?.id]);
 
   // Load reviews when product changes
@@ -75,7 +81,11 @@ export default function ProductDetailsModal({ isOpen, onClose, product }) {
   if (!product) return null;
 
   const handleAddToCart = () => {
-    const success = cart.addItem({
+    if (!user) {
+      authPrompt.open("Please sign in or register to add items to your cart.");
+      return;
+    }
+    const success = addItem({
       id: product.id,
       title: product.title,
       price: product.price,
@@ -95,17 +105,21 @@ export default function ProductDetailsModal({ isOpen, onClose, product }) {
   };
 
   const handleToggleWishlist = () => {
-    const itemId = product.id;
-    wishlist.toggle({
-      id: itemId,
+    if (!user) {
+      authPrompt.open("Please sign in or register to save items to your wishlist.");
+      return;
+    }
+    if (!product?.id) return;
+    const wasSaved = isSaved;
+    toggleWishlist({
+      id: product.id,
       title: product.title,
       image: product.images?.[0] || product.image,
       price: product.price,
     });
-    const isInWishlist = wishlist.items.some((item) => item.id === itemId);
     toast({
-      title: isInWishlist ? "Removed from wishlist" : "Added to wishlist",
-      status: isInWishlist ? "info" : "success",
+      title: wasSaved ? "Removed from wishlist" : "Added to wishlist",
+      status: wasSaved ? "info" : "success",
       duration: 1500,
       isClosable: true,
       position: "top",
@@ -113,6 +127,10 @@ export default function ProductDetailsModal({ isOpen, onClose, product }) {
   };
 
   const submitReview = async () => {
+    if (!user) {
+      authPrompt.open("Please sign in or register to leave a review.");
+      return;
+    }
     if (!reviewText.trim()) {
       toast({
         title: "Please write a review",
@@ -175,7 +193,7 @@ export default function ProductDetailsModal({ isOpen, onClose, product }) {
         ).toFixed(1)
       : 0;
 
-  const isInWishlist = wishlist.items.some((item) => item.id === product.id);
+  const isInWishlist = isSaved;
   const productImages =
     product.images || (product.image ? [product.image] : []);
 
@@ -217,53 +235,101 @@ export default function ProductDetailsModal({ isOpen, onClose, product }) {
             >
               {/* Left side - Images */}
               <GridItem>
-                <Stack spacing={3}>
-                  {productImages.length > 0 ? (
-                    productImages.map((src, i) => (
-                      <Box
-                        key={src + i}
-                        position="relative"
-                        borderRadius="16px"
-                        overflow="hidden"
-                        border="1px solid #F5C7CF"
-                        boxShadow="md"
-                        cursor="pointer"
-                        _hover={{ transform: "scale(1.02)" }}
-                        transition="all 0.3s"
-                        onClick={() => openImageModal(src)}
-                      >
-                        <ChakraImage
-                          src={src}
-                          alt={product.title}
-                          objectFit="cover"
-                          w="100%"
-                          h={{ base: "250px", md: "300px" }}
-                        />
-                        <IconButton
-                          icon={<ZoomIn size={18} />}
-                          position="absolute"
-                          top={3}
-                          right={3}
-                          size="sm"
-                          colorScheme="whiteAlpha"
-                          bg="rgba(255,255,255,0.9)"
-                          _hover={{ bg: "white" }}
-                          aria-label="Zoom image"
-                        />
-                      </Box>
-                    ))
-                  ) : (
+                {productImages.length > 0 ? (
+                  <Stack spacing={3}>
                     <Box
+                      position="relative"
                       borderRadius="16px"
+                      overflow="hidden"
                       border="1px solid #F5C7CF"
-                      p={8}
-                      textAlign="center"
-                      bg="white"
+                      boxShadow="md"
+                      cursor="pointer"
+                      onClick={() =>
+                        openImageModal(
+                          productImages[activeImageIndex] || productImages[0]
+                        )
+                      }
                     >
-                      <Text color="#5B6B73">No images available</Text>
+                      <ChakraImage
+                        src={
+                          productImages[activeImageIndex] || productImages[0]
+                        }
+                        alt={product.title}
+                        fallbackSrc="/images/home/home1.svg"
+                        objectFit="cover"
+                        w="100%"
+                        h={{ base: "260px", md: "360px" }}
+                        transition="all 0.3s ease"
+                      />
+                      <IconButton
+                        icon={<ZoomIn size={18} />}
+                        position="absolute"
+                        top={3}
+                        right={3}
+                        size="sm"
+                        colorScheme="whiteAlpha"
+                        bg="rgba(255,255,255,0.9)"
+                        _hover={{ bg: "white" }}
+                        aria-label="Zoom image"
+                      />
                     </Box>
-                  )}
-                </Stack>
+
+                    {productImages.length > 1 && (
+                      <HStack
+                        spacing={2}
+                        overflowX="auto"
+                        py={1}
+                        css={{
+                          "&::-webkit-scrollbar": { display: "none" },
+                          scrollbarWidth: "none",
+                        }}
+                      >
+                        {productImages.map((src, i) => (
+                          <Box
+                            key={src + i}
+                            as="button"
+                            type="button"
+                            onClick={() => setActiveImageIndex(i)}
+                            borderRadius="10px"
+                            overflow="hidden"
+                            border={
+                              activeImageIndex === i
+                                ? "2px solid #bc0930"
+                                : "1px solid #F5C7CF"
+                            }
+                            opacity={activeImageIndex === i ? 1 : 0.65}
+                            transform={
+                              activeImageIndex === i ? "scale(1.04)" : "scale(1)"
+                            }
+                            transition="all 0.2s"
+                            flexShrink={0}
+                            w={{ base: "64px", md: "72px" }}
+                            h={{ base: "64px", md: "72px" }}
+                          >
+                            <ChakraImage
+                              src={src}
+                              alt={`Thumbnail ${i + 1}`}
+                              fallbackSrc="/images/home/home1.svg"
+                              objectFit="cover"
+                              w="100%"
+                              h="100%"
+                            />
+                          </Box>
+                        ))}
+                      </HStack>
+                    )}
+                  </Stack>
+                ) : (
+                  <Box
+                    borderRadius="16px"
+                    border="1px solid #F5C7CF"
+                    p={8}
+                    textAlign="center"
+                    bg="white"
+                  >
+                    <Text color="#5B6B73">No images available</Text>
+                  </Box>
+                )}
               </GridItem>
 
               {/* Right side - Product Info */}
