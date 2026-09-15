@@ -3,8 +3,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Use Next.js server runtime to allow API routes (needed for AI generation)
-  output: "standalone",
   images: {
     unoptimized: true,
   },
