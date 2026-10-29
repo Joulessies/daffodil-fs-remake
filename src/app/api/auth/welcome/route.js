@@ -91,7 +91,7 @@ export async function POST(request) {
       from:
         process.env.EMAIL_FROM ||
         process.env.GMAIL_USER ||
-        `Daffodil <no-reply@daffodilflower.page>`,
+        `Daffodil <no-reply@localhost>`,
       to: email,
       subject: "Welcome to Daffodil",
       html,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/lib/supabase";
 import {
   Box,
   Button,
@@ -26,6 +27,11 @@ import {
   Icon,
   Divider,
   Progress,
+  Input,
+  FormControl,
+  FormLabel,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import AdminBackButton from "@/components/AdminBackButton";
@@ -42,6 +48,7 @@ import {
   CheckCircle,
   MessageSquare,
   FileText,
+  Smartphone,
 } from "lucide-react";
 
 const StatCard = ({
@@ -135,6 +142,10 @@ export default function AdminPage() {
   const [recentOrders, setRecentOrders] = useState([]);
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState("");
 
   useEffect(() => {
     if (!user || !isAdmin) return;
@@ -145,22 +156,18 @@ export default function AdminPage() {
     try {
       setLoading(true);
 
-      // Load orders
       const ordersRes = await fetch("/api/admin/orders");
       const ordersData = await ordersRes.json();
       const orders = ordersData.items || [];
 
-      // Load products
       const productsRes = await fetch("/api/admin/products?pageSize=100");
       const productsData = await productsRes.json();
       const products = productsData.items || [];
 
-      // Load users
       const usersRes = await fetch("/api/admin/users");
       const usersData = await usersRes.json();
       const users = usersData.items || [];
 
-      // Calculate statistics
       const totalRevenue = orders.reduce(
         (sum, order) => sum + (Number(order.total) || 0),
         0,
@@ -181,15 +188,31 @@ export default function AdminPage() {
         pendingOrders: pendingOrders.length,
       });
 
-      // Get recent orders (last 5)
       setRecentOrders(orders.slice(0, 5));
-
-      // Get low stock products
       setLowStockProducts(lowStockItems.slice(0, 5));
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    setLoginError("");
+    setIsLoggingIn(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: adminEmail.trim(),
+        password: adminPassword,
+      });
+      if (error) {
+        setLoginError(error.message);
+      }
+    } catch (err) {
+      setLoginError(err?.message || "Failed to sign in");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -201,11 +224,140 @@ export default function AdminPage() {
     );
   }
 
-  if (!user || !isAdmin) {
-    if (typeof window !== "undefined") {
-      window.location.replace("/");
-    }
-    return null;
+  if (!user) {
+    return (
+      <Box minH="85vh" bg="#FFF8F3" py={12} px={4} display="flex" alignItems="center" justifyContent="center">
+        <Box maxW="480px" w="100%" bg="white" p={8} borderRadius="20px" border="1px solid" borderColor="#F5C7CF" shadow="lg">
+          <VStack spacing={5} align="stretch">
+            <Box textAlign="center">
+              <Badge colorScheme="red" bg="#bc093018" color="#bc0930" px={3} py={1} borderRadius="full" fontWeight="700" fontSize="xs" mb={3}>
+                COMPANY / ADMIN PORTAL
+              </Badge>
+              <Heading size="lg" color="#bc0930" style={{ fontFamily: "var(--font-rothek)" }}>
+                Web and Mobile
+              </Heading>
+              <Text color="#5B6B73" fontSize="sm" mt={1}>
+                Sign in to manage studio operations, orders, and catalog
+              </Text>
+            </Box>
+
+            <Box bg="#FFF8F3" p={3.5} borderRadius="12px" border="1px solid #F5C7CF">
+              <VStack spacing={2} align="start" fontSize="xs">
+                <HStack spacing={2}>
+                  <Badge colorScheme="blue" fontSize="2xs">LOCAL HOST</Badge>
+                  <Text color="#4A5568" fontWeight="600">Presented through localhost:3000 (Production domain expired)</Text>
+                </HStack>
+                <HStack spacing={2}>
+                  <Badge colorScheme="purple" fontSize="2xs">ROLE SEPARATION</Badge>
+                  <Text color="#742A2A" fontWeight="600">Web: Company & Admin Only | Customer: Mobile App (APK)</Text>
+                </HStack>
+              </VStack>
+            </Box>
+
+            {loginError && (
+              <Alert status="error" borderRadius="8px" fontSize="sm">
+                <AlertIcon />
+                {loginError}
+              </Alert>
+            )}
+
+            <form onSubmit={handleAdminLogin}>
+              <VStack spacing={4} align="stretch">
+                <FormControl isRequired>
+                  <FormLabel fontSize="xs" fontWeight="700" textTransform="uppercase" letterSpacing="0.05em" color="#5B6B73">
+                    Company Email
+                  </FormLabel>
+                  <Input
+                    type="email"
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    placeholder="admin@company.com"
+                    bg="#FAFAFA"
+                    borderColor="#F5C7CF"
+                    _focus={{ borderColor: "#bc0930", boxShadow: "0 0 0 1px #bc0930" }}
+                  />
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel fontSize="xs" fontWeight="700" textTransform="uppercase" letterSpacing="0.05em" color="#5B6B73">
+                    Password
+                  </FormLabel>
+                  <Input
+                    type="password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder="••••••••"
+                    bg="#FAFAFA"
+                    borderColor="#F5C7CF"
+                    _focus={{ borderColor: "#bc0930", boxShadow: "0 0 0 1px #bc0930" }}
+                  />
+                </FormControl>
+
+                <Button
+                  type="submit"
+                  bg="#bc0930"
+                  color="white"
+                  _hover={{ bg: "#9c0728" }}
+                  isLoading={isLoggingIn}
+                  w="100%"
+                  mt={2}
+                  size="md"
+                  fontWeight="600"
+                >
+                  Sign In as Company Admin
+                </Button>
+              </VStack>
+            </form>
+
+            <Divider borderColor="#F5C7CF" />
+
+            <Box bg="#F7FAFC" p={3.5} borderRadius="12px" border="1px dashed #CBD5E0">
+              <HStack spacing={2} align="start">
+                <Icon as={Smartphone} color="#bc0930" mt={0.5} boxSize={4} />
+                <VStack align="start" spacing={1}>
+                  <Text fontSize="xs" fontWeight="700" color="#2D3748">
+                    Customer Shopping (APK)
+                  </Text>
+                  <Text fontSize="xs" color="#718096" lineHeight="shorter">
+                    Customer arrangements, cart, and orders are available exclusively on the Mobile App (APK).
+                  </Text>
+                </VStack>
+              </HStack>
+            </Box>
+          </VStack>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (user && !isAdmin) {
+    return (
+      <Box minH="85vh" bg="#FFF8F3" py={12} px={4} display="flex" alignItems="center" justifyContent="center">
+        <Box maxW="480px" w="100%" bg="white" p={8} borderRadius="20px" border="1px solid" borderColor="#F5C7CF" shadow="lg" textAlign="center">
+          <Badge colorScheme="yellow" mb={3} px={3} py={1} borderRadius="full" fontSize="xs">
+            ACCESS RESTRICTED
+          </Badge>
+          <Heading size="md" color="#bc0930" mb={2}>
+            Company Account Required
+          </Heading>
+          <Text fontSize="sm" color="#5B6B73" mb={4}>
+            Signed in as <strong>{user.email}</strong>. This account does not have Company Administrator privileges.
+          </Text>
+          <Text fontSize="xs" color="#718096" mb={6}>
+            Web is for company and administrative management only. Customers use the Mobile App (APK).
+          </Text>
+          <Button
+            onClick={() => supabase.auth.signOut()}
+            colorScheme="red"
+            variant="outline"
+            size="sm"
+            w="100%"
+          >
+            Sign Out
+          </Button>
+        </Box>
+      </Box>
+    );
   }
 
   const getStatusColor = (status) => {

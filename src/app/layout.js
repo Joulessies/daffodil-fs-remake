@@ -23,10 +23,10 @@ const playfair = Playfair_Display({
 
 export const metadata = {
   title: {
-    default: "Daffodil Flower Shop",
-    template: "%s - Daffodil Flower Shop",
+    default: "Web and Mobile",
+    template: "%s - Web and Mobile",
   },
-  description: "Beautiful flowers for every occasion",
+  description: "Web and Mobile - Company & Admin Management Portal",
   icons: {
     icon: "/images/favicon.ico",
   },

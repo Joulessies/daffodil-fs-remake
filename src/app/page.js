@@ -1,13 +1,5 @@
-"use client";
-
-import NavigationBar from "@/components/navigationbar";
-import HomePage from "./home/page";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div>
-      <NavigationBar />
-      <HomePage />
-    </div>
-  );
+  redirect("/admin");
 }

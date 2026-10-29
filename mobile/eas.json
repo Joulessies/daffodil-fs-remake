@@ -1,0 +1,42 @@
+{
+  "cli": {
+    "version": ">= 12.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_c2V0dGxpbmctd2hpcHBldC01OTMwLmNsZXJrLmFjY291bnRzLmRldiQ",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://rwsxqxwekjhxxjoajnal.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_oV-NsDI5cn8oOb3S7SsRFQ_eMA5q-eU",
+        "EXPO_PUBLIC_SUPABASE_KEY": "sb_publishable_oV-NsDI5cn8oOb3S7SsRFQ_eMA5q-eU",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51U1gnd7rkXSs3efpOGgh8Pw4FYAs791J9zSh1oU5tJjzxn9PbeKYqYrB3Qy78YmcT0P9h8wBYZSZek91RCE4gGW600RUmfRmVv",
+        "EXPO_PUBLIC_PAYPAL_CLIENT_ID": "AX691mcCmZyARi0gfA-iat8t_qVYeFcNX_lkRrIPoEyw7jShRdhvznOTSpIIjg-YAdNW-YUGMfnIPIcl",
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "concierge@daffodilflowershop.me",
+        "EXPO_PUBLIC_API_URL": "https://www.daffodilflowershop.me"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_c2V0dGxpbmctd2hpcHBldC01OTMwLmNsZXJrLmFjY291bnRzLmRldiQ",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://rwsxqxwekjhxxjoajnal.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_oV-NsDI5cn8oOb3S7SsRFQ_eMA5q-eU",
+        "EXPO_PUBLIC_SUPABASE_KEY": "sb_publishable_oV-NsDI5cn8oOb3S7SsRFQ_eMA5q-eU",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51U1gnd7rkXSs3efpOGgh8Pw4FYAs791J9zSh1oU5tJjzxn9PbeKYqYrB3Qy78YmcT0P9h8wBYZSZek91RCE4gGW600RUmfRmVv",
+        "EXPO_PUBLIC_PAYPAL_CLIENT_ID": "AX691mcCmZyARi0gfA-iat8t_qVYeFcNX_lkRrIPoEyw7jShRdhvznOTSpIIjg-YAdNW-YUGMfnIPIcl",
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "concierge@daffodilflowershop.me",
+        "EXPO_PUBLIC_API_URL": "https://www.daffodilflowershop.me"
+      }
+    }
+  }
+}

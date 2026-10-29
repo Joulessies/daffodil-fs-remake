@@ -80,7 +80,19 @@ export default function AdminNav() {
 
   return (
     <>
-      {/* Top Navbar */}
+      <Box bg="#FFF8F3" borderBottom="1px solid #F5C7CF" px={4} py={1.5}>
+        <Flex maxW="1600px" mx="auto" justify="space-between" align="center" flexWrap="wrap" gap={2}>
+          <HStack spacing={2} fontSize="xs">
+            <Badge colorScheme="blue" variant="subtle" fontSize="2xs">LOCAL HOST</Badge>
+            <Text color="#4A5568" fontWeight="600">Presented through localhost:3000 (Production domain expired)</Text>
+          </HStack>
+          <HStack spacing={2} fontSize="xs">
+            <Badge colorScheme="purple" variant="subtle" fontSize="2xs">ACCESS SEPARATION</Badge>
+            <Text color="#742A2A" fontWeight="600">Web: Company & Admin Only | Customer: Mobile App (APK)</Text>
+          </HStack>
+        </Flex>
+      </Box>
+
       <Box
         as="header"
         bg="white"
@@ -99,7 +111,6 @@ export default function AdminNav() {
           align="center"
           justify="space-between"
         >
-          {/* Brand + Hamburger */}
           <HStack spacing={3}>
             <IconButton
               aria-label="Open navigation menu"
@@ -120,7 +131,7 @@ export default function AdminNav() {
                   letterSpacing="-0.02em"
                   style={{ fontFamily: "var(--font-rothek)" }}
                 >
-                  DAFFODIL
+                  WEB AND MOBILE
                 </Text>
                 <Badge
                   colorScheme="red"
@@ -132,7 +143,7 @@ export default function AdminNav() {
                   borderRadius="full"
                   fontWeight="700"
                 >
-                  ADMIN
+                  COMPANY / ADMIN
                 </Badge>
               </HStack>
             </Link>
@@ -171,31 +182,22 @@ export default function AdminNav() {
             })}
           </HStack>
 
-          {/* Storefront Link */}
           <HStack spacing={2}>
-            <Link href="/" target="_blank" rel="noopener noreferrer">
-              <Button
-                size="sm"
-                variant="outline"
-                colorScheme="red"
-                borderColor="#F5C7CF"
-                color="#bc0930"
-                _hover={{ bg: "#FFF8F3" }}
-                leftIcon={<Store size={15} />}
-                fontSize="xs"
-                px={{ base: 2.5, sm: 3 }}
-              >
-                <Text as="span" display={{ base: "none", sm: "inline" }}>
-                  Visit
-                </Text>{" "}
-                Shop
-              </Button>
-            </Link>
+            <Badge
+              colorScheme="purple"
+              variant="subtle"
+              fontSize="xs"
+              px={3}
+              py={1.5}
+              borderRadius="md"
+              fontWeight="600"
+            >
+              Customer Shopping: Mobile App (APK)
+            </Badge>
           </HStack>
         </Flex>
       </Box>
 
-      {/* Slide-out Mobile & Tablet Navigation Drawer */}
       <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="xs">
         <DrawerOverlay bg="blackAlpha.400" backdropFilter="blur(3px)" />
         <DrawerContent bg="#FFFDF7" maxW={{ base: "290px", sm: "320px" }}>
@@ -226,10 +228,10 @@ export default function AdminNav() {
                   lineHeight="1.2"
                   style={{ fontFamily: "var(--font-rothek)" }}
                 >
-                  Daffodil Portal
+                  Web and Mobile
                 </Text>
                 <Text fontSize="xs" color="#5B6B73" fontWeight="500">
-                  Store Management
+                  Company & Admin Portal
                 </Text>
               </Box>
             </HStack>

@@ -18,14 +18,14 @@ import styles from "./ContactPage.module.scss";
 export default function ContactPage() {
   const toast = useToast();
   const publicSupportEmail =
-    process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@daffodilflower.page";
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@localhost";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [touched, setTouched] = useState({});
-  const [botField, setBotField] = useState(""); // honeypot
+  const [botField, setBotField] = useState("");
 
   const errors = useMemo(() => {
     const next = {};

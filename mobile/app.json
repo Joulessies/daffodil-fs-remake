@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Daffodil Flower Shop",
+    "slug": "daffodil-flower-shop",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "daffodil",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFF8E1"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundColor": "#FFF8E1"
+      },
+      "package": "com.daffodil.flowershop"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "newArchEnabled": false,
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "0e3137d4-2a80-46a8-92c3-90602bd5eae1"
+      }
+    },
+    "owner": "joulessies"
+  }
+}

@@ -10,7 +10,6 @@ export default function AuthCallbackPage() {
     let isMounted = true;
     (async () => {
       if (!supabase) {
-        // Missing configuration; bounce home
         window.location.replace("/");
         return;
       }
@@ -30,12 +29,19 @@ export default function AuthCallbackPage() {
           handled = !error;
         }
 
-        // Handle implicit/hash tokens (e.g., magic link) as a fallback
+        // Handle implicit/hash tokens (e.g., magic link or mobile OAuth) as a fallback
         if (!handled && window.location.hash) {
           const params = new URLSearchParams(window.location.hash.slice(1));
           const access_token = params.get("access_token");
           const refresh_token = params.get("refresh_token");
           if (access_token && refresh_token) {
+            // Bounce into mobile app if opened on phone
+            if (typeof window !== "undefined" && /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+              window.location.href = `daffodil://auth/callback#access_token=${encodeURIComponent(
+                access_token
+              )}&refresh_token=${encodeURIComponent(refresh_token)}`;
+            }
+
             const { error } = await supabase.auth.setSession({
               access_token,
               refresh_token,

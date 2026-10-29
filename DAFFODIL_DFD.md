@@ -1,7 +1,7 @@
-# 🌼 Daffodil Flower Shop - Data Flow Diagram (DFD) 🌼
+# 🌼 Web and Mobile - Data Flow Diagram (DFD) 🌼
 
-> **Complete system architecture documentation for www.daffodilflower.page**  
-> _An e-commerce platform for custom floral arrangements with AI-powered customization_
+> **Complete system architecture documentation presented through localhost:3000 (Production domain expired)**  
+> _Web: Company & Admin Only | Mobile App (APK): Customer Only_
 
 ---
 

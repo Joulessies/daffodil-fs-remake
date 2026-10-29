@@ -132,19 +132,16 @@ export async function POST(request) {
       .replace(/>/g, "&gt;")
       .replace(/\n/g, "<br/>");
 
-    // Determine recipient email (should go to business, not back to sender)
     const contactEmail =
       process.env.CONTACT_TO ||
       process.env.NEXT_PUBLIC_SUPPORT_EMAIL ||
-      "support@daffodilflower.page";
+      "support@localhost";
 
-    // Determine sender email
     const fromEmail =
       process.env.EMAIL_FROM ||
       gmailUser ||
-      `Daffodil Contact <no-reply@daffodilflower.page>`;
+      `Daffodil Contact <no-reply@localhost>`;
 
-    // Email to business/support team
     const businessHtml = `
       <!DOCTYPE html>
       <html>
