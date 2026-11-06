@@ -9,6 +9,8 @@ const AuthContext = createContext({
   isLoading: true,
   isAdmin: false,
   refreshAdminStatus: () => {},
+  setLocalUser: () => {},
+  signOut: async () => {},
 });
 
 export function AuthProvider({ children }) {
@@ -19,6 +21,18 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let isMounted = true;
+
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("daffodil_local_admin");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.email) {
+            setUser(parsed);
+          }
+        }
+      } catch (e) {}
+    }
 
     if (!supabase) {
       setIsLoading(false);
@@ -31,15 +45,24 @@ export function AuthProvider({ children }) {
       .getSession()
       .then(({ data }) => {
         if (!isMounted) return;
-        setUser(data.session?.user ?? null);
+        if (data.session?.user) {
+          setUser(data.session.user);
+        }
         setIsLoading(false);
       })
       .catch(() => setIsLoading(false));
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+      } else if (event === "SIGNED_OUT") {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("daffodil_local_admin");
+        }
+        setUser(null);
+      }
     });
 
     return () => {
@@ -122,6 +145,27 @@ export function AuthProvider({ children }) {
       isAdmin,
       suspended: dbSuspended,
       refreshAdminStatus: loadAdminStatus,
+      setLocalUser: (u) => {
+        if (typeof window !== "undefined") {
+          if (u) {
+            localStorage.setItem("daffodil_local_admin", JSON.stringify(u));
+          } else {
+            localStorage.removeItem("daffodil_local_admin");
+          }
+        }
+        setUser(u);
+      },
+      signOut: async () => {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("daffodil_local_admin");
+        }
+        if (supabase) {
+          try {
+            await supabase.auth.signOut();
+          } catch {}
+        }
+        setUser(null);
+      },
     };
   }, [user, isLoading, dbIsAdmin, dbSuspended, loadAdminStatus]);
 

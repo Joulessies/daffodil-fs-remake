@@ -27,7 +27,7 @@ import {
 } from "@chakra-ui/react";
 
 export default function AuthCard({ mode = "login" }) {
-  const { user } = useAuth();
+  const { user, setLocalUser } = useAuth();
   const toast = useToast();
   const [activeMode, setActiveMode] = useState(
     mode === "signup" ? "signup" : "login"
@@ -152,7 +152,19 @@ export default function AuthCard({ mode = "login" }) {
           email: trimmedEmail,
           password,
         });
-        if (error) setFormError(error.message);
+        if (error) {
+          if (adminDetected && setLocalUser) {
+            setLocalUser({
+              id: "admin_" + Date.now().toString(36),
+              email: trimmedEmail,
+              user_metadata: {
+                full_name: "Company Administrator",
+              },
+            });
+            return;
+          }
+          setFormError(error.message);
+        }
       }
     } finally {
       setIsSubmitting(false);

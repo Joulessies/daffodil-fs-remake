@@ -69,7 +69,7 @@ const NAV_ITEMS = [
 export default function AdminNav() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   const isActive = (item) => {
     if (item.exact) {
@@ -182,7 +182,24 @@ export default function AdminNav() {
             })}
           </HStack>
 
-          <HStack spacing={2}>
+          <HStack spacing={3}>
+            {user && (
+              <HStack spacing={2}>
+                <Text fontSize="xs" color="#5B6B73" display={{ base: "none", md: "block" }}>
+                  {user.email}
+                </Text>
+                <Button
+                  size="xs"
+                  variant="outline"
+                  borderColor="#F5C7CF"
+                  color="#bc0930"
+                  _hover={{ bg: "#FFF8F3" }}
+                  onClick={signOut}
+                >
+                  Sign Out
+                </Button>
+              </HStack>
+            )}
             <Badge
               colorScheme="purple"
               variant="subtle"
