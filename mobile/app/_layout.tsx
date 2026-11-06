@@ -3,9 +3,8 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { ClerkProvider } from '@clerk/clerk-expo';
-
-import { tokenCache } from '@/services/tokenCache';
+import { ClerkProvider } from '@clerk/expo';
+import { tokenCache } from '@clerk/expo/token-cache';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import { initDatabase } from '@/services/database';
@@ -14,11 +13,6 @@ import Theme from '@/constants/Theme';
 const CLERK_PUBLISHABLE_KEY =
   process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ||
   'pk_test_c2V0dGxpbmctd2hpcHBldC01OTMwLmNsZXJrLmFjY291bnRzLmRldiQ';
-
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -50,7 +44,11 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+    <ClerkProvider
+      publishableKey={CLERK_PUBLISHABLE_KEY}
+      tokenCache={tokenCache}
+      __experimental_disableNativeClientSync
+    >
       <AuthProvider>
         <CartProvider>
           <RootLayoutNav />
@@ -77,6 +75,7 @@ function RootLayoutNav() {
         },
       }}
     >
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="product/[id]" options={{ headerShown: false }} />

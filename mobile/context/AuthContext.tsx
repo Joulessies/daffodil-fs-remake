@@ -2,7 +2,14 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuth as useClerkAuth, useUser as useClerkUser, useSignIn as useClerkSignIn, useSignUp as useClerkSignUp, useOAuth } from '@clerk/clerk-expo';
+import {
+  useAuth as useClerkAuth,
+  useUser as useClerkUser,
+  useSignIn as useClerkSignIn,
+  useSignUp as useClerkSignUp,
+  useClerk,
+} from '@clerk/expo';
+import { useSSO } from '@clerk/expo/experimental';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -34,9 +41,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoaded: isAuthLoaded, isSignedIn, signOut: clerkSignOut } = useClerkAuth();
   const { user: clerkUser, isLoaded: isUserLoaded } = useClerkUser();
-  const { isLoaded: isSignInLoaded, signIn: clerkSignIn, setActive: setSignInActive } = useClerkSignIn();
-  const { isLoaded: isSignUpLoaded, signUp: clerkSignUp, setActive: setSignUpActive } = useClerkSignUp();
-  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  const { signIn: clerkSignIn } = useClerkSignIn();
+  const { signUp: clerkSignUp } = useClerkSignUp();
+  const { startSSOFlow } = useSSO();
+  const { setActive } = useClerk();
 
   const [localUser, setLocalUser] = useState<AppUser | null>(null);
   const [localLoaded, setLocalLoaded] = useState<boolean>(false);
@@ -83,16 +91,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     const trimmedEmail = email.trim();
     // 1. Attempt Clerk authentication first
-    if (isSignInLoaded && clerkSignIn) {
+    if (clerkSignIn) {
       try {
-        const result = await clerkSignIn.create({
-          identifier: trimmedEmail,
+        const { error } = await clerkSignIn.password({
+          emailAddress: trimmedEmail,
           password,
         });
-
-        if (result.status === 'complete' && setSignInActive) {
-          await setSignInActive({ session: result.createdSessionId });
+        if (!error && clerkSignIn.status === 'complete') {
+          await clerkSignIn.finalize();
           return { error: null };
+        }
+        if (error) {
+          console.log('[Auth] Clerk sign-in message:', error.message || error);
         }
       } catch (clerkErr: any) {
         console.log('[Auth] Clerk sign-in message:', clerkErr?.message || clerkErr);
@@ -119,22 +129,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const trimmedName = fullName.trim();
 
     // 1. Attempt Clerk sign-up
-    if (isSignUpLoaded && clerkSignUp) {
+    if (clerkSignUp) {
       try {
         const parts = trimmedName.split(' ');
         const firstName = parts[0] || 'Client';
         const lastName = parts.slice(1).join(' ') || '';
 
-        const result = await clerkSignUp.create({
+        const { error } = await clerkSignUp.password({
           emailAddress: trimmedEmail,
           password,
           firstName,
           lastName,
         });
-
-        if (result.status === 'complete' && setSignUpActive) {
-          await setSignUpActive({ session: result.createdSessionId });
+        if (!error && clerkSignUp.status === 'complete') {
+          await clerkSignUp.finalize();
           return { error: null };
+        }
+        if (error) {
+          console.log('[Auth] Clerk sign-up message:', error.message || error);
         }
       } catch (clerkErr: any) {
         console.log('[Auth] Clerk sign-up message:', clerkErr?.message || clerkErr);
@@ -173,9 +185,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     try {
-      const redirectUrl = Linking.createURL('/(tabs)/profile', { scheme: 'daffodil-flower-shop' });
-      console.log('[Auth] Starting OAuth with redirectUrl:', redirectUrl);
-      const res = await startOAuthFlow({
+      const redirectUrl = Linking.createURL('/(tabs)/profile', { scheme: 'daffodil' });
+      console.log('[Auth] Starting SSO with redirectUrl:', redirectUrl);
+      const res = await startSSOFlow({
+        strategy: 'oauth_google',
         redirectUrl,
       });
 
@@ -191,8 +204,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const sessionId = res.createdSessionId || res.signIn?.createdSessionId || res.signUp?.createdSessionId;
 
-      if (sessionId && res.setActive) {
-        await res.setActive({ session: sessionId });
+      if (sessionId && setActive) {
+        await setActive({ session: sessionId });
         return { error: null };
       }
 

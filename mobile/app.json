@@ -23,7 +23,10 @@
       "package": "com.daffodil.flowershop"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-secure-store",
+      "@clerk/expo",
+      "expo-web-browser"
     ],
     "newArchEnabled": false,
     "experiments": {
